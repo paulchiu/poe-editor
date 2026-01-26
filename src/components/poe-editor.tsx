@@ -124,7 +124,11 @@ console.log(\`Welcome to \${editor}\`);
 > Start writing your masterpiece today.
 `
 
-export function PoeEditor(): ReactElement {
+interface PoeEditorProps {
+  onReady?: () => void
+}
+
+export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   const [showAbout, setShowAbout] = React.useState(false)
@@ -347,7 +351,13 @@ ${htmlContent}
   // Effects
   React.useEffect(() => {
     setMounted(true)
-  }, [])
+
+    // Notify parent that the editor is ready
+    // Use requestAnimationFrame to ensure DOM is painted
+    requestAnimationFrame(() => {
+      onReady?.()
+    })
+  }, [onReady])
 
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent): void => {

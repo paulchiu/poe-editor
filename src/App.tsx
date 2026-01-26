@@ -1,9 +1,13 @@
 import * as React from 'react'
 import { ThemeProvider } from 'next-themes'
-import { PoeEditor } from "@/components/poe-editor"
 import { SplashScreen } from "@/components/splash-screen"
 
 const SPLASH_SESSION_KEY = 'poe-splash-shown'
+
+// Lazy load the main editor component
+const PoeEditor = React.lazy(() =>
+  import("@/components/poe-editor").then(module => ({ default: module.PoeEditor }))
+)
 
 export default function App() {
   const [hasShownSplash, setHasShownSplash] = React.useState(true)
@@ -17,19 +21,15 @@ export default function App() {
     setMounted(true)
   }, [])
 
-  React.useEffect(() => {
-    // Simulate loading completion
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1500)
-
-    return () => clearTimeout(timer)
+  const handleEditorReady = React.useCallback(() => {
+    // Editor is fully loaded and ready
+    setIsLoading(false)
   }, [])
 
-  const handleSplashComplete = () => {
+  const handleSplashComplete = React.useCallback(() => {
     sessionStorage.setItem(SPLASH_SESSION_KEY, 'true')
     setHasShownSplash(true)
-  }
+  }, [])
 
   // Don't show splash on subsequent visits in same session
   const showSplash = !hasShownSplash && mounted
@@ -39,7 +39,9 @@ export default function App() {
       {showSplash && (
         <SplashScreen onComplete={handleSplashComplete} isLoading={isLoading} />
       )}
-      <PoeEditor />
+      <React.Suspense fallback={null}>
+        <PoeEditor onReady={handleEditorReady} />
+      </React.Suspense>
     </ThemeProvider>
   )
 }
