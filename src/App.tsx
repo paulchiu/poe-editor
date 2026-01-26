@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { ThemeProvider } from 'next-themes'
 import { SplashScreen } from "@/components/splash-screen"
+import { Toaster } from "@/components/ui/toaster"
 
 // Lazy load the main editor component
 const PoeEditor = React.lazy(() =>
@@ -27,6 +28,7 @@ export default function App() {
       <React.Suspense fallback={null}>
         <PoeEditor onReady={handleEditorReady} />
       </React.Suspense>
+      <Toaster />
     </ThemeProvider>
   )
 }

@@ -66,8 +66,8 @@ import {
   CodeSquare,
   ListOrdered,
 } from 'lucide-react'
+import { useToast } from "@/hooks/use-toast"
 import { cn } from '@/lib/utils'
-import { toast } from 'sonner'
 import type { ReactElement } from 'react'
 
 interface ToolbarButtonProps {
@@ -130,6 +130,7 @@ interface PoeEditorProps {
 
 export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const { theme, setTheme } = useTheme()
+  const { toast } = useToast()
   const [mounted, setMounted] = React.useState(false)
   const [showAbout, setShowAbout] = React.useState(false)
   const [showShortcuts, setShowShortcuts] = React.useState(false)
@@ -141,13 +142,21 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
    // Stable error handler to prevent useUrlState effect from re-running
    const handleError = React.useCallback((error: Error) => {
-     toast.error(`Error: ${error.message}`)
-   }, [])
+     toast({
+       variant: "destructive",
+       title: "Error",
+       description: error.message
+     })
+   }, [toast])
 
    // Stable warning handler to prevent useUrlState effect from re-running
    const handleLengthWarning = React.useCallback((length: number) => {
-     toast.warning(`URL is getting long (${length} chars). Consider shortening your document.`)
-   }, [])
+     toast({
+       variant: "default",
+       title: "URL Limit Warning",
+       description: `URL is getting long (${length} chars). Consider shortening your document.`
+     })
+   }, [toast])
 
    // URL state management
    const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
@@ -278,30 +287,30 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     }
   }, [])
 
-  // Document management functions
-  const handleNew = React.useCallback((): void => {
-    if (confirm('Create a new document? Current content will be lost if not saved.')) {
-      setContent('')
-      setDocumentName('untitled.md')
-      toast.success('New document created')
-    }
-  }, [setContent, setDocumentName])
+   // Document management functions
+   const handleNew = React.useCallback((): void => {
+     if (confirm('Create a new document? Current content will be lost if not saved.')) {
+       setContent('')
+       setDocumentName('untitled.md')
+       toast({ description: 'New document created' })
+     }
+   }, [setContent, setDocumentName, toast])
 
-  const handleRename = React.useCallback((): void => {
-    const newName = prompt('Enter new document name:', documentName)
-    if (newName && newName.trim()) {
-      setDocumentName(newName.trim())
-      toast.success(`Renamed to ${newName}`)
-    }
-  }, [documentName, setDocumentName])
+   const handleRename = React.useCallback((): void => {
+     const newName = prompt('Enter new document name:', documentName)
+     if (newName && newName.trim()) {
+       setDocumentName(newName.trim())
+       toast({ description: `Renamed to ${newName}` })
+     }
+   }, [documentName, setDocumentName, toast])
 
-  const handleDownloadMarkdown = React.useCallback((): void => {
-    downloadFile(documentName, content, 'text/markdown')
-    toast.success('Downloaded as Markdown')
-  }, [documentName, content])
+   const handleDownloadMarkdown = React.useCallback((): void => {
+     downloadFile(documentName, content, 'text/markdown')
+     toast({ description: "Downloaded as Markdown" })
+   }, [documentName, content, toast])
 
-  const handleDownloadHTML = React.useCallback((): void => {
-    const htmlDoc = `<!DOCTYPE html>
+   const handleDownloadHTML = React.useCallback((): void => {
+     const htmlDoc = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -310,37 +319,45 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css">
   <style>
     .markdown-body { box-sizing: border-box; min-width: 200px; max-width: 980px; margin: 0 auto; padding: 45px; }
+    @media (max-width: 767px) { .markdown-body { padding: 15px; } }
   </style>
 </head>
 <body class="markdown-body">
 ${htmlContent}
 </body>
 </html>`
-    const htmlFileName = documentName.replace(/\.md$/, '.html')
-    downloadFile(htmlFileName, htmlDoc, 'text/html')
-    toast.success('Downloaded as HTML')
-  }, [documentName, htmlContent])
+     const htmlFileName = documentName.replace(/\.md$/, '.html')
+     downloadFile(htmlFileName, htmlDoc, 'text/html')
+     toast({ description: "Downloaded as HTML" })
+   }, [documentName, htmlContent, toast])
 
-  const handleCopyLink = React.useCallback(async (): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(window.location.href)
-      toast.success('Link copied to clipboard!')
-    } catch {
-      toast.error('Failed to copy link')
-    }
-  }, [])
+   const handleCopyLink = React.useCallback(async (): Promise<void> => {
+     try {
+       await navigator.clipboard.writeText(window.location.href)
+       toast({
+         title: "Success",
+         description: "Link copied to clipboard!",
+       })
+     } catch {
+       toast({
+         variant: "destructive",
+         title: "Error",
+         description: "Failed to copy link"
+       })
+     }
+   }, [toast])
 
-  const handleClear = React.useCallback((): void => {
-    if (confirm('Clear all content? This cannot be undone.')) {
-      setContent('')
-      toast.success('Content cleared')
-    }
-  }, [setContent])
+   const handleClear = React.useCallback((): void => {
+     if (confirm('Clear all content? This cannot be undone.')) {
+       setContent('')
+       toast({ description: 'Content cleared' })
+     }
+   }, [setContent, toast])
 
-  const handleSave = React.useCallback((): void => {
-    // Save is automatic via URL state, just show confirmation
-    toast.success('Document auto-saved to URL!')
-  }, [])
+   const handleSave = React.useCallback((): void => {
+     // Save is automatic via URL state, just show confirmation
+     toast({ description: 'Document auto-saved to URL!' })
+   }, [toast])
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -534,24 +551,28 @@ ${htmlContent}
               <DropdownMenuItem onClick={handleNew}>
                 <FilePlus className="size-4" />
                 New
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleRename}>
-                <Pencil className="size-4" />
-                Rename
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Download className="size-4" />
-                  Download
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem onClick={handleDownloadMarkdown}>
-                    Markdown (.md)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDownloadHTML}>HTML (.html)</DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
+               </DropdownMenuItem>
+               <DropdownMenuItem onClick={handleRename}>
+                 <Pencil className="size-4" />
+                 Rename
+               </DropdownMenuItem>
+               <DropdownMenuSeparator />
+               <DropdownMenuSub>
+                 <DropdownMenuSubTrigger>
+                   <Download className="size-4" />
+                   Download
+                 </DropdownMenuSubTrigger>
+                 <DropdownMenuSubContent>
+                   <DropdownMenuItem onClick={handleDownloadMarkdown}>
+                     <Download className="size-4" />
+                     Markdown (.md)
+                   </DropdownMenuItem>
+                   <DropdownMenuItem onClick={handleDownloadHTML}>
+                     <Download className="size-4" />
+                     HTML (.html)
+                   </DropdownMenuItem>
+                 </DropdownMenuSubContent>
+               </DropdownMenuSub>
               <DropdownMenuItem onClick={handleCopyLink}>
                 <Link2 className="size-4" />
                 Copy Link
