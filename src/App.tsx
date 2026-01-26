@@ -1,12 +1,11 @@
-'use client'
-
 import * as React from 'react'
+import { ThemeProvider } from 'next-themes'
 import { PoeEditor } from "@/components/poe-editor"
 import { SplashScreen } from "@/components/splash-screen"
 
 const SPLASH_SESSION_KEY = 'poe-splash-shown'
 
-export default function Page() {
+export default function App() {
   const [hasShownSplash, setHasShownSplash] = React.useState(true)
   const [isLoading, setIsLoading] = React.useState(true)
   const [mounted, setMounted] = React.useState(false)
@@ -36,11 +35,11 @@ export default function Page() {
   const showSplash = !hasShownSplash && mounted
 
   return (
-    <>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       {showSplash && (
         <SplashScreen onComplete={handleSplashComplete} isLoading={isLoading} />
       )}
       <PoeEditor />
-    </>
+    </ThemeProvider>
   )
 }
