@@ -1,46 +1,46 @@
-"use client"
+'use client'
 
-import { TabsContent } from "@/components/ui/tabs"
+import { TabsContent } from '@/components/ui/tabs'
 
-import { TabsTrigger } from "@/components/ui/tabs"
+import { TabsTrigger } from '@/components/ui/tabs'
 
-import { TabsList } from "@/components/ui/tabs"
+import { TabsList } from '@/components/ui/tabs'
 
-import { Tabs } from "@/components/ui/tabs"
+import { Tabs } from '@/components/ui/tabs'
 
-import { ResizableHandle } from "@/components/ui/resizable"
+import { ResizableHandle } from '@/components/ui/resizable'
 
-import { ResizablePanel } from "@/components/ui/resizable"
+import { ResizablePanel } from '@/components/ui/resizable'
 
-import { ResizablePanelGroup } from "@/components/ui/resizable"
+import { ResizablePanelGroup } from '@/components/ui/resizable'
 
-import { DropdownMenuSubContent } from "@/components/ui/dropdown-menu"
+import { DropdownMenuSubContent } from '@/components/ui/dropdown-menu'
 
-import { DropdownMenuSubTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenuSubTrigger } from '@/components/ui/dropdown-menu'
 
-import { DropdownMenuSub } from "@/components/ui/dropdown-menu"
+import { DropdownMenuSub } from '@/components/ui/dropdown-menu'
 
-import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 
-import { DropdownMenuContent } from "@/components/ui/dropdown-menu"
+import { DropdownMenuContent } from '@/components/ui/dropdown-menu'
 
-import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
-import { DropdownMenu } from "@/components/ui/dropdown-menu"
+import { DropdownMenu } from '@/components/ui/dropdown-menu'
 
-import { TooltipContent } from "@/components/ui/tooltip"
+import { TooltipContent } from '@/components/ui/tooltip'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 
-import { TooltipTrigger } from "@/components/ui/tooltip"
+import { TooltipTrigger } from '@/components/ui/tooltip'
 
-import { Tooltip } from "@/components/ui/tooltip"
+import { Tooltip } from '@/components/ui/tooltip'
 
-import * as React from "react"
-import { useTheme } from "next-themes"
-import { TooltipProvider } from "@/components/ui/tooltip"
+import * as React from 'react'
+import { useTheme } from 'next-themes'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import {
   Bold,
   Italic,
@@ -67,18 +67,18 @@ import {
   Keyboard,
   CodeSquare,
   ListOrdered,
-} from "lucide-react"
+} from 'lucide-react'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { VimStatusBar, type VimMode } from "@/components/vim-status-bar"
-import { SplashScreen } from "@/components/splash-screen"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { VimStatusBar, type VimMode } from '@/components/vim-status-bar'
+import { SplashScreen } from '@/components/splash-screen'
+import { cn } from '@/lib/utils'
 
 function ToolbarButton({
   icon: Icon,
@@ -99,8 +99,8 @@ function ToolbarButton({
           size="icon-sm"
           onClick={onClick}
           className={cn(
-            "text-muted-foreground hover:text-foreground",
-            active && "bg-accent text-foreground"
+            'text-muted-foreground hover:text-foreground',
+            active && 'bg-accent text-foreground'
           )}
         >
           <Icon className="size-4" />
@@ -117,67 +117,64 @@ interface SimulatedEditorProps {
   vimMode?: VimMode
 }
 
-function SimulatedEditor({
-  vimModeEnabled = false,
-  vimMode = "normal",
-}: SimulatedEditorProps) {
+function SimulatedEditor({ vimModeEnabled = false, vimMode = 'normal' }: SimulatedEditorProps) {
   const lines = [
-    { num: 1, content: "# Welcome to Poe", color: "text-cyan-400" },
-    { num: 2, content: "", color: "" },
+    { num: 1, content: '# Welcome to Poe', color: 'text-cyan-400' },
+    { num: 2, content: '', color: '' },
     {
       num: 3,
-      content: "A **modern** Markdown editor built for focus.",
-      color: "text-foreground",
+      content: 'A **modern** Markdown editor built for focus.',
+      color: 'text-foreground',
     },
-    { num: 4, content: "", color: "" },
-    { num: 5, content: "## Features", color: "text-cyan-400" },
-    { num: 6, content: "", color: "" },
+    { num: 4, content: '', color: '' },
+    { num: 5, content: '## Features', color: 'text-cyan-400' },
+    { num: 6, content: '', color: '' },
     {
       num: 7,
-      content: "- Live preview with split pane",
-      color: "text-foreground",
+      content: '- Live preview with split pane',
+      color: 'text-foreground',
     },
     {
       num: 8,
-      content: "- Vim mode for power users",
-      color: "text-foreground",
+      content: '- Vim mode for power users',
+      color: 'text-foreground',
     },
     {
       num: 9,
-      content: "- Dark and light themes",
-      color: "text-foreground",
+      content: '- Dark and light themes',
+      color: 'text-foreground',
     },
     {
       num: 10,
-      content: "- Export to MD or HTML",
-      color: "text-foreground",
+      content: '- Export to MD or HTML',
+      color: 'text-foreground',
     },
-    { num: 11, content: "", color: "" },
+    { num: 11, content: '', color: '' },
     {
       num: 12,
-      content: "```javascript",
-      color: "text-emerald-400",
+      content: '```javascript',
+      color: 'text-emerald-400',
     },
     {
       num: 13,
       content: 'const editor = "Poe";',
-      color: "text-amber-300",
+      color: 'text-amber-300',
     },
     {
       num: 14,
-      content: "console.log(`Welcome to ${editor}`);",
-      color: "text-amber-300",
+      content: 'console.log(`Welcome to ${editor}`);',
+      color: 'text-amber-300',
     },
     {
       num: 15,
-      content: "```",
-      color: "text-emerald-400",
+      content: '```',
+      color: 'text-emerald-400',
     },
-    { num: 16, content: "", color: "" },
+    { num: 16, content: '', color: '' },
     {
       num: 17,
-      content: "> Start writing your masterpiece today.",
-      color: "text-muted-foreground italic",
+      content: '> Start writing your masterpiece today.',
+      color: 'text-muted-foreground italic',
     },
   ]
 
@@ -189,15 +186,11 @@ function SimulatedEditor({
             <span className="w-8 text-right pr-4 text-muted-foreground/50 select-none">
               {line.num}
             </span>
-            <span className={cn("flex-1", line.color)}>
-              {line.content || "\u00A0"}
-            </span>
+            <span className={cn('flex-1', line.color)}>{line.content || '\u00A0'}</span>
           </div>
         ))}
         <div className="flex">
-          <span className="w-8 text-right pr-4 text-muted-foreground/50 select-none">
-            18
-          </span>
+          <span className="w-8 text-right pr-4 text-muted-foreground/50 select-none">18</span>
           <span className="animate-pulse text-foreground">|</span>
         </div>
       </div>
@@ -220,8 +213,7 @@ function SimulatedPreview() {
       <article className="prose prose-neutral dark:prose-invert max-w-none">
         <h1 className="text-3xl font-bold mb-4">Welcome to Poe</h1>
         <p className="text-muted-foreground mb-6">
-          A <strong className="text-foreground">modern</strong> Markdown editor
-          built for focus.
+          A <strong className="text-foreground">modern</strong> Markdown editor built for focus.
         </p>
 
         <h2 className="text-xl font-semibold mt-8 mb-4">Features</h2>
@@ -250,7 +242,7 @@ function SimulatedPreview() {
 
 export function PoeEditor() {
   const [vimModeEnabled, setVimModeEnabled] = React.useState(false)
-  const [vimMode, setVimMode] = React.useState<VimMode>("normal")
+  const [vimMode, setVimMode] = React.useState<VimMode>('normal')
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   const [showAbout, setShowAbout] = React.useState(false)
@@ -263,23 +255,23 @@ export function PoeEditor() {
 
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         setShowAbout(false)
         setShowShortcuts(false)
       }
     }
-    window.addEventListener("keydown", handleEscape)
-    return () => window.removeEventListener("keydown", handleEscape)
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
   }, [])
 
   const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
+    setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
   const toggleVimMode = () => {
     setVimModeEnabled(!vimModeEnabled)
     if (!vimModeEnabled) {
-      setVimMode("normal")
+      setVimMode('normal')
     }
   }
 
@@ -293,7 +285,8 @@ export function PoeEditor() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-muted-foreground">
-              Poe is a modern, distraction-free Markdown editor designed for writers, developers, and anyone who values focused writing.
+              Poe is a modern, distraction-free Markdown editor designed for writers, developers,
+              and anyone who values focused writing.
             </p>
             <div className="space-y-2">
               <h3 className="font-semibold text-sm">Features:</h3>
@@ -355,7 +348,9 @@ export function PoeEditor() {
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Redo</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + Shift + Z</code>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Ctrl + Shift + Z
+                    </code>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Find</span>
@@ -373,11 +368,15 @@ export function PoeEditor() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Toggle Vim Mode</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + Shift + V</code>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Ctrl + Shift + V
+                    </code>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Toggle Theme</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + Shift + L</code>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Ctrl + Shift + L
+                    </code>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Close Modal</span>
@@ -408,12 +407,7 @@ export function PoeEditor() {
         </DialogContent>
       </Dialog>
 
-      {showSplash && (
-        <SplashScreen
-          onComplete={() => setShowSplash(false)}
-          isLoading={false}
-        />
-      )}
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} isLoading={false} />}
 
       <div className="h-screen flex flex-col overflow-hidden bg-background">
         <header className="h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4">
@@ -504,8 +498,8 @@ export function PoeEditor() {
                   size="icon-sm"
                   onClick={toggleVimMode}
                   className={cn(
-                    "text-muted-foreground hover:text-foreground",
-                    vimMode && "bg-accent text-foreground"
+                    'text-muted-foreground hover:text-foreground',
+                    vimMode && 'bg-accent text-foreground'
                   )}
                 >
                   <Terminal className="size-4" />
@@ -513,7 +507,7 @@ export function PoeEditor() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {vimModeEnabled ? "Disable Vim Mode" : "Enable Vim Mode"}
+                {vimModeEnabled ? 'Disable Vim Mode' : 'Enable Vim Mode'}
               </TooltipContent>
             </Tooltip>
 
@@ -525,7 +519,7 @@ export function PoeEditor() {
                   onClick={toggleTheme}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  {mounted && theme === "dark" ? (
+                  {mounted && theme === 'dark' ? (
                     <Sun className="size-4" />
                   ) : (
                     <Moon className="size-4" />
@@ -534,9 +528,7 @@ export function PoeEditor() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {mounted && theme === "dark"
-                  ? "Switch to Light Mode"
-                  : "Switch to Dark Mode"}
+                {mounted && theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               </TooltipContent>
             </Tooltip>
 
@@ -561,9 +553,7 @@ export function PoeEditor() {
                   <Keyboard className="size-4" />
                   Keyboard Shortcuts
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setShowSplash(true)}>
-                  Show Splash
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowSplash(true)}>Show Splash</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -574,10 +564,7 @@ export function PoeEditor() {
             <ResizablePanelGroup direction="horizontal" className="h-full">
               <ResizablePanel defaultSize={50} minSize={30}>
                 <div className="h-full pr-2">
-                  <SimulatedEditor
-                    vimModeEnabled={vimModeEnabled}
-                    vimMode={vimMode}
-                  />
+                  <SimulatedEditor vimModeEnabled={vimModeEnabled} vimMode={vimMode} />
                 </div>
               </ResizablePanel>
               <ResizableHandle withHandle className="mx-2" />
@@ -600,10 +587,7 @@ export function PoeEditor() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="editor" className="flex-1 p-4 mt-0">
-                <SimulatedEditor
-                  vimModeEnabled={vimModeEnabled}
-                  vimMode={vimMode}
-                />
+                <SimulatedEditor vimModeEnabled={vimModeEnabled} vimMode={vimMode} />
               </TabsContent>
               <TabsContent value="preview" className="flex-1 p-4 mt-0">
                 <SimulatedPreview />

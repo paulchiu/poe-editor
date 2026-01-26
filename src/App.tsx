@@ -1,11 +1,13 @@
 import * as React from 'react'
 import { ThemeProvider } from 'next-themes'
-import { SplashScreen } from "@/components/splash-screen"
-import { Toaster } from "@/components/ui/toaster"
+import { SplashScreen } from '@/components/splash-screen'
+import { Toaster } from '@/components/ui/toaster'
 
 // Lazy load the main editor component
 const PoeEditor = React.lazy(() =>
-  import("@/components/poe-editor").then(module => ({ default: module.PoeEditor }))
+  import('@/components/poe-editor').then((module) => ({
+    default: module.PoeEditor,
+  }))
 )
 
 export default function App() {
@@ -22,9 +24,7 @@ export default function App() {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      {isLoading && (
-        <SplashScreen onComplete={handleSplashComplete} isLoading={isLoading} />
-      )}
+      {isLoading && <SplashScreen onComplete={handleSplashComplete} isLoading={isLoading} />}
       <React.Suspense fallback={null}>
         <PoeEditor onReady={handleEditorReady} />
       </React.Suspense>

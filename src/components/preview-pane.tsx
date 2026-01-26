@@ -43,26 +43,26 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
     return (
       <div className="h-full overflow-auto">
         <div ref={ref} className="relative group markdown-body p-6 bg-transparent h-full">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={handleCopy}
-                  className="absolute top-4 right-4 z-10 h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p className="text-xs">Copy rich text</p>
-              </TooltipContent>
-            </Tooltip>
-            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={handleCopy}
+                className="absolute top-4 right-4 z-10 h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-600" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p className="text-xs">Copy rich text</p>
+            </TooltipContent>
+          </Tooltip>
+          <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
         </div>
       </div>
     )

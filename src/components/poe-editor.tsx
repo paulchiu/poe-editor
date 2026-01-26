@@ -25,11 +25,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu'
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from '@/components/ui/resizable'
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
   Dialog,
@@ -66,7 +62,7 @@ import {
   CodeSquare,
   ListOrdered,
 } from 'lucide-react'
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import type { ReactElement } from 'react'
 
@@ -135,42 +131,51 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showAbout, setShowAbout] = React.useState(false)
   const [showShortcuts, setShowShortcuts] = React.useState(false)
   const [showSplash, setShowSplash] = React.useState(false)
-  const [cursorPosition, setCursorPosition] = React.useState({ lineNumber: 1, column: 1 })
+  const [, setCursorPosition] = React.useState({
+    lineNumber: 1,
+    column: 1,
+  })
 
-   const isMobile = useIsMobile()
-   const editorRef = React.useRef<EditorPaneHandle>(null)
+  const isMobile = useIsMobile()
+  const editorRef = React.useRef<EditorPaneHandle>(null)
 
-   // Stable error handler to prevent useUrlState effect from re-running
-   const handleError = React.useCallback((error: Error) => {
-     toast({
-       variant: "destructive",
-       title: "Error",
-       description: error.message
-     })
-   }, [toast])
+  // Stable error handler to prevent useUrlState effect from re-running
+  const handleError = React.useCallback(
+    (error: Error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message,
+      })
+    },
+    [toast]
+  )
 
-   // Stable warning handler to prevent useUrlState effect from re-running
-   const handleLengthWarning = React.useCallback((length: number) => {
-     toast({
-       variant: "default",
-       title: "URL Limit Warning",
-       description: `URL is getting long (${length} chars). Consider shortening your document.`
-     })
-   }, [toast])
+  // Stable warning handler to prevent useUrlState effect from re-running
+  const handleLengthWarning = React.useCallback(
+    (length: number) => {
+      toast({
+        variant: 'default',
+        title: 'URL Limit Warning',
+        description: `URL is getting long (${length} chars). Consider shortening your document.`,
+      })
+    },
+    [toast]
+  )
 
-   // URL state management
-   const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
-     defaultContent: DEFAULT_CONTENT,
-     defaultName: 'untitled.md',
-     onError: handleError,
-     onLengthWarning: handleLengthWarning,
-   })
+  // URL state management
+  const { content, setContent, documentName, setDocumentName } = useUrlState({
+    defaultContent: DEFAULT_CONTENT,
+    defaultName: 'untitled.md',
+    onError: handleError,
+    onLengthWarning: handleLengthWarning,
+  })
 
   // Vim mode management
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
 
   // Scroll synchronization
-  const { sourceRef: editorScrollRef, targetRef: previewScrollRef } = useSyncScroll({
+  useSyncScroll({
     enabled: !isMobile,
   })
 
@@ -287,30 +292,30 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     }
   }, [])
 
-   // Document management functions
-   const handleNew = React.useCallback((): void => {
-     if (confirm('Create a new document? Current content will be lost if not saved.')) {
-       setContent('')
-       setDocumentName('untitled.md')
-       toast({ description: 'New document created' })
-     }
-   }, [setContent, setDocumentName, toast])
+  // Document management functions
+  const handleNew = React.useCallback((): void => {
+    if (confirm('Create a new document? Current content will be lost if not saved.')) {
+      setContent('')
+      setDocumentName('untitled.md')
+      toast({ description: 'New document created' })
+    }
+  }, [setContent, setDocumentName, toast])
 
-   const handleRename = React.useCallback((): void => {
-     const newName = prompt('Enter new document name:', documentName)
-     if (newName && newName.trim()) {
-       setDocumentName(newName.trim())
-       toast({ description: `Renamed to ${newName}` })
-     }
-   }, [documentName, setDocumentName, toast])
+  const handleRename = React.useCallback((): void => {
+    const newName = prompt('Enter new document name:', documentName)
+    if (newName && newName.trim()) {
+      setDocumentName(newName.trim())
+      toast({ description: `Renamed to ${newName}` })
+    }
+  }, [documentName, setDocumentName, toast])
 
-   const handleDownloadMarkdown = React.useCallback((): void => {
-     downloadFile(documentName, content, 'text/markdown')
-     toast({ description: "Downloaded as Markdown" })
-   }, [documentName, content, toast])
+  const handleDownloadMarkdown = React.useCallback((): void => {
+    downloadFile(documentName, content, 'text/markdown')
+    toast({ description: 'Downloaded as Markdown' })
+  }, [documentName, content, toast])
 
-   const handleDownloadHTML = React.useCallback((): void => {
-     const htmlDoc = `<!DOCTYPE html>
+  const handleDownloadHTML = React.useCallback((): void => {
+    const htmlDoc = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -326,38 +331,38 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 ${htmlContent}
 </body>
 </html>`
-     const htmlFileName = documentName.replace(/\.md$/, '.html')
-     downloadFile(htmlFileName, htmlDoc, 'text/html')
-     toast({ description: "Downloaded as HTML" })
-   }, [documentName, htmlContent, toast])
+    const htmlFileName = documentName.replace(/\.md$/, '.html')
+    downloadFile(htmlFileName, htmlDoc, 'text/html')
+    toast({ description: 'Downloaded as HTML' })
+  }, [documentName, htmlContent, toast])
 
-   const handleCopyLink = React.useCallback(async (): Promise<void> => {
-     try {
-       await navigator.clipboard.writeText(window.location.href)
-       toast({
-         title: "Success",
-         description: "Link copied to clipboard!",
-       })
-     } catch {
-       toast({
-         variant: "destructive",
-         title: "Error",
-         description: "Failed to copy link"
-       })
-     }
-   }, [toast])
+  const handleCopyLink = React.useCallback(async (): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      toast({
+        title: 'Success',
+        description: 'Link copied to clipboard!',
+      })
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to copy link',
+      })
+    }
+  }, [toast])
 
-   const handleClear = React.useCallback((): void => {
-     if (confirm('Clear all content? This cannot be undone.')) {
-       setContent('')
-       toast({ description: 'Content cleared' })
-     }
-   }, [setContent, toast])
+  const handleClear = React.useCallback((): void => {
+    if (confirm('Clear all content? This cannot be undone.')) {
+      setContent('')
+      toast({ description: 'Content cleared' })
+    }
+  }, [setContent, toast])
 
-   const handleSave = React.useCallback((): void => {
-     // Save is automatic via URL state, just show confirmation
-     toast({ description: 'Document auto-saved to URL!' })
-   }, [toast])
+  const handleSave = React.useCallback((): void => {
+    // Save is automatic via URL state, just show confirmation
+    toast({ description: 'Document auto-saved to URL!' })
+  }, [toast])
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -551,28 +556,28 @@ ${htmlContent}
               <DropdownMenuItem onClick={handleNew}>
                 <FilePlus className="size-4" />
                 New
-               </DropdownMenuItem>
-               <DropdownMenuItem onClick={handleRename}>
-                 <Pencil className="size-4" />
-                 Rename
-               </DropdownMenuItem>
-               <DropdownMenuSeparator />
-               <DropdownMenuSub>
-                 <DropdownMenuSubTrigger>
-                   <Download className="size-4" />
-                   Download
-                 </DropdownMenuSubTrigger>
-                 <DropdownMenuSubContent>
-                   <DropdownMenuItem onClick={handleDownloadMarkdown}>
-                     <Download className="size-4" />
-                     Markdown (.md)
-                   </DropdownMenuItem>
-                   <DropdownMenuItem onClick={handleDownloadHTML}>
-                     <Download className="size-4" />
-                     HTML (.html)
-                   </DropdownMenuItem>
-                 </DropdownMenuSubContent>
-               </DropdownMenuSub>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRename}>
+                <Pencil className="size-4" />
+                Rename
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Download className="size-4" />
+                  Download
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={handleDownloadMarkdown}>
+                    <Download className="size-4" />
+                    Markdown (.md)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDownloadHTML}>
+                    <Download className="size-4" />
+                    HTML (.html)
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
               <DropdownMenuItem onClick={handleCopyLink}>
                 <Link2 className="size-4" />
                 Copy Link
@@ -687,9 +692,7 @@ ${htmlContent}
                   <Keyboard className="size-4" />
                   Keyboard Shortcuts
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setShowSplash(true)}>
-                  Show Splash
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowSplash(true)}>Show Splash</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -710,9 +713,6 @@ ${htmlContent}
                       onFormat={handleFormat}
                       onCodeBlock={formatCodeBlock}
                       vimMode={vimModeEnabled}
-                      documentName={documentName}
-                      isModified={isOverLimit}
-                      cursorPosition={cursorPosition}
                     />
                   </div>
                 </ResizablePanel>
@@ -745,9 +745,6 @@ ${htmlContent}
                     onFormat={handleFormat}
                     onCodeBlock={formatCodeBlock}
                     vimMode={vimModeEnabled}
-                    documentName={documentName}
-                    isModified={isOverLimit}
-                    cursorPosition={cursorPosition}
                   />
                 </TabsContent>
                 <TabsContent value="preview" className="flex-1 p-4 mt-0">

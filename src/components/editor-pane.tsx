@@ -1,4 +1,4 @@
-import { useRef, useImperativeHandle, forwardRef, useState, useEffect, type ReactElement } from 'react'
+import { useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
@@ -15,9 +15,6 @@ interface EditorPaneProps {
   onFormat?: (type: 'bold' | 'italic' | 'link' | 'code') => void
   onCodeBlock?: () => void
   vimMode?: boolean
-  documentName?: string
-  isModified?: boolean
-  cursorPosition?: { lineNumber: number; column: number }
 }
 
 export interface EditorPaneHandle {
@@ -27,7 +24,7 @@ export interface EditorPaneHandle {
 }
 
 export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
-  ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode, documentName = 'untitled.md', isModified = false, cursorPosition = { lineNumber: 1, column: 1 } }, ref) => {
+  ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode }, ref) => {
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
     const vimInstanceRef = useRef<VimAdapter | null>(null)
     const statusBarRef = useRef<HTMLDivElement | null>(null)
@@ -203,7 +200,11 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
                   onClick={handleCopy}
                   className="absolute top-4 right-4 z-10 h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border opacity-0 group-hover:opacity-100 transition-opacity text-foreground"
                 >
-                  {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                  {copied ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="left">

@@ -53,13 +53,20 @@ export function SplashScreen({ onComplete, isLoading }: SplashScreenProps) {
         <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
           Poe Markdown Editor
         </h1>
-        <p className="mt-3 text-base text-muted-foreground">
-          Loading your editor...
-        </p>
+        <p className="mt-3 text-base text-muted-foreground">Loading your editor...</p>
         <div className="mt-6 flex justify-center gap-1">
-          <div className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: '0ms' }} />
-          <div className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: '150ms' }} />
-          <div className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: '300ms' }} />
+          <div
+            className="h-2 w-2 animate-bounce rounded-full bg-primary"
+            style={{ animationDelay: '0ms' }}
+          />
+          <div
+            className="h-2 w-2 animate-bounce rounded-full bg-primary"
+            style={{ animationDelay: '150ms' }}
+          />
+          <div
+            className="h-2 w-2 animate-bounce rounded-full bg-primary"
+            style={{ animationDelay: '300ms' }}
+          />
         </div>
       </div>
     </div>

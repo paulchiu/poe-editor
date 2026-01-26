@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from 'react'
+import { cn } from '@/lib/utils'
 
-export type VimMode = "normal" | "insert" | "visual" | "command"
+export type VimMode = 'normal' | 'insert' | 'visual' | 'command'
 
 interface VimStatusBarProps {
   mode: VimMode
@@ -24,42 +24,42 @@ const modeConfig: Record<
   }
 > = {
   normal: {
-    label: "NORMAL",
-    bgColor: "bg-blue-900/30",
-    textColor: "text-blue-400",
+    label: 'NORMAL',
+    bgColor: 'bg-blue-900/30',
+    textColor: 'text-blue-400',
   },
   insert: {
-    label: "INSERT",
-    bgColor: "bg-green-900/30",
-    textColor: "text-green-400",
+    label: 'INSERT',
+    bgColor: 'bg-green-900/30',
+    textColor: 'text-green-400',
   },
   visual: {
-    label: "VISUAL",
-    bgColor: "bg-purple-900/30",
-    textColor: "text-purple-400",
+    label: 'VISUAL',
+    bgColor: 'bg-purple-900/30',
+    textColor: 'text-purple-400',
   },
   command: {
-    label: "COMMAND",
-    bgColor: "bg-amber-900/30",
-    textColor: "text-amber-400",
+    label: 'COMMAND',
+    bgColor: 'bg-amber-900/30',
+    textColor: 'text-amber-400',
   },
 }
 
 export function VimStatusBar({
   mode,
-  filePath = "untitled.md",
+  filePath = 'untitled.md',
   modified = false,
   lineNumber = 1,
   columnNumber = 1,
   className,
-  commandInput = "",
+  commandInput = '',
 }: VimStatusBarProps) {
   const config = modeConfig[mode]
 
   return (
     <div
       className={cn(
-        "h-6 flex items-center justify-between px-4 font-mono text-xs border-t border-border bg-muted/30",
+        'h-6 flex items-center justify-between px-4 font-mono text-xs border-t border-border bg-muted/30',
         className
       )}
       role="status"
@@ -69,23 +69,14 @@ export function VimStatusBar({
         {/* Mode indicator */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <div
-            className={cn(
-              "w-2 h-2 rounded-full transition-colors duration-200",
-              config.bgColor
-            )}
+            className={cn('w-2 h-2 rounded-full transition-colors duration-200', config.bgColor)}
             aria-hidden="true"
           />
-          <span className={cn("font-semibold", config.textColor)}>
-            {config.label}
-          </span>
+          <span className={cn('font-semibold', config.textColor)}>{config.label}</span>
         </div>
 
         {/* Command input display */}
-        {commandInput && (
-          <div className="text-muted-foreground flex-shrink-0">
-            {commandInput}
-          </div>
-        )}
+        {commandInput && <div className="text-muted-foreground flex-shrink-0">{commandInput}</div>}
 
         {/* File info */}
         <div className="flex items-center gap-2 text-muted-foreground flex-shrink-0">

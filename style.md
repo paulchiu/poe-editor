@@ -122,16 +122,16 @@ export function useTheme(options?: UseThemeOptions): UseThemeReturn {
 
 ### Naming
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `EditorPane.tsx` |
-| Hooks | camelCase with `use` prefix | `useUrlState.ts` |
-| Utilities | camelCase | `compression.ts` |
-| Test files | `*.test.ts` or `*.test.tsx` | `compression.test.ts` |
-| Constants | SCREAMING_SNAKE_CASE | `MAX_URL_LENGTH` |
-| Types/Interfaces | PascalCase | `EditorPaneProps` |
-| Event handlers | `on` prefix | `onClick`, `onDismiss` |
-| State setters | `set` prefix | `setContent`, `setTheme` |
+| Type             | Convention                  | Example                  |
+| ---------------- | --------------------------- | ------------------------ |
+| Components       | PascalCase                  | `EditorPane.tsx`         |
+| Hooks            | camelCase with `use` prefix | `useUrlState.ts`         |
+| Utilities        | camelCase                   | `compression.ts`         |
+| Test files       | `*.test.ts` or `*.test.tsx` | `compression.test.ts`    |
+| Constants        | SCREAMING_SNAKE_CASE        | `MAX_URL_LENGTH`         |
+| Types/Interfaces | PascalCase                  | `EditorPaneProps`        |
+| Event handlers   | `on` prefix                 | `onClick`, `onDismiss`   |
+| State setters    | `set` prefix                | `setContent`, `setTheme` |
 
 ### Type Patterns
 

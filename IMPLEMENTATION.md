@@ -7,20 +7,24 @@ This document summarizes the functionality implementation for the Poe Markdown E
 ### 1. Utility Functions (`src/utils/`)
 
 #### `compression.ts`
+
 - `compressToHash()` - Compresses text to URL-safe LZ-compressed string
 - `decompressFromHash()` - Decompresses hash back to text with error handling
 - `compressDocumentToHash()` - Serializes document (content + name) to compressed JSON
 - `decompressDocumentFromHash()` - Deserializes with legacy format support
 
 #### `markdown.ts`
+
 - `renderMarkdown()` - Converts markdown to HTML using markdown-it with syntax highlighting
 
 #### `download.ts`
+
 - `downloadFile()` - Triggers browser file download using Blob API
 
 ### 2. Custom Hooks (`src/hooks/`)
 
 #### `useUrlState.ts`
+
 - URL-based document persistence with LZ compression
 - Debounced URL updates (500ms)
 - Hash change event handling for browser navigation
@@ -28,15 +32,18 @@ This document summarizes the functionality implementation for the Poe Markdown E
 - Error callbacks
 
 #### `useVimMode.ts`
+
 - Vim mode toggle with localStorage persistence
 - Boolean state management
 
 #### `useKeyboardShortcuts.ts`
+
 - Global keyboard shortcuts (Cmd+B, Cmd+I, Cmd+K, Cmd+E, Cmd+Shift+K, Cmd+S, ?)
 - Monaco editor integration with conflict resolution
 - Smart detection to avoid input field conflicts
 
 #### `useSyncScroll.ts`
+
 - Bidirectional scroll synchronization between editor and preview
 - Percentage-based ratio (works with different heights)
 - Debounced with loop prevention
@@ -44,6 +51,7 @@ This document summarizes the functionality implementation for the Poe Markdown E
 ### 3. Components (`src/components/`)
 
 #### `editor-pane.tsx`
+
 - Monaco editor integration with TypeScript
 - Vim mode support via monaco-vim
 - Custom keybindings for formatting
@@ -52,11 +60,13 @@ This document summarizes the functionality implementation for the Poe Markdown E
 - Exposed imperative handle: `insertText()`, `getSelection()`, `replaceSelection()`
 
 #### `preview-pane.tsx`
+
 - Live HTML preview with GitHub markdown styling
 - Copy rich text to clipboard (HTML + plain text)
 - Responsive centered layout
 
 #### `poe-editor.tsx` (fully integrated)
+
 - **URL State Management**: Documents auto-save to URL hash
 - **Monaco Editor**: Real code editor replacing simulated version
 - **Vim Mode**: Fully functional vim keybindings
@@ -129,6 +139,7 @@ All code follows the `style.md` conventions:
 ⚠️ Unit tests are pending (Task #12). The application is fully functional but lacks test coverage.
 
 To achieve 80%+ coverage target:
+
 - Need tests for all utility functions (compression, markdown, download)
 - Need tests for all custom hooks
 - Need integration tests for editor component
