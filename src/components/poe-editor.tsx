@@ -11,7 +11,6 @@ import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
 import { EditorPane, type EditorPaneHandle } from '@/components/editor-pane'
 import { PreviewPane } from '@/components/preview-pane'
-import { type VimMode } from '@/components/vim-status-bar'
 import { SplashScreen } from '@/components/splash-screen'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -135,7 +134,6 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showShortcuts, setShowShortcuts] = React.useState(false)
   const [showSplash, setShowSplash] = React.useState(false)
   const [cursorPosition, setCursorPosition] = React.useState({ lineNumber: 1, column: 1 })
-  const [vimModeState, setVimModeState] = React.useState<VimMode>('normal')
 
   const isMobile = useIsMobile()
   const editorRef = React.useRef<EditorPaneHandle>(null)
@@ -683,7 +681,6 @@ ${htmlContent}
                     onFormat={handleFormat}
                     onCodeBlock={formatCodeBlock}
                     vimMode={vimModeEnabled}
-                    vimModeState={vimModeState}
                     documentName={documentName}
                     isModified={isOverLimit}
                     cursorPosition={cursorPosition}
@@ -719,7 +716,6 @@ ${htmlContent}
                   onFormat={handleFormat}
                   onCodeBlock={formatCodeBlock}
                   vimMode={vimModeEnabled}
-                  vimModeState={vimModeState}
                   documentName={documentName}
                   isModified={isOverLimit}
                   cursorPosition={cursorPosition}

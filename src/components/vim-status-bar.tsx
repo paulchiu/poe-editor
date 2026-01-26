@@ -12,6 +12,7 @@ interface VimStatusBarProps {
   lineNumber?: number
   columnNumber?: number
   className?: string
+  commandInput?: string
 }
 
 const modeConfig: Record<
@@ -51,6 +52,7 @@ export function VimStatusBar({
   lineNumber = 1,
   columnNumber = 1,
   className,
+  commandInput = "",
 }: VimStatusBarProps) {
   const config = modeConfig[mode]
 
@@ -77,6 +79,13 @@ export function VimStatusBar({
             {config.label}
           </span>
         </div>
+
+        {/* Command input display */}
+        {commandInput && (
+          <div className="text-muted-foreground flex-shrink-0">
+            {commandInput}
+          </div>
+        )}
 
         {/* File info */}
         <div className="flex items-center gap-2 text-muted-foreground flex-shrink-0">

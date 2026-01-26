@@ -5,7 +5,6 @@ import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
 import { Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { VimStatusBar, type VimMode } from '@/components/vim-status-bar'
 import { toast } from 'sonner'
 
 interface EditorPaneProps {
@@ -16,7 +15,6 @@ interface EditorPaneProps {
   onFormat?: (type: 'bold' | 'italic' | 'link' | 'code') => void
   onCodeBlock?: () => void
   vimMode?: boolean
-  vimModeState?: VimMode
   documentName?: string
   isModified?: boolean
   cursorPosition?: { lineNumber: number; column: number }
@@ -29,9 +27,10 @@ export interface EditorPaneHandle {
 }
 
 export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
-  ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode, vimModeState = 'normal', documentName = 'untitled.md', isModified = false, cursorPosition = { lineNumber: 1, column: 1 } }, ref) => {
+  ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode, documentName = 'untitled.md', isModified = false, cursorPosition = { lineNumber: 1, column: 1 } }, ref) => {
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
     const vimInstanceRef = useRef<VimAdapter | null>(null)
+    const statusBarRef = useRef<HTMLDivElement | null>(null)
     const [copied, setCopied] = useState(false)
 
     const handleEditorDidMount: OnMount = (editor, monaco): void => {
@@ -83,30 +82,38 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       }
     }
 
-    // Handle vim mode changes after editor is mounted
+    // Handle vim mode initialization when editor and status bar are both ready
     useEffect(() => {
-      const ed = editorRef.current
-      if (!ed) return undefined
-
-      if (vimMode) {
-        // Only initialize if not already initialized
-        if (!vimInstanceRef.current) {
-          vimInstanceRef.current = initVimMode(ed, null)
-        }
-      } else {
+      if (!vimMode) {
         // Dispose vim mode when disabled
         if (vimInstanceRef.current) {
           vimInstanceRef.current.dispose()
           vimInstanceRef.current = null
         }
+        return
       }
 
-      return () => {
-        // Cleanup on unmount
-        if (vimInstanceRef.current) {
-          vimInstanceRef.current.dispose()
-          vimInstanceRef.current = null
+      const ed = editorRef.current
+      const statusBar = statusBarRef.current
+
+      if (!ed || !statusBar || vimInstanceRef.current) {
+        return
+      }
+
+      // Small delay to ensure DOM is fully ready
+      const timer = setTimeout(() => {
+        if (editorRef.current && statusBarRef.current && !vimInstanceRef.current) {
+          try {
+            vimInstanceRef.current = initVimMode(editorRef.current, statusBarRef.current)
+            console.log('Vim mode initialized')
+          } catch (e) {
+            console.error('Error initializing vim mode:', e)
+          }
         }
+      }, 0)
+
+      return () => {
+        clearTimeout(timer)
       }
     }, [vimMode])
 
@@ -232,12 +239,17 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           </div>
         </div>
         {vimMode && (
-          <VimStatusBar
-            mode={vimModeState}
-            filePath={documentName}
-            modified={isModified}
-            lineNumber={cursorPosition.lineNumber}
-            columnNumber={cursorPosition.column}
+          <div
+            ref={statusBarRef}
+            className="h-6 border-t border-border bg-muted/30 font-mono text-xs flex items-center overflow-hidden"
+            style={{
+              fontFamily: "'SF Mono', 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace",
+              minHeight: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              paddingLeft: '8px',
+              paddingRight: '8px',
+            }}
           />
         )}
       </div>
