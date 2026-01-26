@@ -11,7 +11,7 @@ import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
 import { EditorPane, type EditorPaneHandle } from '@/components/editor-pane'
 import { PreviewPane } from '@/components/preview-pane'
-import { VimStatusBar, type VimMode } from '@/components/vim-status-bar'
+import { type VimMode } from '@/components/vim-status-bar'
 import { SplashScreen } from '@/components/splash-screen'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -683,6 +683,10 @@ ${htmlContent}
                     onFormat={handleFormat}
                     onCodeBlock={formatCodeBlock}
                     vimMode={vimModeEnabled}
+                    vimModeState={vimModeState}
+                    documentName={documentName}
+                    isModified={isOverLimit}
+                    cursorPosition={cursorPosition}
                   />
                 </div>
               </ResizablePanel>
@@ -715,6 +719,10 @@ ${htmlContent}
                   onFormat={handleFormat}
                   onCodeBlock={formatCodeBlock}
                   vimMode={vimModeEnabled}
+                  vimModeState={vimModeState}
+                  documentName={documentName}
+                  isModified={isOverLimit}
+                  cursorPosition={cursorPosition}
                 />
               </TabsContent>
               <TabsContent value="preview" className="flex-1 p-4 mt-0">
@@ -723,16 +731,6 @@ ${htmlContent}
             </Tabs>
           </div>
         </main>
-
-        {vimModeEnabled && (
-          <VimStatusBar
-            mode={vimModeState}
-            filePath={documentName}
-            modified={isOverLimit}
-            lineNumber={cursorPosition.lineNumber}
-            columnNumber={cursorPosition.column}
-          />
-        )}
       </div>
     </TooltipProvider>
   )

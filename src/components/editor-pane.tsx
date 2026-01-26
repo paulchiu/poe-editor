@@ -5,6 +5,7 @@ import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
 import { Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { VimStatusBar, type VimMode } from '@/components/vim-status-bar'
 import { toast } from 'sonner'
 
 interface EditorPaneProps {
@@ -15,6 +16,10 @@ interface EditorPaneProps {
   onFormat?: (type: 'bold' | 'italic' | 'link' | 'code') => void
   onCodeBlock?: () => void
   vimMode?: boolean
+  vimModeState?: VimMode
+  documentName?: string
+  isModified?: boolean
+  cursorPosition?: { lineNumber: number; column: number }
 }
 
 export interface EditorPaneHandle {
@@ -24,7 +29,7 @@ export interface EditorPaneHandle {
 }
 
 export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
-  ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode }, ref) => {
+  ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode, vimModeState = 'normal', documentName = 'untitled.md', isModified = false, cursorPosition = { lineNumber: 1, column: 1 } }, ref) => {
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
     const vimInstanceRef = useRef<VimAdapter | null>(null)
     const [copied, setCopied] = useState(false)
@@ -180,48 +185,61 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     }))
 
     return (
-      <div className="relative h-full group bg-[#0d1117]">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={handleCopy}
-              className="absolute top-4 right-4 z-10 h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border opacity-0 group-hover:opacity-100 transition-opacity text-foreground"
-            >
-              {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p className="text-xs">Copy markdown</p>
-          </TooltipContent>
-        </Tooltip>
-        <Editor
-          height="100%"
-          language="markdown"
-          value={value}
-          onChange={(value) => onChange(value ?? '')}
-          onMount={handleEditorDidMount}
-          theme={theme === 'dark' ? 'vs-dark' : 'light'}
-          options={{
-            wordWrap: 'on',
-            minimap: { enabled: false },
-            lineNumbers: 'on',
-            fontSize: 14,
-            lineHeight: 24,
-            fontFamily: "'SF Mono', 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace",
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            padding: { top: 16, bottom: 16 },
-            scrollbar: {
-              verticalScrollbarSize: 8,
-              horizontalScrollbarSize: 8,
-            },
-            renderLineHighlight: 'line',
-            cursorBlinking: 'smooth',
-            smoothScrolling: true,
-          }}
-        />
+      <div className="relative h-full group bg-[#0d1117] flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0">
+          <div className="relative h-full">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={handleCopy}
+                  className="absolute top-4 right-4 z-10 h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border opacity-0 group-hover:opacity-100 transition-opacity text-foreground"
+                >
+                  {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p className="text-xs">Copy markdown</p>
+              </TooltipContent>
+            </Tooltip>
+            <Editor
+              height="100%"
+              language="markdown"
+              value={value}
+              onChange={(value) => onChange(value ?? '')}
+              onMount={handleEditorDidMount}
+              theme={theme === 'dark' ? 'vs-dark' : 'light'}
+              options={{
+                wordWrap: 'on',
+                minimap: { enabled: false },
+                lineNumbers: 'on',
+                fontSize: 14,
+                lineHeight: 24,
+                fontFamily: "'SF Mono', 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace",
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                padding: { top: 16, bottom: 16 },
+                scrollbar: {
+                  verticalScrollbarSize: 8,
+                  horizontalScrollbarSize: 8,
+                },
+                renderLineHighlight: 'line',
+                cursorBlinking: 'smooth',
+                smoothScrolling: true,
+              }}
+            />
+          </div>
+        </div>
+        {vimMode && (
+          <VimStatusBar
+            mode={vimModeState}
+            filePath={documentName}
+            modified={isModified}
+            lineNumber={cursorPosition.lineNumber}
+            columnNumber={cursorPosition.column}
+          />
+        )}
       </div>
     )
   }
