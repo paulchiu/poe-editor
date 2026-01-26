@@ -41,9 +41,8 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
     }
 
     return (
-      <div ref={ref} className="h-full flex items-center justify-center overflow-auto">
-        <div className="w-full max-w-3xl">
-          <div className="relative group markdown-body p-6 bg-transparent">
+      <div className="h-full overflow-auto">
+        <div ref={ref} className="relative group markdown-body p-6 bg-transparent h-full">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -64,7 +63,6 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
               </TooltipContent>
             </Tooltip>
             <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-          </div>
         </div>
       </div>
     )
