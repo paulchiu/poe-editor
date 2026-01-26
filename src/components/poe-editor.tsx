@@ -90,6 +90,7 @@ function ToolbarButton({
           variant="ghost"
           size="icon-sm"
           onClick={onClick}
+          onMouseDown={(e) => e.preventDefault()}
           className={cn(
             'text-muted-foreground hover:text-foreground',
             active && 'bg-accent text-foreground'
@@ -668,10 +669,46 @@ ${htmlContent}
         </header>
 
         <main className="flex-1 overflow-hidden">
-          <div className="hidden md:block h-full p-4">
-            <ResizablePanelGroup direction="horizontal" className="h-full">
-              <ResizablePanel defaultSize={50} minSize={30}>
-                <div className="h-full pr-2">
+          {!isMobile ? (
+            <div className="h-full p-4">
+              <ResizablePanelGroup direction="horizontal" className="h-full">
+                <ResizablePanel defaultSize={50} minSize={30}>
+                  <div className="h-full pr-2">
+                    <EditorPane
+                      ref={editorRef}
+                      value={content}
+                      onChange={setContent}
+                      onCursorChange={setCursorPosition}
+                      theme={mounted && theme === 'dark' ? 'dark' : 'light'}
+                      onFormat={handleFormat}
+                      onCodeBlock={formatCodeBlock}
+                      vimMode={vimModeEnabled}
+                      documentName={documentName}
+                      isModified={isOverLimit}
+                      cursorPosition={cursorPosition}
+                    />
+                  </div>
+                </ResizablePanel>
+                <ResizableHandle withHandle className="mx-2" />
+                <ResizablePanel defaultSize={50} minSize={30}>
+                  <div className="h-full pl-2">
+                    <PreviewPane htmlContent={htmlContent} />
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </div>
+          ) : (
+            <div className="h-full flex flex-col">
+              <Tabs defaultValue="editor" className="flex-1 flex flex-col">
+                <TabsList className="w-full rounded-none border-b border-border/60 bg-background h-10">
+                  <TabsTrigger value="editor" className="flex-1">
+                    Editor
+                  </TabsTrigger>
+                  <TabsTrigger value="preview" className="flex-1">
+                    Preview
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="editor" className="flex-1 p-4 mt-0">
                   <EditorPane
                     ref={editorRef}
                     value={content}
@@ -685,47 +722,13 @@ ${htmlContent}
                     isModified={isOverLimit}
                     cursorPosition={cursorPosition}
                   />
-                </div>
-              </ResizablePanel>
-              <ResizableHandle withHandle className="mx-2" />
-              <ResizablePanel defaultSize={50} minSize={30}>
-                <div className="h-full pl-2">
+                </TabsContent>
+                <TabsContent value="preview" className="flex-1 p-4 mt-0">
                   <PreviewPane htmlContent={htmlContent} />
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </div>
-
-          <div className="md:hidden h-full flex flex-col">
-            <Tabs defaultValue="editor" className="flex-1 flex flex-col">
-              <TabsList className="w-full rounded-none border-b border-border/60 bg-background h-10">
-                <TabsTrigger value="editor" className="flex-1">
-                  Editor
-                </TabsTrigger>
-                <TabsTrigger value="preview" className="flex-1">
-                  Preview
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="editor" className="flex-1 p-4 mt-0">
-                <EditorPane
-                  ref={editorRef}
-                  value={content}
-                  onChange={setContent}
-                  onCursorChange={setCursorPosition}
-                  theme={mounted && theme === 'dark' ? 'dark' : 'light'}
-                  onFormat={handleFormat}
-                  onCodeBlock={formatCodeBlock}
-                  vimMode={vimModeEnabled}
-                  documentName={documentName}
-                  isModified={isOverLimit}
-                  cursorPosition={cursorPosition}
-                />
-              </TabsContent>
-              <TabsContent value="preview" className="flex-1 p-4 mt-0">
-                <PreviewPane htmlContent={htmlContent} />
-              </TabsContent>
-            </Tabs>
-          </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
         </main>
       </div>
     </TooltipProvider>
