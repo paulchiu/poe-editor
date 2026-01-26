@@ -1,46 +1,45 @@
-"use client"
+'use client'
 
-import { TabsContent } from "@/components/ui/tabs"
-
-import { TabsTrigger } from "@/components/ui/tabs"
-
-import { TabsList } from "@/components/ui/tabs"
-
-import { Tabs } from "@/components/ui/tabs"
-
-import { ResizableHandle } from "@/components/ui/resizable"
-
-import { ResizablePanel } from "@/components/ui/resizable"
-
-import { ResizablePanelGroup } from "@/components/ui/resizable"
-
-import { DropdownMenuSubContent } from "@/components/ui/dropdown-menu"
-
-import { DropdownMenuSubTrigger } from "@/components/ui/dropdown-menu"
-
-import { DropdownMenuSub } from "@/components/ui/dropdown-menu"
-
-import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
-
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
-
-import { DropdownMenuContent } from "@/components/ui/dropdown-menu"
-
-import { DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-
-import { DropdownMenu } from "@/components/ui/dropdown-menu"
-
-import { TooltipContent } from "@/components/ui/tooltip"
-
-import { Button } from "@/components/ui/button"
-
-import { TooltipTrigger } from "@/components/ui/tooltip"
-
-import { Tooltip } from "@/components/ui/tooltip"
-
-import * as React from "react"
-import { useTheme } from "next-themes"
-import { TooltipProvider } from "@/components/ui/tooltip"
+import * as React from 'react'
+import { useTheme } from 'next-themes'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { useUrlState } from '@/hooks/useUrlState'
+import { useVimMode } from '@/hooks/useVimMode'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { useSyncScroll } from '@/hooks/useSyncScroll'
+import { renderMarkdown } from '@/utils/markdown'
+import { downloadFile } from '@/utils/download'
+import { EditorPane, type EditorPaneHandle } from '@/components/editor-pane'
+import { PreviewPane } from '@/components/preview-pane'
+import { VimStatusBar, type VimMode } from '@/components/vim-status-bar'
+import { SplashScreen } from '@/components/splash-screen'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+} from '@/components/ui/dropdown-menu'
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from '@/components/ui/resizable'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Bold,
   Italic,
@@ -67,30 +66,24 @@ import {
   Keyboard,
   CodeSquare,
   ListOrdered,
-} from "lucide-react"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { VimStatusBar, type VimMode } from "@/components/vim-status-bar"
-import { SplashScreen } from "@/components/splash-screen"
-import { cn } from "@/lib/utils"
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import type { ReactElement } from 'react'
+
+interface ToolbarButtonProps {
+  icon: React.ElementType
+  label: string
+  onClick?: () => void
+  active?: boolean
+}
 
 function ToolbarButton({
   icon: Icon,
   label,
   onClick,
   active = false,
-}: {
-  icon: React.ElementType
-  label: string
-  onClick?: () => void
-  active?: boolean
-}) {
+}: ToolbarButtonProps): ReactElement {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -99,8 +92,8 @@ function ToolbarButton({
           size="icon-sm"
           onClick={onClick}
           className={cn(
-            "text-muted-foreground hover:text-foreground",
-            active && "bg-accent text-foreground"
+            'text-muted-foreground hover:text-foreground',
+            active && 'bg-accent text-foreground'
           )}
         >
           <Icon className="size-4" />
@@ -112,174 +105,279 @@ function ToolbarButton({
   )
 }
 
-interface SimulatedEditorProps {
-  vimModeEnabled?: boolean
-  vimMode?: VimMode
-}
+const DEFAULT_CONTENT = `# Welcome to Poe
 
-function SimulatedEditor({
-  vimModeEnabled = false,
-  vimMode = "normal",
-}: SimulatedEditorProps) {
-  const lines = [
-    { num: 1, content: "# Welcome to Poe", color: "text-cyan-400" },
-    { num: 2, content: "", color: "" },
-    {
-      num: 3,
-      content: "A **modern** Markdown editor built for focus.",
-      color: "text-foreground",
-    },
-    { num: 4, content: "", color: "" },
-    { num: 5, content: "## Features", color: "text-cyan-400" },
-    { num: 6, content: "", color: "" },
-    {
-      num: 7,
-      content: "- Live preview with split pane",
-      color: "text-foreground",
-    },
-    {
-      num: 8,
-      content: "- Vim mode for power users",
-      color: "text-foreground",
-    },
-    {
-      num: 9,
-      content: "- Dark and light themes",
-      color: "text-foreground",
-    },
-    {
-      num: 10,
-      content: "- Export to MD or HTML",
-      color: "text-foreground",
-    },
-    { num: 11, content: "", color: "" },
-    {
-      num: 12,
-      content: "```javascript",
-      color: "text-emerald-400",
-    },
-    {
-      num: 13,
-      content: 'const editor = "Poe";',
-      color: "text-amber-300",
-    },
-    {
-      num: 14,
-      content: "console.log(`Welcome to ${editor}`);",
-      color: "text-amber-300",
-    },
-    {
-      num: 15,
-      content: "```",
-      color: "text-emerald-400",
-    },
-    { num: 16, content: "", color: "" },
-    {
-      num: 17,
-      content: "> Start writing your masterpiece today.",
-      color: "text-muted-foreground italic",
-    },
-  ]
+A **modern** Markdown editor built for focus.
 
-  return (
-    <div className="h-full flex flex-col overflow-hidden rounded-lg border border-border bg-[#0d1117]">
-      <div className="flex-1 overflow-auto p-4 font-mono text-sm">
-        {lines.map((line) => (
-          <div key={line.num} className="flex">
-            <span className="w-8 text-right pr-4 text-muted-foreground/50 select-none">
-              {line.num}
-            </span>
-            <span className={cn("flex-1", line.color)}>
-              {line.content || "\u00A0"}
-            </span>
-          </div>
-        ))}
-        <div className="flex">
-          <span className="w-8 text-right pr-4 text-muted-foreground/50 select-none">
-            18
-          </span>
-          <span className="animate-pulse text-foreground">|</span>
-        </div>
-      </div>
-      {vimModeEnabled && (
-        <VimStatusBar
-          mode={vimMode}
-          filePath="document.md"
-          modified={false}
-          lineNumber={18}
-          columnNumber={1}
-        />
-      )}
-    </div>
-  )
-}
+## Features
 
-function SimulatedPreview() {
-  return (
-    <div className="h-full overflow-auto bg-card rounded-lg p-6">
-      <article className="prose prose-neutral dark:prose-invert max-w-none">
-        <h1 className="text-3xl font-bold mb-4">Welcome to Poe</h1>
-        <p className="text-muted-foreground mb-6">
-          A <strong className="text-foreground">modern</strong> Markdown editor
-          built for focus.
-        </p>
+- Live preview with split pane
+- Vim mode for power users
+- Dark and light themes
+- Export to MD or HTML
 
-        <h2 className="text-xl font-semibold mt-8 mb-4">Features</h2>
-        <ul className="space-y-2 text-muted-foreground">
-          <li>Live preview with split pane</li>
-          <li>Vim mode for power users</li>
-          <li>Dark and light themes</li>
-          <li>Export to MD or HTML</li>
-        </ul>
+\`\`\`javascript
+const editor = "Poe";
+console.log(\`Welcome to \${editor}\`);
+\`\`\`
 
-        <div className="mt-6 rounded-lg bg-[#0d1117] p-4 font-mono text-sm">
-          <code className="text-amber-300">
-            {`const editor = "Poe";`}
-            <br />
-            {`console.log(\`Welcome to \${editor}\`);`}
-          </code>
-        </div>
+> Start writing your masterpiece today.
+`
 
-        <blockquote className="mt-6 border-l-4 border-border pl-4 italic text-muted-foreground">
-          Start writing your masterpiece today.
-        </blockquote>
-      </article>
-    </div>
-  )
-}
-
-export function PoeEditor() {
-  const [vimModeEnabled, setVimModeEnabled] = React.useState(false)
-  const [vimMode, setVimMode] = React.useState<VimMode>("normal")
+export function PoeEditor(): ReactElement {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   const [showAbout, setShowAbout] = React.useState(false)
   const [showShortcuts, setShowShortcuts] = React.useState(false)
   const [showSplash, setShowSplash] = React.useState(false)
+  const [cursorPosition, setCursorPosition] = React.useState({ lineNumber: 1, column: 1 })
+  const [vimModeState, setVimModeState] = React.useState<VimMode>('normal')
 
+  const isMobile = useIsMobile()
+  const editorRef = React.useRef<EditorPaneHandle>(null)
+
+  // URL state management
+  const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
+    defaultContent: DEFAULT_CONTENT,
+    defaultName: 'untitled.md',
+    onError: (error) => {
+      toast.error(`Error: ${error.message}`)
+    },
+    onLengthWarning: (length) => {
+      toast.warning(`URL is getting long (${length} chars). Consider shortening your document.`)
+    },
+  })
+
+  // Vim mode management
+  const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
+
+  // Scroll synchronization
+  const { sourceRef: editorScrollRef, targetRef: previewScrollRef } = useSyncScroll({
+    enabled: !isMobile,
+  })
+
+  // Rendered HTML for preview
+  const htmlContent = React.useMemo(() => renderMarkdown(content), [content])
+
+  // Formatting functions
+  const formatBold = React.useCallback((): void => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const selection = editor.getSelection()
+    if (selection) {
+      editor.replaceSelection(`**${selection}**`)
+    } else {
+      editor.insertText('**bold**')
+    }
+  }, [])
+
+  const formatItalic = React.useCallback((): void => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const selection = editor.getSelection()
+    if (selection) {
+      editor.replaceSelection(`*${selection}*`)
+    } else {
+      editor.insertText('*italic*')
+    }
+  }, [])
+
+  const formatLink = React.useCallback((): void => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const selection = editor.getSelection()
+    if (selection) {
+      editor.replaceSelection(`[${selection}](url)`)
+    } else {
+      editor.insertText('[link](url)')
+    }
+  }, [])
+
+  const formatCode = React.useCallback((): void => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const selection = editor.getSelection()
+    if (selection) {
+      editor.replaceSelection(`\`${selection}\``)
+    } else {
+      editor.insertText('`code`')
+    }
+  }, [])
+
+  const formatCodeBlock = React.useCallback((): void => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const selection = editor.getSelection()
+    if (selection) {
+      editor.replaceSelection(`\`\`\`\n${selection}\n\`\`\``)
+    } else {
+      editor.insertText('```\ncode block\n```')
+    }
+  }, [])
+
+  const formatHeading = React.useCallback((level: number): void => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const prefix = '#'.repeat(level) + ' '
+    const selection = editor.getSelection()
+    if (selection) {
+      editor.replaceSelection(`${prefix}${selection}`)
+    } else {
+      editor.insertText(`${prefix}heading`)
+    }
+  }, [])
+
+  const formatQuote = React.useCallback((): void => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const selection = editor.getSelection()
+    if (selection) {
+      editor.replaceSelection(`> ${selection}`)
+    } else {
+      editor.insertText('> quote')
+    }
+  }, [])
+
+  const formatBulletList = React.useCallback((): void => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const selection = editor.getSelection()
+    if (selection) {
+      editor.replaceSelection(`- ${selection}`)
+    } else {
+      editor.insertText('- item')
+    }
+  }, [])
+
+  const formatNumberedList = React.useCallback((): void => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const selection = editor.getSelection()
+    if (selection) {
+      editor.replaceSelection(`1. ${selection}`)
+    } else {
+      editor.insertText('1. item')
+    }
+  }, [])
+
+  // Document management functions
+  const handleNew = React.useCallback((): void => {
+    if (confirm('Create a new document? Current content will be lost if not saved.')) {
+      setContent('')
+      setDocumentName('untitled.md')
+      toast.success('New document created')
+    }
+  }, [setContent, setDocumentName])
+
+  const handleRename = React.useCallback((): void => {
+    const newName = prompt('Enter new document name:', documentName)
+    if (newName && newName.trim()) {
+      setDocumentName(newName.trim())
+      toast.success(`Renamed to ${newName}`)
+    }
+  }, [documentName, setDocumentName])
+
+  const handleDownloadMarkdown = React.useCallback((): void => {
+    downloadFile(documentName, content, 'text/markdown')
+    toast.success('Downloaded as Markdown')
+  }, [documentName, content])
+
+  const handleDownloadHTML = React.useCallback((): void => {
+    const htmlDoc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${documentName}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css">
+  <style>
+    .markdown-body { box-sizing: border-box; min-width: 200px; max-width: 980px; margin: 0 auto; padding: 45px; }
+  </style>
+</head>
+<body class="markdown-body">
+${htmlContent}
+</body>
+</html>`
+    const htmlFileName = documentName.replace(/\.md$/, '.html')
+    downloadFile(htmlFileName, htmlDoc, 'text/html')
+    toast.success('Downloaded as HTML')
+  }, [documentName, htmlContent])
+
+  const handleCopyLink = React.useCallback(async (): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      toast.success('Link copied to clipboard!')
+    } catch {
+      toast.error('Failed to copy link')
+    }
+  }, [])
+
+  const handleClear = React.useCallback((): void => {
+    if (confirm('Clear all content? This cannot be undone.')) {
+      setContent('')
+      toast.success('Content cleared')
+    }
+  }, [setContent])
+
+  const handleSave = React.useCallback((): void => {
+    // Save is automatic via URL state, just show confirmation
+    toast.success('Document auto-saved to URL!')
+  }, [])
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onBold: formatBold,
+    onItalic: formatItalic,
+    onLink: formatLink,
+    onCode: formatCode,
+    onCodeBlock: formatCodeBlock,
+    onSave: handleSave,
+    onHelp: () => setShowShortcuts(true),
+  })
+
+  // Effects
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
   React.useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+    const handleEscape = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
         setShowAbout(false)
         setShowShortcuts(false)
       }
     }
-    window.addEventListener("keydown", handleEscape)
-    return () => window.removeEventListener("keydown", handleEscape)
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
   }, [])
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
+  const toggleTheme = (): void => {
+    setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
-  const toggleVimMode = () => {
-    setVimModeEnabled(!vimModeEnabled)
-    if (!vimModeEnabled) {
-      setVimMode("normal")
+  const handleFormat = (type: 'bold' | 'italic' | 'link' | 'code'): void => {
+    switch (type) {
+      case 'bold':
+        formatBold()
+        break
+      case 'italic':
+        formatItalic()
+        break
+      case 'link':
+        formatLink()
+        break
+      case 'code':
+        formatCode()
+        break
     }
   }
 
@@ -293,7 +391,8 @@ export function PoeEditor() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-muted-foreground">
-              Poe is a modern, distraction-free Markdown editor designed for writers, developers, and anyone who values focused writing.
+              Poe is a modern, distraction-free Markdown editor designed for writers, developers,
+              and anyone who values focused writing.
             </p>
             <div className="space-y-2">
               <h3 className="font-semibold text-sm">Features:</h3>
@@ -302,12 +401,12 @@ export function PoeEditor() {
                 <li>Vim mode for power users</li>
                 <li>Dark and light theme support</li>
                 <li>Export to Markdown or HTML</li>
-                <li>Lightweight and fast</li>
+                <li>URL-based document persistence</li>
               </ul>
             </div>
             <div className="text-xs text-muted-foreground border-t border-border pt-4">
               <p className="font-semibold mb-1">Version 1.0.0</p>
-              <p>© 2024 Poe. Built with Next.js, React, and Tailwind CSS.</p>
+              <p>© 2024 Poe. Built with React, Vite, and Tailwind CSS.</p>
             </div>
           </div>
         </DialogContent>
@@ -329,41 +428,33 @@ export function PoeEditor() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Bold</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + B</code>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Cmd/Ctrl + B
+                    </code>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Italic</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + I</code>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Cmd/Ctrl + I
+                    </code>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Code</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + `</code>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Cmd/Ctrl + E
+                    </code>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Link</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + K</code>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-sm mb-3">Editor</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Undo</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + Z</code>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Cmd/Ctrl + K
+                    </code>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Redo</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + Shift + Z</code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Find</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + F</code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Save</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + S</code>
+                    <span className="text-muted-foreground">Code Block</span>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Cmd/Ctrl + Shift + K
+                    </code>
                   </div>
                 </div>
               </div>
@@ -372,12 +463,14 @@ export function PoeEditor() {
                 <h3 className="font-semibold text-sm mb-3">Application</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Toggle Vim Mode</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + Shift + V</code>
+                    <span className="text-muted-foreground">Save</span>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Cmd/Ctrl + S
+                    </code>
                   </div>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Toggle Theme</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Ctrl + Shift + L</code>
+                    <span className="text-muted-foreground">Help</span>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">?</code>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-muted-foreground">Close Modal</span>
@@ -386,34 +479,31 @@ export function PoeEditor() {
                 </div>
               </div>
 
-              <div>
-                <h3 className="font-semibold text-sm mb-3">Vim Mode</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Enter Normal Mode</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Esc</code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Enter Insert Mode</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">i</code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Save & Quit</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">:wq</code>
+              {vimModeEnabled && (
+                <div>
+                  <h3 className="font-semibold text-sm mb-3">Vim Mode</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Enter Normal Mode</span>
+                      <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Esc</code>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Enter Insert Mode</span>
+                      <code className="bg-muted px-2 py-1 rounded text-xs font-mono">i / a</code>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Enter Visual Mode</span>
+                      <code className="bg-muted px-2 py-1 rounded text-xs font-mono">v</code>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </ScrollArea>
         </DialogContent>
       </Dialog>
 
-      {showSplash && (
-        <SplashScreen
-          onComplete={() => setShowSplash(false)}
-          isLoading={false}
-        />
-      )}
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} isLoading={false} />}
 
       <div className="h-screen flex flex-col overflow-hidden bg-background">
         <header className="h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4">
@@ -421,16 +511,16 @@ export function PoeEditor() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 text-sm font-medium">
                 <FileText className="size-4" />
-                untitled.md
+                {documentName}
                 <ChevronDown className="size-3 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleNew}>
                 <FilePlus className="size-4" />
                 New
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRename}>
                 <Pencil className="size-4" />
                 Rename
               </DropdownMenuItem>
@@ -441,16 +531,18 @@ export function PoeEditor() {
                   Download
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
-                  <DropdownMenuItem>Markdown (.md)</DropdownMenuItem>
-                  <DropdownMenuItem>HTML (.html)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDownloadMarkdown}>
+                    Markdown (.md)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDownloadHTML}>HTML (.html)</DropdownMenuItem>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleCopyLink}>
                 <Link2 className="size-4" />
                 Copy Link
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">
+              <DropdownMenuItem onClick={handleClear}>
                 <Trash2 className="size-4" />
                 Clear
               </DropdownMenuItem>
@@ -458,10 +550,10 @@ export function PoeEditor() {
           </DropdownMenu>
 
           <div className="hidden md:flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-            <ToolbarButton icon={Bold} label="Bold (Ctrl+B)" />
-            <ToolbarButton icon={Italic} label="Italic (Ctrl+I)" />
-            <ToolbarButton icon={Link} label="Link (Ctrl+K)" />
-            <ToolbarButton icon={Code} label="Code (Ctrl+`)" />
+            <ToolbarButton icon={Bold} label="Bold (Cmd+B)" onClick={formatBold} />
+            <ToolbarButton icon={Italic} label="Italic (Cmd+I)" onClick={formatItalic} />
+            <ToolbarButton icon={Link} label="Link (Cmd+K)" onClick={formatLink} />
+            <ToolbarButton icon={Code} label="Code (Cmd+E)" onClick={formatCode} />
             <div className="w-px h-5 bg-border mx-1" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -475,25 +567,25 @@ export function PoeEditor() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => formatHeading(1)}>
                   <Heading1 className="size-4" />
                   Heading 1
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => formatHeading(2)}>
                   <Heading2 className="size-4" />
                   Heading 2
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => formatHeading(3)}>
                   <Heading3 className="size-4" />
                   Heading 3
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <ToolbarButton icon={Quote} label="Quote" />
-            <ToolbarButton icon={List} label="Bullet List" />
-            <ToolbarButton icon={ListOrdered} label="Numbered List" />
+            <ToolbarButton icon={Quote} label="Quote" onClick={formatQuote} />
+            <ToolbarButton icon={List} label="Bullet List" onClick={formatBulletList} />
+            <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={formatNumberedList} />
             <div className="w-px h-5 bg-border mx-1" />
-            <ToolbarButton icon={CodeSquare} label="Code Block" />
+            <ToolbarButton icon={CodeSquare} label="Code Block" onClick={formatCodeBlock} />
           </div>
 
           <div className="flex items-center gap-1">
@@ -504,8 +596,8 @@ export function PoeEditor() {
                   size="icon-sm"
                   onClick={toggleVimMode}
                   className={cn(
-                    "text-muted-foreground hover:text-foreground",
-                    vimMode && "bg-accent text-foreground"
+                    'text-muted-foreground hover:text-foreground',
+                    vimModeEnabled && 'bg-accent text-foreground'
                   )}
                 >
                   <Terminal className="size-4" />
@@ -513,7 +605,7 @@ export function PoeEditor() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {vimModeEnabled ? "Disable Vim Mode" : "Enable Vim Mode"}
+                {vimModeEnabled ? 'Disable Vim Mode' : 'Enable Vim Mode'}
               </TooltipContent>
             </Tooltip>
 
@@ -525,7 +617,7 @@ export function PoeEditor() {
                   onClick={toggleTheme}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  {mounted && theme === "dark" ? (
+                  {mounted && theme === 'dark' ? (
                     <Sun className="size-4" />
                   ) : (
                     <Moon className="size-4" />
@@ -534,9 +626,7 @@ export function PoeEditor() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {mounted && theme === "dark"
-                  ? "Switch to Light Mode"
-                  : "Switch to Dark Mode"}
+                {mounted && theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               </TooltipContent>
             </Tooltip>
 
@@ -574,16 +664,22 @@ export function PoeEditor() {
             <ResizablePanelGroup direction="horizontal" className="h-full">
               <ResizablePanel defaultSize={50} minSize={30}>
                 <div className="h-full pr-2">
-                  <SimulatedEditor
-                    vimModeEnabled={vimModeEnabled}
-                    vimMode={vimMode}
+                  <EditorPane
+                    ref={editorRef}
+                    value={content}
+                    onChange={setContent}
+                    onCursorChange={setCursorPosition}
+                    theme={mounted && theme === 'dark' ? 'dark' : 'light'}
+                    onFormat={handleFormat}
+                    onCodeBlock={formatCodeBlock}
+                    vimMode={vimModeEnabled}
                   />
                 </div>
               </ResizablePanel>
               <ResizableHandle withHandle className="mx-2" />
               <ResizablePanel defaultSize={50} minSize={30}>
                 <div className="h-full pl-2">
-                  <SimulatedPreview />
+                  <PreviewPane htmlContent={htmlContent} />
                 </div>
               </ResizablePanel>
             </ResizablePanelGroup>
@@ -600,17 +696,33 @@ export function PoeEditor() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="editor" className="flex-1 p-4 mt-0">
-                <SimulatedEditor
-                  vimModeEnabled={vimModeEnabled}
-                  vimMode={vimMode}
+                <EditorPane
+                  ref={editorRef}
+                  value={content}
+                  onChange={setContent}
+                  onCursorChange={setCursorPosition}
+                  theme={mounted && theme === 'dark' ? 'dark' : 'light'}
+                  onFormat={handleFormat}
+                  onCodeBlock={formatCodeBlock}
+                  vimMode={vimModeEnabled}
                 />
               </TabsContent>
               <TabsContent value="preview" className="flex-1 p-4 mt-0">
-                <SimulatedPreview />
+                <PreviewPane htmlContent={htmlContent} />
               </TabsContent>
             </Tabs>
           </div>
         </main>
+
+        {vimModeEnabled && (
+          <VimStatusBar
+            mode={vimModeState}
+            filePath={documentName}
+            modified={isOverLimit}
+            lineNumber={cursorPosition.lineNumber}
+            columnNumber={cursorPosition.column}
+          />
+        )}
       </div>
     </TooltipProvider>
   )
