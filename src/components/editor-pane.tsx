@@ -26,7 +26,6 @@ export interface EditorPaneHandle {
 export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode }, ref) => {
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
-    const vimStatusRef = useRef<HTMLDivElement>(null)
     const vimInstanceRef = useRef<VimAdapter | null>(null)
     const [copied, setCopied] = useState(false)
 
@@ -34,8 +33,8 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       editorRef.current = editor
 
       // Initialize vim mode immediately after editor mounts if vimMode is enabled
-      if (vimMode && vimStatusRef.current) {
-        vimInstanceRef.current = initVimMode(editor, vimStatusRef.current)
+      if (vimMode) {
+        vimInstanceRef.current = initVimMode(editor, null)
       }
 
       // Listen for cursor position changes
@@ -82,13 +81,12 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     // Handle vim mode changes after editor is mounted
     useEffect(() => {
       const ed = editorRef.current
-      const statusDiv = vimStatusRef.current
-      if (!ed || !statusDiv) return undefined
+      if (!ed) return undefined
 
       if (vimMode) {
         // Only initialize if not already initialized
         if (!vimInstanceRef.current) {
-          vimInstanceRef.current = initVimMode(ed, statusDiv)
+          vimInstanceRef.current = initVimMode(ed, null)
         }
       } else {
         // Dispose vim mode when disabled
@@ -222,15 +220,6 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
             renderLineHighlight: 'line',
             cursorBlinking: 'smooth',
             smoothScrolling: true,
-          }}
-        />
-        {/* Vim status bar - positioned as overlay at bottom */}
-        <div
-          ref={vimStatusRef}
-          className="absolute bottom-0 left-0 right-0 bg-muted/95 border-t border-border text-foreground text-xs"
-          style={{
-            fontFamily: "'SF Mono', 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace",
-            fontSize: '14px',
           }}
         />
       </div>
