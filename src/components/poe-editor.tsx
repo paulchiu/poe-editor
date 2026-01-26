@@ -136,20 +136,26 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showSplash, setShowSplash] = React.useState(false)
   const [cursorPosition, setCursorPosition] = React.useState({ lineNumber: 1, column: 1 })
 
-  const isMobile = useIsMobile()
-  const editorRef = React.useRef<EditorPaneHandle>(null)
+   const isMobile = useIsMobile()
+   const editorRef = React.useRef<EditorPaneHandle>(null)
 
-  // URL state management
-  const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
-    defaultContent: DEFAULT_CONTENT,
-    defaultName: 'untitled.md',
-    onError: (error) => {
-      toast.error(`Error: ${error.message}`)
-    },
-    onLengthWarning: (length) => {
-      toast.warning(`URL is getting long (${length} chars). Consider shortening your document.`)
-    },
-  })
+   // Stable error handler to prevent useUrlState effect from re-running
+   const handleError = React.useCallback((error: Error) => {
+     toast.error(`Error: ${error.message}`)
+   }, [])
+
+   // Stable warning handler to prevent useUrlState effect from re-running
+   const handleLengthWarning = React.useCallback((length: number) => {
+     toast.warning(`URL is getting long (${length} chars). Consider shortening your document.`)
+   }, [])
+
+   // URL state management
+   const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
+     defaultContent: DEFAULT_CONTENT,
+     defaultName: 'untitled.md',
+     onError: handleError,
+     onLengthWarning: handleLengthWarning,
+   })
 
   // Vim mode management
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
