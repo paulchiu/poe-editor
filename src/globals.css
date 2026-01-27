@@ -4,39 +4,39 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #faf9f7;
+  --foreground: #2a2a2a;
+  --card: #faf9f7;
+  --card-foreground: #2a2a2a;
+  --popover: #faf9f7;
+  --popover-foreground: #2a2a2a;
+  --primary: #2a2a2a;
+  --primary-foreground: #faf9f7;
+  --secondary: #f0efeb;
+  --secondary-foreground: #2a2a2a;
+  --muted: #f0efeb;
+  --muted-foreground: rgba(42, 42, 42, 0.6);
+  --accent: #f0efeb;
+  --accent-foreground: #2a2a2a;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #e5e3df;
+  --input: #e5e3df;
+  --ring: #e5e3df;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #faf9f7;
+  --sidebar-foreground: #2a2a2a;
+  --sidebar-primary: #2a2a2a;
+  --sidebar-primary-foreground: #faf9f7;
+  --sidebar-accent: #f0efeb;
+  --sidebar-accent-foreground: #2a2a2a;
+  --sidebar-border: #e5e3df;
+  --sidebar-ring: #e5e3df;
 }
 
 .dark {
@@ -151,19 +151,19 @@
 /* Github Markdown CSS Overrides for Theme Support */
 html:not(.dark) .markdown-body {
   color-scheme: light;
-  --focus-outlineColor: #0969da;
-  --fgColor-default: #1f2328;
-  --fgColor-muted: #59636e;
+  --focus-outlineColor: #1f6feb;
+  --fgColor-default: #2a2a2a;
+  --fgColor-muted: rgba(42, 42, 42, 0.6);
   --fgColor-accent: #0969da;
   --fgColor-success: #1a7f37;
   --fgColor-attention: #9a6700;
   --fgColor-danger: #d1242f;
   --fgColor-done: #8250df;
-  --bgColor-default: #ffffff;
-  --bgColor-muted: #f6f8fa;
+  --bgColor-default: transparent;
+  --bgColor-muted: #f0efeb;
   --bgColor-neutral-muted: #818b981f;
   --bgColor-attention-muted: #fff8c5;
-  --borderColor-default: #d1d9e0;
+  --borderColor-default: #e5e3df;
   --borderColor-muted: #d1d9e0b3;
   --borderColor-neutral-muted: #d1d9e0b3;
   --borderColor-accent-emphasis: #0969da;
