@@ -340,13 +340,11 @@ ${htmlContent}
     try {
       await navigator.clipboard.writeText(window.location.href)
       toast({
-        title: 'Success',
         description: 'Link copied to clipboard!',
       })
     } catch {
       toast({
         variant: 'destructive',
-        title: 'Error',
         description: 'Failed to copy link',
       })
     }
