@@ -101,7 +101,7 @@ function ToolbarButton({
 
 const DEFAULT_CONTENT = `# Welcome to Poe
 
-A **modern** Markdown editor built for focus.
+A Markdown editor with vim support.
 
 ## Features
 
@@ -115,7 +115,7 @@ const editor = "Poe";
 console.log(\`Welcome to \${editor}\`);
 \`\`\`
 
-> Start writing your masterpiece today.
+> Start writing.
 `
 
 interface PoeEditorProps {
@@ -423,15 +423,12 @@ ${htmlContent}
             <DialogTitle className="text-2xl">About Poe</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-muted-foreground">
-              Poe is a modern, distraction-free Markdown editor designed for writers, developers,
-              and anyone who values focused writing.
-            </p>
+            <p className="text-muted-foreground">Poe is a Markdown editor with vim support.</p>
             <div className="space-y-2">
               <h3 className="font-semibold text-sm">Features:</h3>
               <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                 <li>Live preview with split-pane layout</li>
-                <li>Vim mode for power users</li>
+                <li>Vim mode</li>
                 <li>Dark and light theme support</li>
                 <li>Export to Markdown or HTML</li>
                 <li>URL-based document persistence</li>
@@ -439,7 +436,8 @@ ${htmlContent}
             </div>
             <div className="text-xs text-muted-foreground border-t border-border pt-4">
               <p className="font-semibold mb-1">Version 1.0.0</p>
-              <p>© 2024 Poe. Built with React, Vite, and Tailwind CSS.</p>
+              <p className="mb-1">Inspired by dillinger.io and TypeScript playground.</p>
+              <p>&copy; 2026. Built with React, Vite, and Tailwind CSS.</p>
             </div>
           </div>
         </DialogContent>
@@ -450,9 +448,6 @@ ${htmlContent}
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl">Keyboard Shortcuts</DialogTitle>
-            <DialogDescription>
-              Master Poe with these essential keyboard shortcuts
-            </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-96">
             <div className="space-y-6 pr-4">

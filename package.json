@@ -1,6 +1,9 @@
 {
-  "name": "my-v0-project",
-  "version": "0.1.0",
+  "name": "poe-editor",
+  "version": "1.0.0",
+  "description": "A Markdown editor with vim support",
+  "author": "Poe",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
