@@ -37,7 +37,7 @@ export function SplashScreen({ onComplete, isLoading }: SplashScreenProps) {
   return (
     <div
       className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 transition-opacity duration-500',
+        'fixed inset-0 z-50 flex items-center justify-center bg-linear-to-br from-background via-background to-primary/5 transition-opacity duration-500',
         isFading ? 'opacity-0' : 'opacity-100'
       )}
     >
@@ -45,7 +45,7 @@ export function SplashScreen({ onComplete, isLoading }: SplashScreenProps) {
         <div className="mb-4 flex justify-center">
           <div className="relative">
             <div className="absolute inset-0 animate-pulse rounded-full bg-primary/20 blur-3xl" />
-            <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center">
+            <div className="relative h-20 w-20 rounded-full bg-linear-to-br from-primary to-primary/50 flex items-center justify-center">
               <span className="text-xl font-bold text-primary-foreground">Poe</span>
             </div>
           </div>
