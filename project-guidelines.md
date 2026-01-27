@@ -1,7 +1,8 @@
-# style.md
+# Project Guidelines
 
 ## Language & Runtime
 
+- **Package Manager:** pnpm
 - **TypeScript** with strict mode enabled (`strict: true`, plus `noUncheckedIndexedAccess`, `noImplicitReturns`, `exactOptionalPropertyTypes`)
 - **Target:** ES2022
 - **React 19** — functional components and hooks only (no class components)
@@ -241,11 +242,12 @@ docs: add keyboard shortcuts to README
 src/
 ├── components/     # React components
 ├── hooks/          # Custom hooks
+├── lib/            # Library configurations and shared helpers
 ├── utils/          # Pure utility functions
 ├── test/           # Test setup and mocks
 ├── App.tsx         # Root component
 ├── main.tsx        # Entry point
-└── index.css       # Global styles (TailwindCSS v4)
+└── globals.css     # Global styles (TailwindCSS v4)
 ```
 
 ## Error Handling
