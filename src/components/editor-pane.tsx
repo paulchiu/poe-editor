@@ -189,7 +189,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     }))
 
     return (
-      <div className="relative h-full group bg-[#0d1117] flex flex-col overflow-hidden">
+      <div className="relative h-full group bg-background flex flex-col overflow-hidden">
         <div className="flex-1 min-h-0">
           <div className="relative h-full">
             <Tooltip>
@@ -242,14 +242,9 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         {vimMode && (
           <div
             ref={statusBarRef}
-            className="h-6 border-t border-border bg-muted/30 font-mono text-xs flex items-center overflow-hidden"
+            className="vim-status-bar h-6 border-t border-border bg-background font-mono text-xs flex items-center overflow-hidden"
             style={{
               fontFamily: "'SF Mono', 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace",
-              minHeight: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              paddingLeft: '8px',
-              paddingRight: '8px',
             }}
           />
         )}

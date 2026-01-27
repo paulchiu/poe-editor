@@ -123,3 +123,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Vim Mode Status Bar Overrides */
+.vim-status-bar {
+  @apply gap-2 px-2;
+}
+
+/* Force all children to respect the theme colors */
+.vim-status-bar,
+.vim-status-bar span,
+.vim-status-bar div,
+.vim-status-bar input {
+  color: var(--foreground) !important;
+  background-color: transparent !important;
+  caret-color: var(--foreground) !important;
+}
+
+/* Specific input overrides */
+.vim-status-bar input {
+  @apply !outline-none !ring-0 font-mono text-xs !h-full !p-0 !m-0;
+  border: none !important;
+  box-shadow: none !important;
+  width: auto !important;
+  flex: 1 !important;
+}
