@@ -189,7 +189,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     }))
 
     return (
-      <div className="relative h-full group bg-background flex flex-col overflow-hidden">
+      <div className="relative h-full group bg-background flex flex-col overflow-hidden rounded-lg border border-border">
         <div className="flex-1 min-h-0">
           <div className="relative h-full">
             <Tooltip>
@@ -223,8 +223,10 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
                 minimap: { enabled: false },
                 lineNumbers: 'on',
                 fontSize: 14,
-                lineHeight: 24,
-                fontFamily: "'SF Mono', 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace",
+                lineHeight: 22,
+                fontFamily:
+                  "'JetBrains Mono', 'SF Mono', 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace",
+                fontLigatures: true,
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
                 padding: { top: 16, bottom: 16 },
