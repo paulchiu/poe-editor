@@ -32,8 +32,8 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
     }
 
     return (
-      <div className="h-full overflow-auto">
-        <div ref={ref} className="relative group markdown-body p-6 pt-0 bg-transparent h-full">
+      <div ref={ref} className="h-full overflow-auto">
+        <div className="relative group markdown-body p-6 pt-0 bg-transparent h-full">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

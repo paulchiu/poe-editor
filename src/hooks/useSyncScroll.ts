@@ -6,9 +6,9 @@ interface UseSyncScrollOptions {
   debounceMs?: number
 }
 
-interface UseSyncScrollReturn {
-  sourceRef: React.RefObject<HTMLElement | null>
-  targetRef: React.RefObject<HTMLElement | null>
+interface UseSyncScrollReturn<T extends HTMLElement = HTMLElement> {
+  sourceRef: React.RefObject<T | null>
+  targetRef: React.RefObject<T | null>
 }
 
 /**
@@ -17,11 +17,11 @@ interface UseSyncScrollReturn {
  * @param options - Configuration object with optional enabled flag and debounce duration
  * @returns Refs for source and target elements to synchronize
  */
-export function useSyncScroll(options: UseSyncScrollOptions = {}): UseSyncScrollReturn {
+export function useSyncScroll<T extends HTMLElement = HTMLElement>(options: UseSyncScrollOptions = {}): UseSyncScrollReturn<T> {
   const { enabled = true, debounceMs = 50 } = options
 
-  const sourceRef = useRef<HTMLElement | null>(null)
-  const targetRef = useRef<HTMLElement | null>(null)
+  const sourceRef = useRef<T | null>(null)
+  const targetRef = useRef<T | null>(null)
   const isScrollingSource = useRef(false)
   const isScrollingTarget = useRef(false)
   const scrollTimeoutSource = useRef<number | undefined>(undefined)
@@ -76,48 +76,70 @@ export function useSyncScroll(options: UseSyncScrollOptions = {}): UseSyncScroll
   useEffect(() => {
     if (!enabled) return
 
-    const source = sourceRef.current
-    const target = targetRef.current
+    let cleanupFn: (() => void) | undefined
+    let pollInterval: number | undefined
 
-    if (!source || !target) return
+    const attachListeners = (): boolean => {
+      const source = sourceRef.current
+      const target = targetRef.current
 
-    const handleSourceScroll = (): void => {
-      if (isScrollingSource.current) return
+      if (!source || !target) return false
 
-      if (scrollTimeoutSource.current) {
-        clearTimeout(scrollTimeoutSource.current)
+      const handleSourceScroll = (): void => {
+        if (isScrollingSource.current) return
+
+        if (scrollTimeoutSource.current) {
+          clearTimeout(scrollTimeoutSource.current)
+        }
+
+        scrollTimeoutSource.current = window.setTimeout(() => {
+          syncScroll('source')
+        }, debounceMs)
       }
 
-      scrollTimeoutSource.current = window.setTimeout(() => {
-        syncScroll('source')
-      }, debounceMs)
-    }
+      const handleTargetScroll = (): void => {
+        if (isScrollingTarget.current) return
 
-    const handleTargetScroll = (): void => {
-      if (isScrollingTarget.current) return
+        if (scrollTimeoutTarget.current) {
+          clearTimeout(scrollTimeoutTarget.current)
+        }
 
-      if (scrollTimeoutTarget.current) {
-        clearTimeout(scrollTimeoutTarget.current)
+        scrollTimeoutTarget.current = window.setTimeout(() => {
+          syncScroll('target')
+        }, debounceMs)
       }
 
-      scrollTimeoutTarget.current = window.setTimeout(() => {
-        syncScroll('target')
-      }, debounceMs)
+      source.addEventListener('scroll', handleSourceScroll)
+      target.addEventListener('scroll', handleTargetScroll)
+
+      cleanupFn = () => {
+        source.removeEventListener('scroll', handleSourceScroll)
+        target.removeEventListener('scroll', handleTargetScroll)
+
+        if (scrollTimeoutSource.current) {
+          clearTimeout(scrollTimeoutSource.current)
+        }
+        if (scrollTimeoutTarget.current) {
+          clearTimeout(scrollTimeoutTarget.current)
+        }
+      }
+
+      return true
     }
 
-    source.addEventListener('scroll', handleSourceScroll)
-    target.addEventListener('scroll', handleTargetScroll)
+    // Try to attach immediately
+    if (!attachListeners()) {
+      // If refs are not ready, poll until they are
+      pollInterval = window.setInterval(() => {
+        if (attachListeners()) {
+          window.clearInterval(pollInterval)
+        }
+      }, 100)
+    }
 
     return () => {
-      source.removeEventListener('scroll', handleSourceScroll)
-      target.removeEventListener('scroll', handleTargetScroll)
-
-      if (scrollTimeoutSource.current) {
-        clearTimeout(scrollTimeoutSource.current)
-      }
-      if (scrollTimeoutTarget.current) {
-        clearTimeout(scrollTimeoutTarget.current)
-      }
+      if (cleanupFn) cleanupFn()
+      if (pollInterval) window.clearInterval(pollInterval)
     }
   }, [enabled, debounceMs, syncScroll])
 

@@ -10,7 +10,7 @@
 * **Framework:** React 19 (Functional components only).
 * **Styling:** Tailwind CSS (v4) + Shadcn UI.
 * **Package Manager:** pnpm.
-* **Testing:** Vitest + React Testing Library.
+* **Testing:** Vitest + React Testing Library + Playwright (E2E).
 
 ## 2. Core Architectural Principles
 
@@ -66,7 +66,7 @@
   * **Recoverable Errors:** Return `null` (e.g., decompression failure).
   * **User Feedback:** Use callbacks (`onError`) or toast messages. Never swallow errors silently.
 
-## 5. Testing Strategy *(Planned: Not yet configured)*
+## 5. Testing Strategy
 
 * **Framework:** Vitest + React Testing Library.
 * **Coverage:** Target 80%+.
@@ -75,12 +75,15 @@
   * **Pure Functions:** 100% coverage required (edge cases + error handling).
   * **Integration:** Test critical user flows; avoid excessive mocking of internal hooks.
   * **Structure:** Use `describe` blocks, `beforeEach` for cleanup, and descriptive `it` names (starting with lowercase verbs).
+  * **E2E Testing:** Playwright.
+  * **Location:** `/tests/e2e`.
+  * **Scope:** Critical user flows (file operations, editing, etc.).
 
 ## 6. Operation Manual
 
 * **Install:** `pnpm install`
 * **Dev:** `pnpm dev`
-* **Test:** `pnpm test`
+* **Test:** `pnpm test` (Unit), `pnpm test:e2e` (E2E)
 * **Lint:** `pnpm lint` (Zero warnings tolerance).
 
 ## 7. Git Commit Convention

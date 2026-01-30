@@ -16,6 +16,7 @@ interface EditorPaneProps {
   onFormat?: (type: 'bold' | 'italic' | 'link' | 'code') => void
   onCodeBlock?: () => void
   vimMode?: boolean
+  scrollRef?: React.RefObject<HTMLElement | null>
 }
 
 export interface EditorPaneHandle {
@@ -25,7 +26,7 @@ export interface EditorPaneHandle {
 }
 
 export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
-  ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode }, ref) => {
+  ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode, scrollRef }, ref) => {
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
     const vimInstanceRef = useRef<VimAdapter | null>(null)
     const statusBarRef = useRef<HTMLDivElement | null>(null)
@@ -33,6 +34,38 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     const handleEditorDidMount: OnMount = (editor, monaco): void => {
       editorRef.current = editor
+
+      // Capture scroll element for sync scroll
+      if (scrollRef) {
+        const domNode = editor.getDomNode()
+        if (domNode) {
+          const scrollable = domNode.querySelector('.monaco-scrollable-element') as HTMLElement
+          if (scrollable) {
+            // We need to use a type assertion or just set current directly if it's a mutable ref object
+            ;(scrollRef as React.MutableRefObject<HTMLElement | null>).current = scrollable
+            
+            // Override scroll properties to use Monaco's internal state
+            // since the DOM element uses virtual scrolling/transform
+            Object.defineProperty(scrollable, 'scrollTop', {
+              get: () => editor.getScrollTop(),
+              configurable: true,
+            })
+            Object.defineProperty(scrollable, 'scrollHeight', {
+              get: () => editor.getScrollHeight(),
+              configurable: true,
+            })
+            Object.defineProperty(scrollable, 'clientHeight', {
+              get: () => editor.getLayoutInfo().height,
+              configurable: true,
+            })
+
+            // Bridge Monaco scroll event to native scroll event for useSyncScroll
+            editor.onDidScrollChange(() => {
+              scrollable.dispatchEvent(new Event('scroll'))
+            })
+          }
+        }
+      }
 
       // Initialize vim mode immediately after editor mounts if vimMode is enabled
       if (vimMode) {
@@ -237,7 +270,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
                 },
                 renderLineHighlight: 'line',
                 cursorBlinking: 'smooth',
-                smoothScrolling: true,
+                smoothScrolling: false, // Explicitly disable smooth scrolling for sync
               }}
             />
           </div>

@@ -106,7 +106,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
 
   // Scroll synchronization
-  useSyncScroll({
+  const { sourceRef, targetRef } = useSyncScroll<HTMLDivElement>({
     enabled: !isMobile,
   })
 
@@ -333,13 +333,14 @@ ${htmlContent}
                       onFormat={handleFormat}
                       onCodeBlock={handleFormatCodeBlock}
                       vimMode={vimModeEnabled}
+                      scrollRef={sourceRef}
                     />
                   </div>
                 </ResizablePanel>
                 <ResizableHandle withHandle className="mx-2" />
                 <ResizablePanel defaultSize={50} minSize={30}>
                   <div className="h-full pl-2">
-                    <PreviewPane htmlContent={htmlContent} />
+                    <PreviewPane ref={targetRef} htmlContent={htmlContent} />
                   </div>
                 </ResizablePanel>
               </ResizablePanelGroup>
@@ -365,10 +366,11 @@ ${htmlContent}
                     onFormat={handleFormat}
                     onCodeBlock={handleFormatCodeBlock}
                     vimMode={vimModeEnabled}
+                    scrollRef={sourceRef}
                   />
                 </TabsContent>
                 <TabsContent value="preview" className="flex-1 p-4 mt-0">
-                  <PreviewPane htmlContent={htmlContent} />
+                  <PreviewPane ref={targetRef} htmlContent={htmlContent} />
                 </TabsContent>
               </Tabs>
             </div>
