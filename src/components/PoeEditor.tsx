@@ -11,57 +11,11 @@ import { EditorPane, type EditorPaneHandle } from '@/components/EditorPane'
 import { PreviewPane } from '@/components/PreviewPane'
 import { SplashScreen } from '@/components/SplashScreen'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-} from '@/components/ui/dropdown-menu'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Bold,
-  Italic,
-  Link,
-  Code,
-  Heading,
-  Quote,
-  List,
-  Terminal,
-  Sun,
-  Moon,
-  MoreHorizontal,
-  FileText,
-  FilePlus,
-  Pencil,
-  Download,
-  Link2,
-  Trash2,
-  Info,
-  ChevronDown,
-  Heading1,
-  Heading2,
-  Heading3,
-  Keyboard,
-  CodeSquare,
-  ListOrdered,
-  Sparkles,
-  AlertTriangle,
-} from 'lucide-react'
+import { AboutDialog } from '@/components/AboutDialog'
+import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
+import { EditorToolbar } from '@/components/EditorToolbar'
 import { useToast } from '@/hooks/useToast'
 import { cn } from '@/utils/classnames'
 import {
@@ -77,40 +31,7 @@ import {
 } from '@/utils/formatting'
 import type { ReactElement } from 'react'
 
-interface ToolbarButtonProps {
-  icon: React.ElementType
-  label: string
-  onClick?: () => void
-  active?: boolean
-}
 
-function ToolbarButton({
-  icon: Icon,
-  label,
-  onClick,
-  active = false,
-}: ToolbarButtonProps): ReactElement {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={onClick}
-          onMouseDown={(e) => e.preventDefault()}
-          className={cn(
-            'text-muted-foreground hover:text-foreground',
-            active && 'bg-accent text-foreground'
-          )}
-        >
-          <Icon className="size-4" />
-          <span className="sr-only">{label}</span>
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  )
-}
 
 const DEFAULT_CONTENT = `# Welcome to Poe
 
@@ -358,306 +279,44 @@ ${htmlContent}
 
   return (
     <TooltipProvider>
-      {/* About Modal */}
-      <Dialog open={showAbout} onOpenChange={setShowAbout}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">About Poe</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">Modal editing for Markdown</p>
-            <div className="space-y-2">
-              <h3 className="font-semibold text-sm">Features:</h3>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                <li>Live preview with split-pane layout</li>
-                <li>Vim mode</li>
-                <li>Dark and light theme support</li>
-                <li>Export to Markdown or HTML</li>
-                <li>URL-based document persistence</li>
-              </ul>
-            </div>
-            <div className="text-xs text-muted-foreground border-t border-border pt-4">
-              <p className="font-semibold mb-1">Version 1.0.0</p>
-              <p className="mb-1">
-                Inspired by{' '}
-                <a
-                  href="https://dillinger.io"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium hover:underline"
-                >
-                  dillinger.io
-                </a>{' '}
-                and{' '}
-                <a
-                  href="https://www.typescriptlang.org/play"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium hover:underline"
-                >
-                  TypeScript playground
-                </a>
-              </p>
-              <p>&copy; 2026 Paul Chiu</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AboutDialog open={showAbout} onOpenChange={setShowAbout} />
 
-      {/* Keyboard Shortcuts Modal */}
-      <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">Keyboard Shortcuts</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="h-96">
-            <div className="space-y-6 pr-4">
-              <div>
-                <h3 className="font-semibold text-sm mb-3">Formatting</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Bold</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                      Cmd/Ctrl + B
-                    </code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Italic</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                      Cmd/Ctrl + I
-                    </code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Code</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                      Cmd/Ctrl + E
-                    </code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Link</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                      Cmd/Ctrl + K
-                    </code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Code Block</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                      Cmd/Ctrl + Shift + K
-                    </code>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-sm mb-3">Application</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Save</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                      Cmd/Ctrl + S
-                    </code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Help</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">?</code>
-                  </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Close Modal</span>
-                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Esc</code>
-                  </div>
-                </div>
-              </div>
-
-              {vimModeEnabled && (
-                <div>
-                  <h3 className="font-semibold text-sm mb-3">Vim Mode</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Enter Normal Mode</span>
-                      <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Esc</code>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Enter Insert Mode</span>
-                      <code className="bg-muted px-2 py-1 rounded text-xs font-mono">i / a</code>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-muted-foreground">Enter Visual Mode</span>
-                      <code className="bg-muted px-2 py-1 rounded text-xs font-mono">v</code>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+      <KeyboardShortcutsDialog
+        open={showShortcuts}
+        onOpenChange={setShowShortcuts}
+        vimModeEnabled={vimModeEnabled}
+      />
 
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} isLoading={false} debug={true} />}
 
       <div className="h-screen flex flex-col overflow-hidden bg-background">
-        <header className={cn(
-          "h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 transition-colors",
-           isOverLimit && "border-destructive/50 bg-destructive/10"
-        )}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className={cn(
-                "gap-2 text-sm font-medium",
-                 isOverLimit && "text-destructive hover:text-destructive hover:bg-destructive/20"
-              )}>
-                {isOverLimit ? <AlertTriangle className="size-4" /> : <FileText className="size-4" />}
-                {documentName}
-                <ChevronDown className="size-3 text-muted-foreground" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              <DropdownMenuItem onClick={handleNew}>
-                <FilePlus className="size-4" />
-                New
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleRename}>
-                <Pencil className="size-4" />
-                Rename
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Download className="size-4" />
-                  Download
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem onClick={handleDownloadMarkdown}>
-                    <Download className="size-4" />
-                    Markdown (.md)
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleDownloadHTML}>
-                    <Download className="size-4" />
-                    HTML (.html)
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              <DropdownMenuItem onClick={handleCopyLink}>
-                <Link2 className="size-4" />
-                Copy Link
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleClear}>
-                <Trash2 className="size-4" />
-                Clear
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <div className="hidden md:flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-            <ToolbarButton icon={Bold} label="Bold (Cmd+B)" onClick={handleFormatBold} />
-            <ToolbarButton icon={Italic} label="Italic (Cmd+I)" onClick={handleFormatItalic} />
-            <ToolbarButton icon={Link} label="Link (Cmd+K)" onClick={handleFormatLink} />
-            <ToolbarButton icon={Code} label="Code (Cmd+E)" onClick={handleFormatCode} />
-            <div className="w-px h-5 bg-border mx-1" />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <Heading className="size-4" />
-                  <span className="sr-only">Heading</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleFormatHeading(1)}>
-                  <Heading1 className="size-4" />
-                  Heading 1
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFormatHeading(2)}>
-                  <Heading2 className="size-4" />
-                  Heading 2
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleFormatHeading(3)}>
-                  <Heading3 className="size-4" />
-                  Heading 3
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <ToolbarButton icon={Quote} label="Quote" onClick={handleFormatQuote} />
-            <ToolbarButton icon={List} label="Bullet List" onClick={handleFormatBulletList} />
-            <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={handleFormatNumberedList} />
-            <div className="w-px h-5 bg-border mx-1" />
-            <ToolbarButton icon={CodeSquare} label="Code Block" onClick={handleFormatCodeBlock} />
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={toggleVimMode}
-                  className={cn(
-                    'text-muted-foreground hover:text-foreground',
-                    vimModeEnabled && 'bg-accent text-foreground'
-                  )}
-                >
-                  <Terminal className="size-4" />
-                  <span className="sr-only">Vim Mode</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {vimModeEnabled ? 'Disable Vim Mode' : 'Enable Vim Mode'}
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={toggleTheme}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  {mounted && theme === 'dark' ? (
-                    <Sun className="size-4" />
-                  ) : (
-                    <Moon className="size-4" />
-                  )}
-                  <span className="sr-only">Toggle Theme</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                {mounted && theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              </TooltipContent>
-            </Tooltip>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <MoreHorizontal className="size-4" />
-                  <span className="sr-only">Menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setShowShortcuts(true)}>
-                  <Keyboard className="size-4" />
-                  Keyboard Shortcuts
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setShowAbout(true)}>
-                  <Info className="size-4" />
-                  About Poe
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setShowSplash(true)}>
-                  <Sparkles className="size-4" />
-                  Show Splash
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
+        <EditorToolbar
+          documentName={documentName}
+          isOverLimit={isOverLimit}
+          vimModeEnabled={vimModeEnabled}
+          theme={theme}
+          mounted={mounted}
+          onNew={handleNew}
+          onRename={handleRename}
+          onDownloadMarkdown={handleDownloadMarkdown}
+          onDownloadHTML={handleDownloadHTML}
+          onCopyLink={handleCopyLink}
+          onClear={handleClear}
+          onFormatBold={handleFormatBold}
+          onFormatItalic={handleFormatItalic}
+          onFormatLink={handleFormatLink}
+          onFormatCode={handleFormatCode}
+          onFormatHeading={handleFormatHeading}
+          onFormatQuote={handleFormatQuote}
+          onFormatBulletList={handleFormatBulletList}
+          onFormatNumberedList={handleFormatNumberedList}
+          onFormatCodeBlock={handleFormatCodeBlock}
+          toggleVimMode={toggleVimMode}
+          toggleTheme={toggleTheme}
+          setShowShortcuts={setShowShortcuts}
+          setShowAbout={setShowAbout}
+          setShowSplash={setShowSplash}
+        />
 
         <main className="flex-1 overflow-hidden">
           {!isMobile ? (
