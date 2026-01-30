@@ -4,6 +4,7 @@ import { Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
+import { copyToClipboard, stripHtml } from '@/utils/clipboard'
 
 interface PreviewPaneProps {
   htmlContent: string
@@ -19,18 +20,8 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
 
     const handleCopy = async (): Promise<void> => {
       try {
-        // Create a ClipboardItem with both HTML and plain text
-        const blob = new Blob([htmlContent], { type: 'text/html' })
-        const plainText =
-          new DOMParser().parseFromString(htmlContent, 'text/html').body.textContent || ''
-        const textBlob = new Blob([plainText], { type: 'text/plain' })
-
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'text/html': blob,
-            'text/plain': textBlob,
-          }),
-        ])
+        const plainText = stripHtml(htmlContent)
+        await copyToClipboard(plainText, htmlContent)
 
         setCopied(true)
         toast.success('Rich text copied to clipboard!')

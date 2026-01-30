@@ -6,6 +6,7 @@ import { Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
+import { copyToClipboard } from '@/utils/clipboard'
 
 interface EditorPaneProps {
   value: string
@@ -116,7 +117,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     const handleCopy = async (): Promise<void> => {
       try {
-        await navigator.clipboard.writeText(value)
+        await copyToClipboard(value)
         setCopied(true)
         toast.success('Markdown copied to clipboard!')
         setTimeout(() => setCopied(false), 2000)
