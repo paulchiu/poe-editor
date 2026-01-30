@@ -28,7 +28,7 @@ interface UseUrlStateReturn {
 export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
   const {
     debounceMs = 500,
-    maxLength: defaultMaxLength = 2000,
+    maxLength: defaultMaxLength = 32_000,
     onError,
     onLengthWarning,
     defaultContent = '',
