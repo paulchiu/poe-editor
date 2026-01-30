@@ -61,7 +61,7 @@ import {
   ListOrdered,
 } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/classnames'
 import type { ReactElement } from 'react'
 
 interface ToolbarButtonProps {

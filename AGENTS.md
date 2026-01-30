@@ -21,8 +21,7 @@
 * **Type-Based Architecture:**
   * `/src/components` - React components (Shadcn in `/components/ui`).
   * `/src/hooks` - Custom hooks (prefix with `use`).
-  * `/src/lib` - Library configurations and shared helpers (e.g., `utils.ts` for classname utilities).
-  * `/src/utils` - Pure utility functions (business logic).
+  * `/src/utils` - Pure utility functions (e.g., business logic, `classnames.ts`).
   * `/src/test` - Test setup and global mocks. *(Planned: Not yet configured)*
   * `/src/pages` - Route views. *(Planned: As application grows)*
   * **Path Aliases:** Use `@/*` to reference `/src/*` (e.g., `@/components/ui/button`, `@/hooks/useUrlState`).
@@ -35,7 +34,7 @@
 * **File Naming (Strict):**
   * **Components:** `PascalCase.tsx` (e.g., `EditorPane.tsx`, `UserProfile.tsx`).
   * **Hooks:** `camelCase.ts` with `use` prefix (e.g., `useUrlState.ts`, `useTheme.ts`).
-  * **Utilities/Lib:** `camelCase.ts` (e.g., `compression.ts`, `dateUtils.ts`).
+  * **Utilities:** `camelCase.ts` (e.g., `compression.ts`, `dateUtils.ts`).
   * **Tests:** `*.test.ts` or `*.test.tsx` (colocated with source).
 * **Symbol Naming:**
   * **Components:** `PascalCase` (e.g., `function UserProfile()`).
