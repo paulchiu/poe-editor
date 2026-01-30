@@ -111,7 +111,6 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
               {showLoading && <div className="h-full w-full animate-progress-indeterminate bg-primary" />}
               {!showLoading && debug && <div className="h-full w-full bg-primary" />}
             </div>
-            <span className="text-xs text-muted-foreground">{showLoading ? 'Loading' : 'Ready'}</span>
           </div>
 
           {/* Footer */}
