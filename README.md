@@ -26,7 +26,7 @@ This project draws inspiration from [dillinger.io](https://dillinger.io) and the
 ### Local Server
 
 ```bash
-pnpm dev
+bun dev
 ```
 
 ### Worker Preview
@@ -34,15 +34,15 @@ pnpm dev
 Preview application behaviour in the Workers environment:
 
 ```bash
-pnpm preview:worker
+bun preview:worker
 ```
 
 ## Testing
 
 ```bash
-pnpm test        # Unit tests
-pnpm test:e2e    # End-to-end tests
-pnpm lint        # Linting
+bun test        # Unit tests
+bun run test:e2e    # End-to-end tests
+bun lint        # Linting
 ```
 
 ## Deployment
@@ -52,32 +52,34 @@ pnpm lint        # Linting
 Configured as a Single Page Application (SPA).
 
 1.  **Install dependencies**:
-    ```bash
-    pnpm install
-    ```
+
+```bash
+bun install
+```
 
 2.  **Login**:
+
     ```bash
     npx wrangler login
     ```
 
 3.  **Deploy**:
-    ```bash
-    pnpm deploy
-    ```
+
+```bash
+bun run deploy
+```
 
 ### Custom Domain
 
 Default: `poemd.dev`.
 
 To initialise a custom domain:
+
 1.  Add domain to Cloudflare account.
 2.  Update `wrangler.jsonc`:
     ```json
     {
-      "routes": [
-        { "pattern": "your-domain.com", "custom_domain": true }
-      ]
+      "routes": [{ "pattern": "your-domain.com", "custom_domain": true }]
     }
     ```
 3.  Deploy (DNS/SSL handled automatically).
