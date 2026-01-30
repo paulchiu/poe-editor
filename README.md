@@ -2,6 +2,10 @@
 
 A modern, persistent Markdown editor with Vim keybinding support.
 
+## Inspiration
+
+This project draws inspiration from [dillinger.io](https://dillinger.io) and the [TypeScript Playground](https://www.typescriptlang.org/play).
+
 ## Features
 
 - **Vim Mode**: Full Vim keybinding support via Monaco Editor.
@@ -16,10 +20,6 @@ A modern, persistent Markdown editor with Vim keybinding support.
 - **Styling**: Tailwind CSS v4, Shadcn UI
 - **Editor**: Monaco Editor (with `monaco-vim`)
 - **Deployment**: Cloudflare Workers
-
-## Inspiration
-
-This project draws inspiration from [dillinger.io](https://dillinger.io) and the [TypeScript Playground](https://www.typescriptlang.org/play).
 
 ## Development
 
