@@ -151,13 +151,12 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     [toast]
   )
 
-  // Stable warning handler to prevent useUrlState effect from re-running
   const handleLengthWarning = React.useCallback(
-    (length: number) => {
+    (length: number, limit: number) => {
+      const percentage = Math.round((length / limit) * 100)
       toast({
         variant: 'default',
-        title: 'URL Limit Warning',
-        description: `URL is getting long (${length} chars). Consider shortening your document.`,
+        description: `URL limit reached, used ${percentage}%. Changes are not saved.`,
       })
     },
     [toast]

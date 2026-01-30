@@ -9,7 +9,7 @@ interface UseUrlStateOptions {
   debounceMs?: number
   maxLength?: number
   onError?: (error: Error) => void
-  onLengthWarning?: (length: number) => void
+  onLengthWarning?: (length: number, limit: number) => void
   defaultContent?: string
   defaultName?: string
 }
@@ -106,7 +106,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       setIsOverLimit(overLimit)
 
       if (overLimit) {
-        onLengthWarning?.(compressed.length)
+        onLengthWarning?.(compressed.length, maxLength)
       }
 
       // Update URL regardless of length (allow users to continue editing)
