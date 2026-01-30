@@ -531,7 +531,7 @@ ${htmlContent}
         </DialogContent>
       </Dialog>
 
-      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} isLoading={false} />}
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} isLoading={false} debug={true} />}
 
       <div className="h-screen flex flex-col overflow-hidden bg-background">
         <header className="h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4">
