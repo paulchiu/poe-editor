@@ -60,6 +60,7 @@ import {
   CodeSquare,
   ListOrdered,
   Sparkles,
+  AlertTriangle,
 } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { cn } from '@/utils/classnames'
@@ -163,7 +164,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   )
 
   // URL state management
-  const { content, setContent, documentName, setDocumentName } = useUrlState({
+  const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
     defaultContent: DEFAULT_CONTENT,
     defaultName: 'untitled.md',
     onError: handleError,
@@ -554,11 +555,17 @@ ${htmlContent}
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} isLoading={false} debug={true} />}
 
       <div className="h-screen flex flex-col overflow-hidden bg-background">
-        <header className="h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4">
+        <header className={cn(
+          "h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 transition-colors",
+           isOverLimit && "border-destructive/50 bg-destructive/10"
+        )}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="gap-2 text-sm font-medium">
-                <FileText className="size-4" />
+              <Button variant="ghost" className={cn(
+                "gap-2 text-sm font-medium",
+                 isOverLimit && "text-destructive hover:text-destructive hover:bg-destructive/20"
+              )}>
+                {isOverLimit ? <AlertTriangle className="size-4" /> : <FileText className="size-4" />}
                 {documentName}
                 <ChevronDown className="size-3 text-muted-foreground" />
               </Button>

@@ -28,12 +28,19 @@ interface UseUrlStateReturn {
 export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
   const {
     debounceMs = 500,
-    maxLength = 2000,
+    maxLength: defaultMaxLength = 2000,
     onError,
     onLengthWarning,
     defaultContent = '',
     defaultName = 'untitled.md',
   } = options ?? {}
+
+  // Allow overriding maxLength via URL query param for testing
+  const [maxLength] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    const limit = params.get('limit')
+    return limit ? parseInt(limit, 10) : defaultMaxLength
+  })
 
   const [content, setContentState] = useState<string>(() => {
     // Initialize from URL hash on mount
