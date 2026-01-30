@@ -64,6 +64,17 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { cn } from '@/utils/classnames'
+import {
+  formatBold,
+  formatItalic,
+  formatLink,
+  formatCode,
+  formatCodeBlock,
+  formatHeading,
+  formatQuote,
+  formatBulletList,
+  formatNumberedList,
+} from '@/utils/formatting'
 import type { ReactElement } from 'react'
 
 interface ToolbarButtonProps {
@@ -182,113 +193,43 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const htmlContent = React.useMemo(() => renderMarkdown(content), [content])
 
   // Formatting functions
-  const formatBold = React.useCallback((): void => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const selection = editor.getSelection()
-    if (selection) {
-      editor.replaceSelection(`**${selection}**`)
-    } else {
-      editor.insertText('**bold**')
-    }
+  const handleFormatBold = React.useCallback((): void => {
+    formatBold(editorRef.current)
   }, [])
 
-  const formatItalic = React.useCallback((): void => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const selection = editor.getSelection()
-    if (selection) {
-      editor.replaceSelection(`*${selection}*`)
-    } else {
-      editor.insertText('*italic*')
-    }
+  const handleFormatItalic = React.useCallback((): void => {
+    formatItalic(editorRef.current)
   }, [])
 
-  const formatLink = React.useCallback((): void => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const selection = editor.getSelection()
-    if (selection) {
-      editor.replaceSelection(`[${selection}](url)`)
-    } else {
-      editor.insertText('[link](url)')
-    }
+  const handleFormatLink = React.useCallback((): void => {
+    formatLink(editorRef.current)
   }, [])
 
-  const formatCode = React.useCallback((): void => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const selection = editor.getSelection()
-    if (selection) {
-      editor.replaceSelection(`\`${selection}\``)
-    } else {
-      editor.insertText('`code`')
-    }
+  const handleFormatCode = React.useCallback((): void => {
+    formatCode(editorRef.current)
   }, [])
 
-  const formatCodeBlock = React.useCallback((): void => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const selection = editor.getSelection()
-    if (selection) {
-      editor.replaceSelection(`\`\`\`\n${selection}\n\`\`\``)
-    } else {
-      editor.insertText('```\ncode block\n```')
-    }
+  const handleFormatCodeBlock = React.useCallback((): void => {
+    formatCodeBlock(editorRef.current)
   }, [])
 
-  const formatHeading = React.useCallback((level: number): void => {
-    const editor = editorRef.current
-    if (!editor) return
+  const handleFormatHeading = React.useCallback(
+    (level: number): void => {
+      formatHeading(editorRef.current, level)
+    },
+    []
+  )
 
-    const prefix = '#'.repeat(level) + ' '
-    const selection = editor.getSelection()
-    if (selection) {
-      editor.replaceSelection(`${prefix}${selection}`)
-    } else {
-      editor.insertText(`${prefix}heading`)
-    }
+  const handleFormatQuote = React.useCallback((): void => {
+    formatQuote(editorRef.current)
   }, [])
 
-  const formatQuote = React.useCallback((): void => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const selection = editor.getSelection()
-    if (selection) {
-      editor.replaceSelection(`> ${selection}`)
-    } else {
-      editor.insertText('> quote')
-    }
+  const handleFormatBulletList = React.useCallback((): void => {
+    formatBulletList(editorRef.current)
   }, [])
 
-  const formatBulletList = React.useCallback((): void => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const selection = editor.getSelection()
-    if (selection) {
-      editor.replaceSelection(`- ${selection}`)
-    } else {
-      editor.insertText('- item')
-    }
-  }, [])
-
-  const formatNumberedList = React.useCallback((): void => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const selection = editor.getSelection()
-    if (selection) {
-      editor.replaceSelection(`1. ${selection}`)
-    } else {
-      editor.insertText('1. item')
-    }
+  const handleFormatNumberedList = React.useCallback((): void => {
+    formatNumberedList(editorRef.current)
   }, [])
 
   // Document management functions
@@ -363,11 +304,11 @@ ${htmlContent}
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
-    onBold: formatBold,
-    onItalic: formatItalic,
-    onLink: formatLink,
-    onCode: formatCode,
-    onCodeBlock: formatCodeBlock,
+    onBold: handleFormatBold,
+    onItalic: handleFormatItalic,
+    onLink: handleFormatLink,
+    onCode: handleFormatCode,
+    onCodeBlock: handleFormatCodeBlock,
     onSave: handleSave,
     onHelp: () => setShowShortcuts(true),
   })
@@ -401,16 +342,16 @@ ${htmlContent}
   const handleFormat = (type: 'bold' | 'italic' | 'link' | 'code'): void => {
     switch (type) {
       case 'bold':
-        formatBold()
+        handleFormatBold()
         break
       case 'italic':
-        formatItalic()
+        handleFormatItalic()
         break
       case 'link':
-        formatLink()
+        handleFormatLink()
         break
       case 'code':
-        formatCode()
+        handleFormatCode()
         break
     }
   }
@@ -608,10 +549,10 @@ ${htmlContent}
           </DropdownMenu>
 
           <div className="hidden md:flex items-center gap-1 bg-muted/50 rounded-lg p-1">
-            <ToolbarButton icon={Bold} label="Bold (Cmd+B)" onClick={formatBold} />
-            <ToolbarButton icon={Italic} label="Italic (Cmd+I)" onClick={formatItalic} />
-            <ToolbarButton icon={Link} label="Link (Cmd+K)" onClick={formatLink} />
-            <ToolbarButton icon={Code} label="Code (Cmd+E)" onClick={formatCode} />
+            <ToolbarButton icon={Bold} label="Bold (Cmd+B)" onClick={handleFormatBold} />
+            <ToolbarButton icon={Italic} label="Italic (Cmd+I)" onClick={handleFormatItalic} />
+            <ToolbarButton icon={Link} label="Link (Cmd+K)" onClick={handleFormatLink} />
+            <ToolbarButton icon={Code} label="Code (Cmd+E)" onClick={handleFormatCode} />
             <div className="w-px h-5 bg-border mx-1" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -625,25 +566,25 @@ ${htmlContent}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => formatHeading(1)}>
+                <DropdownMenuItem onClick={() => handleFormatHeading(1)}>
                   <Heading1 className="size-4" />
                   Heading 1
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => formatHeading(2)}>
+                <DropdownMenuItem onClick={() => handleFormatHeading(2)}>
                   <Heading2 className="size-4" />
                   Heading 2
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => formatHeading(3)}>
+                <DropdownMenuItem onClick={() => handleFormatHeading(3)}>
                   <Heading3 className="size-4" />
                   Heading 3
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <ToolbarButton icon={Quote} label="Quote" onClick={formatQuote} />
-            <ToolbarButton icon={List} label="Bullet List" onClick={formatBulletList} />
-            <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={formatNumberedList} />
+            <ToolbarButton icon={Quote} label="Quote" onClick={handleFormatQuote} />
+            <ToolbarButton icon={List} label="Bullet List" onClick={handleFormatBulletList} />
+            <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={handleFormatNumberedList} />
             <div className="w-px h-5 bg-border mx-1" />
-            <ToolbarButton icon={CodeSquare} label="Code Block" onClick={formatCodeBlock} />
+            <ToolbarButton icon={CodeSquare} label="Code Block" onClick={handleFormatCodeBlock} />
           </div>
 
           <div className="flex items-center gap-1">
@@ -731,7 +672,7 @@ ${htmlContent}
                       onCursorChange={setCursorPosition}
                       theme={mounted && theme === 'dark' ? 'dark' : 'light'}
                       onFormat={handleFormat}
-                      onCodeBlock={formatCodeBlock}
+                      onCodeBlock={handleFormatCodeBlock}
                       vimMode={vimModeEnabled}
                     />
                   </div>
@@ -763,7 +704,7 @@ ${htmlContent}
                     onCursorChange={setCursorPosition}
                     theme={mounted && theme === 'dark' ? 'dark' : 'light'}
                     onFormat={handleFormat}
-                    onCodeBlock={formatCodeBlock}
+                    onCodeBlock={handleFormatCodeBlock}
                     vimMode={vimModeEnabled}
                   />
                 </TabsContent>
