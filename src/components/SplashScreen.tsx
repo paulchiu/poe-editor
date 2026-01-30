@@ -7,6 +7,19 @@ interface SplashScreenProps {
   debug?: boolean
 }
 
+export const TAGLINES = [
+  'Finally, a Vim you can exit.',
+  'Modal editing for writers.',
+  'Compiles to English.',
+  'Refactoring your sentences.',
+  'Syntax highlighting for your soul.',
+  'Supports tabs AND spaces.',
+  'Elegant, efficient, and definitely not Emacs.',
+  'Because plain text never crashes.',
+  'Markdown without the meltdown.',
+  'Rubber duck debugging for novelists.',
+]
+
 /**
  * Splash screen component that displays a hero image and transitions to the main app.
  *
@@ -19,6 +32,7 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
   const [isVisible, setIsVisible] = useState(true)
   const [isFading, setIsFading] = useState(false)
   const [showLoading, setShowLoading] = useState(isLoading)
+  const [tagline, setTagline] = useState(() => TAGLINES[Math.floor(Math.random() * TAGLINES.length)])
 
   useEffect(() => {
     setShowLoading(isLoading)
@@ -54,6 +68,8 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
           }, 500)
         } else if (e.key === 'l' || e.key === 'L') {
           setShowLoading((prev) => !prev)
+        } else if (e.key === 'r' || e.key === 'R') {
+          setTagline(TAGLINES[Math.floor(Math.random() * TAGLINES.length)])
         }
       }
       window.addEventListener('keydown', handleEscape)
@@ -101,7 +117,7 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
               Version 1.0.0
             </p>
             <p className="text-sm text-muted-foreground">
-              Finally, a Vim you can exit.
+              {tagline}
             </p>
           </div>
 
@@ -120,7 +136,7 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
             </p>
             {debug && (
               <p className="mt-2 text-xs font-medium text-yellow-500">
-                Debug Mode: Press Esc to exit, 'L' to toggle loading
+                Debug Mode: Press Esc to exit, 'L' toggles loading, 'R' refreshes tagline
               </p>
             )}
           </div>
