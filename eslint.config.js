@@ -6,7 +6,7 @@ import prettierConfig from 'eslint-config-prettier'
 
 export default [
   {
-    ignores: ['node_modules', 'dist', 'build', '.next', 'pnpm-lock.yaml', 'package-lock.json'],
+    ignores: ['node_modules', 'dist', 'build', '.next', 'package-lock.json'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
