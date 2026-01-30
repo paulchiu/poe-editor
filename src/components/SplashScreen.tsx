@@ -75,7 +75,7 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
               alt="Poe - Markdown Editor"
               width={280}
               height={280}
-              className="relative h-auto w-72 max-w-full"
+              className="relative h-auto w-72 max-w-full dark:invert"
             />
           </div>
         </div>
