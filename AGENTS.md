@@ -99,3 +99,4 @@
 2. **DO NOT** use `console.log` in final code.
 3. **DO NOT** import React namespace (e.g., `import React from 'react'` or `import * as React from 'react'`). JSX Transform is enabled; import only what you need.
 4. **DO NOT** force "Strict TDD" (write test first) unless helpful; allow pragmatic development but ensure tests exist before completion.
+5. **DO NOT** leave the codebase in a broken state. Ensure all linting errors and unit tests pass before considering a task complete.
