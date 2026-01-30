@@ -101,7 +101,7 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
               Version 1.0.0
             </p>
             <p className="text-sm text-muted-foreground">
-              A distraction-free writing experience
+              Finally, a Vim you can exit.
             </p>
           </div>
 
