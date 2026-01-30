@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { AboutDialog } from '@/components/AboutDialog'
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { EditorToolbar } from '@/components/EditorToolbar'
+import { RenameDialog } from '@/components/RenameDialog'
 import { useToast } from '@/hooks/useToast'
 
 import {
@@ -59,6 +60,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [mounted, setMounted] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [showRename, setShowRename] = useState(false)
   const [showSplash, setShowSplash] = useState(false)
   const [, setCursorPosition] = useState({
     lineNumber: 1,
@@ -157,12 +159,15 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   }, [setContent, setDocumentName, toast])
 
   const handleRename = useCallback((): void => {
-    const newName = prompt('Enter new document name:', documentName)
+    setShowRename(true)
+  }, [])
+
+  const handleRenameConfirm = useCallback((newName: string): void => {
     if (newName && newName.trim()) {
       setDocumentName(newName.trim())
-      toast({ description: `Renamed to ${newName}` })
+      toast({ description: `Renamed to ${newName.trim()}` })
     }
-  }, [documentName, setDocumentName, toast])
+  }, [setDocumentName, toast])
 
   const handleDownloadMarkdown = useCallback((): void => {
     downloadFile(documentName, content, 'text/markdown')
@@ -282,6 +287,13 @@ ${htmlContent}
         open={showShortcuts}
         onOpenChange={setShowShortcuts}
         vimModeEnabled={vimModeEnabled}
+      />
+
+      <RenameDialog
+        open={showRename}
+        onOpenChange={setShowRename}
+        currentName={documentName}
+        onRename={handleRenameConfirm}
       />
 
       {showSplash && (
