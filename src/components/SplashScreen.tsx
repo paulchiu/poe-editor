@@ -136,7 +136,8 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
             </p>
             {debug && (
               <p className="mt-2 text-xs font-medium text-yellow-500">
-                Debug Mode: Press Esc to exit, 'L' toggles loading, 'R' refreshes tagline
+                Debug Mode: Press Esc to exit, &apos;L&apos; toggles loading, &apos;R&apos; refreshes tagline
+
               </p>
             )}
           </div>

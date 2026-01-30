@@ -17,7 +17,7 @@ import { AboutDialog } from '@/components/AboutDialog'
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { EditorToolbar } from '@/components/EditorToolbar'
 import { useToast } from '@/hooks/useToast'
-import { cn } from '@/utils/classnames'
+
 import {
   formatBold,
   formatItalic,

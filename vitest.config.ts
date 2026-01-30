@@ -1,10 +1,9 @@
-/// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import * as path from 'path'
 declare module 'vite' {
   interface UserConfig {
-    test?: any
+    test?: unknown
   }
 }
 
