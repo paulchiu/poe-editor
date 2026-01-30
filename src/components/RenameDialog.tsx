@@ -22,6 +22,11 @@ interface RenameDialogProps {
   onRename: (newName: string) => void
 }
 
+/**
+ * Dialog for renaming the current document
+ * @param props - Component props
+ * @returns Rename dialog component
+ */
 export function RenameDialog({
   open,
   onOpenChange,
@@ -98,9 +103,7 @@ export function RenameDialog({
           >
             <DialogHeader>
               <DialogTitle>Rename Document</DialogTitle>
-              <DialogDescription>
-                Enter a new name for your document.
-              </DialogDescription>
+              <DialogDescription>Enter a new name for your document.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit}>
               <div className="grid gap-4 py-4">
@@ -123,9 +126,7 @@ export function RenameDialog({
                 </Button>
               </DialogFooter>
             </form>
-            <DialogPrimitive.Close
-              className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-            >
+            <DialogPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4">
               <XIcon />
               <span className="sr-only">Close</span>
             </DialogPrimitive.Close>
@@ -135,4 +136,3 @@ export function RenameDialog({
     </Dialog>
   )
 }
-

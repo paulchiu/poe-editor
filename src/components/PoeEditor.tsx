@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useMemo, useEffect, type ReactElement } from 'react'
 import { useTheme } from 'next-themes'
-import { useIsMobile } from '@/hooks/useMobile'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useVimMode } from '@/hooks/useVimMode'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
@@ -162,12 +162,15 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     setShowRename(true)
   }, [])
 
-  const handleRenameConfirm = useCallback((newName: string): void => {
-    if (newName && newName.trim()) {
-      setDocumentName(newName.trim())
-      toast({ description: `Renamed to ${newName.trim()}` })
-    }
-  }, [setDocumentName, toast])
+  const handleRenameConfirm = useCallback(
+    (newName: string): void => {
+      if (newName && newName.trim()) {
+        setDocumentName(newName.trim())
+        toast({ description: `Renamed to ${newName.trim()}` })
+      }
+    },
+    [setDocumentName, toast]
+  )
 
   const handleDownloadMarkdown = useCallback((): void => {
     downloadFile(documentName, content, 'text/markdown')

@@ -3,7 +3,7 @@ import {
   compressDocumentToHash,
   decompressDocumentFromHash,
   type DocumentData,
-} from '../utils/compression'
+} from '@/utils/compression'
 
 interface UseUrlStateOptions {
   debounceMs?: number
@@ -24,6 +24,8 @@ interface UseUrlStateReturn {
 
 /**
  * Manages document state with URL hash persistence using LZ compression
+ * @param options - Configuration options for URL state management
+ * @returns Object containing content, document name, setters, and limit status
  */
 export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
   const {

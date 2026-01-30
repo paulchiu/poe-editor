@@ -1,5 +1,5 @@
 // Inspired by react-hot-toast library
-import * as React from 'react'
+import { useState, useEffect } from 'react'
 
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast'
 
@@ -67,6 +67,12 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
+/**
+ * Reducer function for toast state management
+ * @param state - Current toast state
+ * @param action - Action to apply to state
+ * @returns Updated toast state
+ */
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'ADD_TOAST':
@@ -133,6 +139,11 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, 'id'>
 
+/**
+ * Displays a toast notification
+ * @param props - Toast configuration properties
+ * @returns Object with toast id, dismiss function, and update function
+ */
 function toast({ ...props }: Toast) {
   const id = genId()
 
@@ -162,10 +173,14 @@ function toast({ ...props }: Toast) {
   }
 }
 
+/**
+ * Hook for managing toast notifications
+ * @returns Toast state and control functions
+ */
 function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
+  const [state, setState] = useState<State>(memoryState)
 
-  React.useEffect(() => {
+  useEffect(() => {
     listeners.push(setState)
     return () => {
       const index = listeners.indexOf(setState)
@@ -182,7 +197,6 @@ function useToast() {
   }
 }
 
-
 // For testing purposes
 export const _resetState = () => {
   memoryState = { toasts: [] }
@@ -193,4 +207,3 @@ export const _resetState = () => {
 }
 
 export { useToast, toast }
-

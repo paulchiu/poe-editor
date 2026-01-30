@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { type ElementType } from 'react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,12 +44,17 @@ import { cn } from '@/utils/classnames'
 import type { ReactElement } from 'react'
 
 interface ToolbarButtonProps {
-  icon: React.ElementType
+  icon: ElementType
   label: string
   onClick?: () => void
   active?: boolean
 }
 
+/**
+ * Individual toolbar button with tooltip
+ * @param props - Component props
+ * @returns Toolbar button component
+ */
 function ToolbarButton({
   icon: Icon,
   label,
@@ -106,6 +111,11 @@ interface EditorToolbarProps {
   setShowSplash: (show: boolean) => void
 }
 
+/**
+ * Main editor toolbar with document controls, formatting tools, and settings
+ * @param props - Component props
+ * @returns Editor toolbar component
+ */
 export function EditorToolbar({
   documentName,
   isOverLimit,
@@ -134,16 +144,21 @@ export function EditorToolbar({
   setShowSplash,
 }: EditorToolbarProps): ReactElement {
   return (
-    <header className={cn(
-      "h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 transition-colors",
-       isOverLimit && "border-destructive/50 bg-destructive/10"
-    )}>
+    <header
+      className={cn(
+        'h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 transition-colors',
+        isOverLimit && 'border-destructive/50 bg-destructive/10'
+      )}
+    >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className={cn(
-            "gap-2 text-sm font-medium",
-             isOverLimit && "text-destructive hover:text-destructive hover:bg-destructive/20"
-          )}>
+          <Button
+            variant="ghost"
+            className={cn(
+              'gap-2 text-sm font-medium',
+              isOverLimit && 'text-destructive hover:text-destructive hover:bg-destructive/20'
+            )}
+          >
             {isOverLimit ? <AlertTriangle className="size-4" /> : <FileText className="size-4" />}
             {documentName}
             <ChevronDown className="size-3 text-muted-foreground" />
@@ -242,9 +257,7 @@ export function EditorToolbar({
               <span className="sr-only">Vim Mode</span>
             </Button>
           </TooltipTrigger>
-          <TooltipContent>
-            {vimModeEnabled ? 'Disable Vim Mode' : 'Enable Vim Mode'}
-          </TooltipContent>
+          <TooltipContent>{vimModeEnabled ? 'Disable Vim Mode' : 'Enable Vim Mode'}</TooltipContent>
         </Tooltip>
 
         <Tooltip>

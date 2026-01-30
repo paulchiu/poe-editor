@@ -1,5 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
-import type React from 'react'
+import { useEffect, useRef, useCallback, type RefObject } from 'react'
 
 interface UseSyncScrollOptions {
   enabled?: boolean
@@ -7,8 +6,8 @@ interface UseSyncScrollOptions {
 }
 
 interface UseSyncScrollReturn<T extends HTMLElement = HTMLElement> {
-  sourceRef: React.RefObject<T | null>
-  targetRef: React.RefObject<T | null>
+  sourceRef: RefObject<T | null>
+  targetRef: RefObject<T | null>
 }
 
 /**
@@ -17,7 +16,9 @@ interface UseSyncScrollReturn<T extends HTMLElement = HTMLElement> {
  * @param options - Configuration object with optional enabled flag and debounce duration
  * @returns Refs for source and target elements to synchronize
  */
-export function useSyncScroll<T extends HTMLElement = HTMLElement>(options: UseSyncScrollOptions = {}): UseSyncScrollReturn<T> {
+export function useSyncScroll<T extends HTMLElement = HTMLElement>(
+  options: UseSyncScrollOptions = {}
+): UseSyncScrollReturn<T> {
   const { enabled = true, debounceMs = 50 } = options
 
   const sourceRef = useRef<T | null>(null)

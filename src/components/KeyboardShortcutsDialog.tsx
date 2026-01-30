@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { ReactElement } from 'react'
@@ -13,6 +14,11 @@ interface KeyboardShortcutsDialogProps {
   vimModeEnabled: boolean
 }
 
+/**
+ * Keyboard shortcuts reference dialog
+ * @param props - Component props
+ * @returns Keyboard shortcuts dialog component
+ */
 export function KeyboardShortcutsDialog({
   open,
   onOpenChange,
@@ -23,6 +29,7 @@ export function KeyboardShortcutsDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl">Keyboard Shortcuts</DialogTitle>
+          <DialogDescription>Reference guide for all keyboard shortcuts</DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-96">
           <div className="space-y-6 pr-4">
@@ -31,27 +38,19 @@ export function KeyboardShortcutsDialog({
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Bold</span>
-                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                    Cmd/Ctrl + B
-                  </code>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Cmd/Ctrl + B</code>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Italic</span>
-                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                    Cmd/Ctrl + I
-                  </code>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Cmd/Ctrl + I</code>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Code</span>
-                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                    Cmd/Ctrl + E
-                  </code>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Cmd/Ctrl + E</code>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Link</span>
-                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                    Cmd/Ctrl + K
-                  </code>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Cmd/Ctrl + K</code>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Code Block</span>
@@ -67,9 +66,7 @@ export function KeyboardShortcutsDialog({
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Save</span>
-                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                    Cmd/Ctrl + S
-                  </code>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Cmd/Ctrl + S</code>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Help</span>

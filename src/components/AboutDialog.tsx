@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import type { ReactElement } from 'react'
 
@@ -11,15 +12,20 @@ interface AboutDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+/**
+ * About dialog showing application information and credits
+ * @param props - Component props
+ * @returns About dialog component
+ */
 export function AboutDialog({ open, onOpenChange }: AboutDialogProps): ReactElement {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl">About Poe</DialogTitle>
+          <DialogDescription>Modal editing for Markdown</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <p className="text-muted-foreground">Modal editing for Markdown</p>
           <div className="space-y-2">
             <h3 className="font-semibold text-sm">Features:</h3>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">

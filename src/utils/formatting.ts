@@ -1,5 +1,9 @@
 import type { EditorPaneHandle } from '@/components/EditorPane'
 
+/**
+ * Wraps selected text or inserts bold markdown
+ * @param editor - Editor instance handle
+ */
 export function formatBold(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
@@ -11,6 +15,10 @@ export function formatBold(editor: EditorPaneHandle | null): void {
   }
 }
 
+/**
+ * Wraps selected text or inserts italic markdown
+ * @param editor - Editor instance handle
+ */
 export function formatItalic(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
@@ -22,6 +30,10 @@ export function formatItalic(editor: EditorPaneHandle | null): void {
   }
 }
 
+/**
+ * Wraps selected text or inserts link markdown
+ * @param editor - Editor instance handle
+ */
 export function formatLink(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
@@ -33,6 +45,10 @@ export function formatLink(editor: EditorPaneHandle | null): void {
   }
 }
 
+/**
+ * Wraps selected text or inserts inline code markdown
+ * @param editor - Editor instance handle
+ */
 export function formatCode(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
@@ -44,6 +60,10 @@ export function formatCode(editor: EditorPaneHandle | null): void {
   }
 }
 
+/**
+ * Wraps selected text or inserts code block markdown
+ * @param editor - Editor instance handle
+ */
 export function formatCodeBlock(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
@@ -55,6 +75,11 @@ export function formatCodeBlock(editor: EditorPaneHandle | null): void {
   }
 }
 
+/**
+ * Formats selected text or inserts heading markdown
+ * @param editor - Editor instance handle
+ * @param level - Heading level (1-6)
+ */
 export function formatHeading(editor: EditorPaneHandle | null, level: number): void {
   if (!editor) return
 
@@ -67,6 +92,10 @@ export function formatHeading(editor: EditorPaneHandle | null, level: number): v
   }
 }
 
+/**
+ * Formats selected text or inserts blockquote markdown
+ * @param editor - Editor instance handle
+ */
 export function formatQuote(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
@@ -82,6 +111,10 @@ export function formatQuote(editor: EditorPaneHandle | null): void {
   }
 }
 
+/**
+ * Formats selected text as bullet list or removes existing bullet formatting
+ * @param editor - Editor instance handle
+ */
 export function formatBulletList(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
@@ -89,18 +122,20 @@ export function formatBulletList(editor: EditorPaneHandle | null): void {
   if (selection) {
     const lines = selection.split('\n')
     const processableLines = lines.filter(
-      (line, i) => !(i === lines.length - 1 && line === '') && line.trim().length > 0
+      (line: string, i: number) =>
+        !(i === lines.length - 1 && line === '') && line.trim().length > 0
     )
 
     const isBulletList =
-      processableLines.length > 0 && processableLines.every((line) => /^\s*[-*]\s/.test(line))
+      processableLines.length > 0 &&
+      processableLines.every((line: string) => /^\s*[-*]\s/.test(line))
     const isNumberedList =
       !isBulletList &&
       processableLines.length > 0 &&
-      processableLines.every((line) => /^\s*\d+\.\s/.test(line))
+      processableLines.every((line: string) => /^\s*\d+\.\s/.test(line))
 
     const formatted = lines
-      .map((line, i) => {
+      .map((line: string, i: number) => {
         if (i === lines.length - 1 && line === '') return line
         if (line.trim().length === 0) return line
 
@@ -119,6 +154,10 @@ export function formatBulletList(editor: EditorPaneHandle | null): void {
   }
 }
 
+/**
+ * Formats selected text as numbered list or removes existing numbering
+ * @param editor - Editor instance handle
+ */
 export function formatNumberedList(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
@@ -126,19 +165,21 @@ export function formatNumberedList(editor: EditorPaneHandle | null): void {
   if (selection) {
     const lines = selection.split('\n')
     const processableLines = lines.filter(
-      (line, i) => !(i === lines.length - 1 && line === '') && line.trim().length > 0
+      (line: string, i: number) =>
+        !(i === lines.length - 1 && line === '') && line.trim().length > 0
     )
 
     const isNumberedList =
-      processableLines.length > 0 && processableLines.every((line) => /^\s*\d+\.\s/.test(line))
+      processableLines.length > 0 &&
+      processableLines.every((line: string) => /^\s*\d+\.\s/.test(line))
     const isBulletList =
       !isNumberedList &&
       processableLines.length > 0 &&
-      processableLines.every((line) => /^\s*[-*]\s/.test(line))
+      processableLines.every((line: string) => /^\s*[-*]\s/.test(line))
 
     let counter = 1
     const formatted = lines
-      .map((line, i) => {
+      .map((line: string, i: number) => {
         if (i === lines.length - 1 && line === '') return line
         if (line.trim().length === 0) return line
 
