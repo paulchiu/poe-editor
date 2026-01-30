@@ -1,15 +1,15 @@
 import * as React from 'react'
 import { useTheme } from 'next-themes'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { useIsMobile } from '@/hooks/useMobile'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useVimMode } from '@/hooks/useVimMode'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSyncScroll } from '@/hooks/useSyncScroll'
 import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
-import { EditorPane, type EditorPaneHandle } from '@/components/editor-pane'
-import { PreviewPane } from '@/components/preview-pane'
-import { SplashScreen } from '@/components/splash-screen'
+import { EditorPane, type EditorPaneHandle } from '@/components/EditorPane'
+import { PreviewPane } from '@/components/PreviewPane'
+import { SplashScreen } from '@/components/SplashScreen'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
@@ -60,7 +60,7 @@ import {
   CodeSquare,
   ListOrdered,
 } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 import type { ReactElement } from 'react'
 

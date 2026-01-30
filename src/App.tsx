@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { ThemeProvider } from 'next-themes'
-import { SplashScreen } from '@/components/splash-screen'
+import { SplashScreen } from '@/components/SplashScreen'
 import { Toaster } from '@/components/ui/toaster'
 
 // Lazy load the main editor component
 const PoeEditor = React.lazy(() =>
-  import('@/components/poe-editor').then((module) => ({
+  import('@/components/PoeEditor').then((module) => ({
     default: module.PoeEditor,
   }))
 )
