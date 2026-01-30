@@ -290,6 +290,7 @@ ${htmlContent}
       />
 
       <RenameDialog
+        key={String(showRename)}
         open={showRename}
         onOpenChange={setShowRename}
         currentName={documentName}

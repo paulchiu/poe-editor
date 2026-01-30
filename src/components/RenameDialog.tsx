@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type ReactElement, type SyntheticEvent, type FormEvent } from 'react'
+import { useState, useRef, type ReactElement, type SyntheticEvent, type FormEvent } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { FocusScope } from '@radix-ui/react-focus-scope'
 import { XIcon } from 'lucide-react'
@@ -34,14 +34,6 @@ export function RenameDialog({
   const expectedSelectionEnd = useRef<number | null>(null)
 
   // Reset name and refs when dialog opens
-  useEffect(() => {
-    if (open) {
-      setName(currentName)
-      hasSetInitialSelection.current = false
-      expectedSelectionEnd.current = null
-    }
-  }, [open, currentName])
-
   const handleOpenAutoFocus = (e: Event) => {
     e.preventDefault()
 

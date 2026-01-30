@@ -137,9 +137,9 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         if (editorRef.current && statusBarRef.current && !vimInstanceRef.current) {
           try {
             vimInstanceRef.current = initVimMode(editorRef.current, statusBarRef.current)
-            console.log('Vim mode initialized')
-          } catch (e) {
-            console.error('Error initializing vim mode:', e)
+
+          } catch {
+            toast.error('Error initializing vim mode')
           }
         }
       }, 0)
