@@ -230,7 +230,9 @@ ${htmlContent}
 
   // Effects
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // This is needed to track if the component has mounted for theme and and layout purposes.
+    // We suppress the warning as this is a common pattern for hydration/mounting checks in SPAs.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
 
     // Notify parent that the editor is ready
@@ -318,7 +320,7 @@ ${htmlContent}
         <main className="flex-1 overflow-hidden">
           {!isMobile ? (
             <div className="h-full p-4">
-              <ResizablePanelGroup direction="horizontal" className="h-full">
+              <ResizablePanelGroup orientation="horizontal" className="h-full">
                 <ResizablePanel defaultSize={50} minSize={30}>
                   <div className="h-full pr-2">
                     <EditorPane
