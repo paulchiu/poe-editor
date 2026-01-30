@@ -436,8 +436,8 @@ ${htmlContent}
             </div>
             <div className="text-xs text-muted-foreground border-t border-border pt-4">
               <p className="font-semibold mb-1">Version 1.0.0</p>
-              <p className="mb-1">Inspired by dillinger.io and TypeScript playground.</p>
-              <p>&copy; 2026. Built with React, Vite, and Tailwind CSS.</p>
+              <p className="mb-1">Inspired by dillinger.io and TypeScript playground</p>
+              <p>&copy; 2026 Paul Chiu</p>
             </div>
           </div>
         </DialogContent>

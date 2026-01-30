@@ -1,15 +1,24 @@
-import * as React from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
+import { cn } from '@/utils/classnames'
 
 interface SplashScreenProps {
   onComplete: () => void
   isLoading: boolean
 }
 
-export function SplashScreen({ onComplete, isLoading }: SplashScreenProps) {
-  const [isVisible, setIsVisible] = React.useState(true)
-  const [isFading, setIsFading] = React.useState(false)
+/**
+ * Splash screen component that displays a hero image and transitions to the main app.
+ *
+ * @param props - The component props.
+ * @param props.onComplete - Callback function triggered when the splash animation completes.
+ * @param props.isLoading - Boolean indicating if the application is still loading resources.
+ * @returns The rendered splash screen or null if not visible.
+ */
+export function SplashScreen({ onComplete, isLoading }: SplashScreenProps): ReactElement | null {
+  const [isVisible, setIsVisible] = useState(true)
+  const [isFading, setIsFading] = useState(false)
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Start fade out when loading is complete
     if (!isLoading && isVisible) {
       const fadeTimer = setTimeout(() => {
@@ -35,41 +44,59 @@ export function SplashScreen({ onComplete, isLoading }: SplashScreenProps) {
   return (
     <div
       className={cn(
-        'fixed inset-0 z-50 flex items-center justify-center bg-linear-to-br from-background via-background to-primary/5 transition-opacity duration-500',
+        'fixed inset-0 z-50 flex items-center justify-center bg-background transition-opacity duration-500',
         isFading ? 'opacity-0' : 'opacity-100'
       )}
     >
-      <div className="text-center">
-        <div className="mb-4 flex justify-center">
+      <div className="flex w-full max-w-4xl gap-12 px-8">
+        {/* Hero Image Section */}
+        <div className="hidden flex-1 items-center justify-center lg:flex">
           <div className="relative">
-            <div className="absolute inset-0 animate-pulse rounded-full bg-primary/20 blur-3xl" />
-            <div className="relative h-20 w-20 rounded-full bg-linear-to-br from-primary to-primary/50 flex items-center justify-center">
-              <span className="text-xl font-bold text-primary-foreground">Poe</span>
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent rounded-2xl blur-3xl" />
+            <img
+              src="/splash-hero.png"
+              alt="Poe - Markdown Editor"
+              width={280}
+              height={280}
+              className="relative h-auto w-72 max-w-full"
+            />
           </div>
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-          Poe Markdown Editor
-        </h1>
-        <div className="mt-6 flex justify-center gap-1">
-          <div
-            className="h-2 w-2 animate-bounce rounded-full bg-primary"
-            style={{ animationDelay: '0ms' }}
-          />
-          <div
-            className="h-2 w-2 animate-bounce rounded-full bg-primary"
-            style={{ animationDelay: '150ms' }}
-          />
-          <div
-            className="h-2 w-2 animate-bounce rounded-full bg-primary"
-            style={{ animationDelay: '300ms' }}
-          />
+
+        {/* Content Section */}
+        <div className="flex flex-1 flex-col justify-center">
+          <h1 className="text-5xl font-bold tracking-tight text-foreground">
+            Poe
+          </h1>
+          <p className="mt-2 text-2xl font-light text-muted-foreground">
+            Markdown Editor
+          </p>
+
+          <div className="mt-8 space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Version 1.0.0
+            </p>
+            <p className="text-sm text-muted-foreground">
+              A distraction-free writing experience
+            </p>
+          </div>
+
+          {/* Loading Indicator */}
+          <div className="mt-10 flex items-center gap-3">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+              <div className="h-full w-1/3 animate-pulse bg-primary" />
+            </div>
+            <span className="text-xs text-muted-foreground">Loading</span>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-8 border-t border-border pt-6">
+            <p className="text-xs text-muted-foreground">
+              &copy; 2026 Paul Chiu. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     </div>
   )
-}
-
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(' ')
 }
