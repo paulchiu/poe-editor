@@ -1,11 +1,6 @@
-import { defineConfig } from 'vite'
+import { defineConfig, defaultExclude } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import * as path from 'path'
-declare module 'vite' {
-  interface UserConfig {
-    test?: unknown
-  }
-}
 
 export default defineConfig({
   plugins: [react()],
@@ -14,6 +9,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     include: ['**/*.{test,spec}.{ts,tsx}'],
+    exclude: [...defaultExclude, 'tests/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

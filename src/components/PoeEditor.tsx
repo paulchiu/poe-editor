@@ -1,4 +1,4 @@
-import * as React from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect, type ReactElement } from 'react'
 import { useTheme } from 'next-themes'
 import { useIsMobile } from '@/hooks/useMobile'
 import { useUrlState } from '@/hooks/useUrlState'
@@ -29,9 +29,6 @@ import {
   formatBulletList,
   formatNumberedList,
 } from '@/utils/formatting'
-import type { ReactElement } from 'react'
-
-
 
 const DEFAULT_CONTENT = `# Welcome to Poe
 
@@ -59,20 +56,20 @@ interface PoeEditorProps {
 export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const { theme, setTheme } = useTheme()
   const { toast } = useToast()
-  const [mounted, setMounted] = React.useState(false)
-  const [showAbout, setShowAbout] = React.useState(false)
-  const [showShortcuts, setShowShortcuts] = React.useState(false)
-  const [showSplash, setShowSplash] = React.useState(false)
-  const [, setCursorPosition] = React.useState({
+  const [mounted, setMounted] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
+  const [showSplash, setShowSplash] = useState(false)
+  const [, setCursorPosition] = useState({
     lineNumber: 1,
     column: 1,
   })
 
   const isMobile = useIsMobile()
-  const editorRef = React.useRef<EditorPaneHandle>(null)
+  const editorRef = useRef<EditorPaneHandle>(null)
 
   // Stable error handler to prevent useUrlState effect from re-running
-  const handleError = React.useCallback(
+  const handleError = useCallback(
     (error: Error) => {
       toast({
         variant: 'destructive',
@@ -83,7 +80,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     [toast]
   )
 
-  const handleLengthWarning = React.useCallback(
+  const handleLengthWarning = useCallback(
     (length: number, limit: number) => {
       const percentage = Math.round((length / limit) * 100)
       toast({
@@ -111,50 +108,47 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   })
 
   // Rendered HTML for preview
-  const htmlContent = React.useMemo(() => renderMarkdown(content), [content])
+  const htmlContent = useMemo(() => renderMarkdown(content), [content])
 
   // Formatting functions
-  const handleFormatBold = React.useCallback((): void => {
+  const handleFormatBold = useCallback((): void => {
     formatBold(editorRef.current)
   }, [])
 
-  const handleFormatItalic = React.useCallback((): void => {
+  const handleFormatItalic = useCallback((): void => {
     formatItalic(editorRef.current)
   }, [])
 
-  const handleFormatLink = React.useCallback((): void => {
+  const handleFormatLink = useCallback((): void => {
     formatLink(editorRef.current)
   }, [])
 
-  const handleFormatCode = React.useCallback((): void => {
+  const handleFormatCode = useCallback((): void => {
     formatCode(editorRef.current)
   }, [])
 
-  const handleFormatCodeBlock = React.useCallback((): void => {
+  const handleFormatCodeBlock = useCallback((): void => {
     formatCodeBlock(editorRef.current)
   }, [])
 
-  const handleFormatHeading = React.useCallback(
-    (level: number): void => {
-      formatHeading(editorRef.current, level)
-    },
-    []
-  )
+  const handleFormatHeading = useCallback((level: number): void => {
+    formatHeading(editorRef.current, level)
+  }, [])
 
-  const handleFormatQuote = React.useCallback((): void => {
+  const handleFormatQuote = useCallback((): void => {
     formatQuote(editorRef.current)
   }, [])
 
-  const handleFormatBulletList = React.useCallback((): void => {
+  const handleFormatBulletList = useCallback((): void => {
     formatBulletList(editorRef.current)
   }, [])
 
-  const handleFormatNumberedList = React.useCallback((): void => {
+  const handleFormatNumberedList = useCallback((): void => {
     formatNumberedList(editorRef.current)
   }, [])
 
   // Document management functions
-  const handleNew = React.useCallback((): void => {
+  const handleNew = useCallback((): void => {
     if (confirm('Create a new document? Current content will be lost if not saved.')) {
       setContent('')
       setDocumentName('untitled.md')
@@ -162,7 +156,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     }
   }, [setContent, setDocumentName, toast])
 
-  const handleRename = React.useCallback((): void => {
+  const handleRename = useCallback((): void => {
     const newName = prompt('Enter new document name:', documentName)
     if (newName && newName.trim()) {
       setDocumentName(newName.trim())
@@ -170,12 +164,12 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     }
   }, [documentName, setDocumentName, toast])
 
-  const handleDownloadMarkdown = React.useCallback((): void => {
+  const handleDownloadMarkdown = useCallback((): void => {
     downloadFile(documentName, content, 'text/markdown')
     toast({ description: 'Downloaded as Markdown' })
   }, [documentName, content, toast])
 
-  const handleDownloadHTML = React.useCallback((): void => {
+  const handleDownloadHTML = useCallback((): void => {
     const htmlDoc = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -197,7 +191,7 @@ ${htmlContent}
     toast({ description: 'Downloaded as HTML' })
   }, [documentName, htmlContent, toast])
 
-  const handleCopyLink = React.useCallback(async (): Promise<void> => {
+  const handleCopyLink = useCallback(async (): Promise<void> => {
     try {
       await navigator.clipboard.writeText(window.location.href)
       toast({
@@ -211,14 +205,14 @@ ${htmlContent}
     }
   }, [toast])
 
-  const handleClear = React.useCallback((): void => {
+  const handleClear = useCallback((): void => {
     if (confirm('Clear all content? This cannot be undone.')) {
       setContent('')
       toast({ description: 'Content cleared' })
     }
   }, [setContent, toast])
 
-  const handleSave = React.useCallback((): void => {
+  const handleSave = useCallback((): void => {
     // Save is automatic via URL state, just show confirmation
     toast({ description: 'Document auto-saved to URL!' })
   }, [toast])
@@ -235,7 +229,8 @@ ${htmlContent}
   })
 
   // Effects
-  React.useEffect(() => {
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setMounted(true)
 
     // Notify parent that the editor is ready
@@ -245,7 +240,7 @@ ${htmlContent}
     })
   }, [onReady])
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleEscape = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         setShowAbout(false)
@@ -287,7 +282,9 @@ ${htmlContent}
         vimModeEnabled={vimModeEnabled}
       />
 
-      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} isLoading={false} debug={true} />}
+      {showSplash && (
+        <SplashScreen onComplete={() => setShowSplash(false)} isLoading={false} debug={true} />
+      )}
 
       <div className="h-screen flex flex-col overflow-hidden bg-background">
         <EditorToolbar

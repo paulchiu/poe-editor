@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Editor Integration', () => {
   const isMac = process.platform === 'darwin';
   const modifier = isMac ? 'Meta' : 'Control';
-  const selectLine = isMac ? 'Shift+Meta+ArrowLeft' : 'Shift+Home';
+
 
   test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
 

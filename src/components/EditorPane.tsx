@@ -42,6 +42,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           const scrollable = domNode.querySelector('.monaco-scrollable-element') as HTMLElement
           if (scrollable) {
             // We need to use a type assertion or just set current directly if it's a mutable ref object
+            // eslint-disable-next-line
             ;(scrollRef as React.MutableRefObject<HTMLElement | null>).current = scrollable
             
             // Override scroll properties to use Monaco's internal state

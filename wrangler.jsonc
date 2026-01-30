@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "poe-editor",
+  "compatibility_date": "2025-01-30",
+  "assets": {
+    "not_found_handling": "single-page-application",
+  },
+  "routes": [
+    {
+      "pattern": "poemd.dev",
+      "custom_domain": true,
+    },
+  ],
+}
