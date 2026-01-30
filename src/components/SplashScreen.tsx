@@ -18,6 +18,11 @@ interface SplashScreenProps {
 export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScreenProps): ReactElement | null {
   const [isVisible, setIsVisible] = useState(true)
   const [isFading, setIsFading] = useState(false)
+  const [showLoading, setShowLoading] = useState(isLoading)
+
+  useEffect(() => {
+    setShowLoading(isLoading)
+  }, [isLoading])
 
   useEffect(() => {
     // Start fade out when loading is complete
@@ -47,6 +52,8 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
             setIsVisible(false)
             onComplete()
           }, 500)
+        } else if (e.key === 'l' || e.key === 'L') {
+          setShowLoading((prev) => !prev)
         }
       }
       window.addEventListener('keydown', handleEscape)
@@ -65,7 +72,7 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
         isFading ? 'opacity-0' : 'opacity-100'
       )}
     >
-      <div className="flex w-full max-w-4xl gap-12 px-8">
+      <div className="flex w-full max-w-3xl gap-8 px-8">
         {/* Hero Image Section */}
         <div className="hidden flex-1 items-center justify-center lg:flex">
           <div className="relative">
@@ -101,20 +108,20 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
           {/* Loading Indicator */}
           <div className="mt-10 flex items-center gap-3">
             <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
-              {isLoading && <div className="h-full w-1/3 animate-pulse bg-primary" />}
-              {!isLoading && debug && <div className="h-full w-full bg-primary" />}
+              {showLoading && <div className="h-full w-full animate-progress-indeterminate bg-primary" />}
+              {!showLoading && debug && <div className="h-full w-full bg-primary" />}
             </div>
-            <span className="text-xs text-muted-foreground">{isLoading ? 'Loading' : 'Ready'}</span>
+            <span className="text-xs text-muted-foreground">{showLoading ? 'Loading' : 'Ready'}</span>
           </div>
 
           {/* Footer */}
-          <div className="mt-8 border-t border-border pt-6">
+          <div className="mt-5">
             <p className="text-xs text-muted-foreground">
               &copy; 2026 Paul Chiu. All rights reserved.
             </p>
             {debug && (
               <p className="mt-2 text-xs font-medium text-yellow-500">
-                Debug Mode: Press Esc to exit
+                Debug Mode: Press Esc to exit, 'L' to toggle loading
               </p>
             )}
           </div>

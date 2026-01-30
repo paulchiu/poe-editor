@@ -59,6 +59,7 @@ import {
   Keyboard,
   CodeSquare,
   ListOrdered,
+  Sparkles,
 } from 'lucide-react'
 import { useToast } from '@/hooks/useToast'
 import { cn } from '@/utils/classnames'
@@ -674,16 +675,19 @@ ${htmlContent}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setShowAbout(true)}>
-                  <Info className="size-4" />
-                  About Poe
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setShowShortcuts(true)}>
                   <Keyboard className="size-4" />
                   Keyboard Shortcuts
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setShowSplash(true)}>Show Splash</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setShowAbout(true)}>
+                  <Info className="size-4" />
+                  About Poe
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowSplash(true)}>
+                  <Sparkles className="size-4" />
+                  Show Splash
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
