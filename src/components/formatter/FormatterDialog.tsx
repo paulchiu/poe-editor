@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useToast } from '@/hooks/useToast'
 import {
   Dialog,
@@ -31,11 +31,12 @@ interface FormatterDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (pipeline: TransformationPipeline) => void
+  editPipeline?: TransformationPipeline | null
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9)
 
-export function FormatterDialog({ open, onOpenChange, onSave }: FormatterDialogProps) {
+export function FormatterDialog({ open, onOpenChange, onSave, editPipeline }: FormatterDialogProps) {
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState('pipeline')
   const [pipelineName, setPipelineName] = useState('')
@@ -43,6 +44,23 @@ export function FormatterDialog({ open, onOpenChange, onSave }: FormatterDialogP
   
   // Pipeline state
   const [steps, setSteps] = useState<PipelineStep[]>([])
+
+  // Load edit state
+  useEffect(() => {
+    if (open) {
+      if (editPipeline) {
+        setPipelineName(editPipeline.name)
+        setPipelineIcon(editPipeline.icon)
+        setSteps(editPipeline.steps)
+      } else {
+        // Reset to default for new pipeline
+        setPipelineName('')
+        setPipelineIcon('🪄')
+        setSteps([])
+      }
+      setActiveTab('pipeline')
+    }
+  }, [open, editPipeline])
 
   const handleAddOperation = useCallback((operation: FormatterOperation) => {
     const newStep: PipelineStep = {
@@ -95,7 +113,7 @@ export function FormatterDialog({ open, onOpenChange, onSave }: FormatterDialogP
     }
     
     const newPipeline: TransformationPipeline = {
-      id: generateId(),
+      id: editPipeline?.id || generateId(),
       name: pipelineName,
       icon: pipelineIcon || '🪄',
       steps,
@@ -127,7 +145,7 @@ export function FormatterDialog({ open, onOpenChange, onSave }: FormatterDialogP
         <DialogHeader className="px-4 py-3 border-b shrink-0 flex flex-row items-center justify-between space-y-0 pr-12">
           <div className="flex items-center gap-2">
             <Wand2 className="w-5 h-5 text-primary" />
-            <DialogTitle>Formatter Builder</DialogTitle>
+            <DialogTitle>{editPipeline ? 'Edit Formatter' : 'Formatter Builder'}</DialogTitle>
           </div>
           <DialogDescription className="sr-only">
             Create and edit custom text transformation pipelines

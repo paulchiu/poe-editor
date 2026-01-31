@@ -12,6 +12,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   Bold,
   Italic,
   Link,
@@ -52,6 +68,7 @@ interface ToolbarButtonProps {
   label: string
   onClick?: () => void
   active?: boolean
+  allowDrag?: boolean
 }
 
 /**
@@ -64,6 +81,7 @@ function ToolbarButton({
   label,
   onClick,
   active = false,
+  allowDrag = false,
 }: ToolbarButtonProps): ReactElement {
   return (
     <Tooltip>
@@ -72,7 +90,7 @@ function ToolbarButton({
           variant="ghost"
           size="icon-sm"
           onClick={onClick}
-          onMouseDown={(e) => e.preventDefault()}
+          onMouseDown={allowDrag ? undefined : (e) => e.preventDefault()}
           className={cn(
             'text-muted-foreground hover:text-foreground',
             active && 'bg-accent text-foreground'
@@ -118,6 +136,9 @@ interface EditorToolbarProps {
   onOpenFormatter?: () => void
   onApplyPipeline?: (pipeline: TransformationPipeline) => void
   onOpenImportExport?: () => void
+  onEditPipeline?: (pipeline: TransformationPipeline) => void
+  onDeletePipeline?: (id: string) => void
+  onReorderPipelines?: (pipelines: TransformationPipeline[]) => void
 }
 
 import { useState, useRef } from 'react'
@@ -158,8 +179,13 @@ export function EditorToolbar({
   onOpenFormatter,
   onApplyPipeline,
   onOpenImportExport,
+  onEditPipeline,
+  onDeletePipeline,
+  onReorderPipelines,
 }: EditorToolbarProps): ReactElement {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
+  const [pipelineToDelete, setPipelineToDelete] = useState<TransformationPipeline | null>(null)
+  const [draggedPipelineId, setDraggedPipelineId] = useState<string | null>(null)
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleClearClick = (e: React.MouseEvent) => {
@@ -175,6 +201,47 @@ export function EditorToolbar({
       setIsConfirmingClear(false)
       onClear()
     }
+  }
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move'
+      // Chrome requires setData to be called for drag to work
+      e.dataTransfer.setData?.('text/plain', id)
+    }
+    // Chrome bug: DOM manipulation during dragStart cancels the drag
+    // Delay state update to avoid this
+    setTimeout(() => {
+      setDraggedPipelineId(id)
+    }, 10)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault()
+    if (!draggedPipelineId || !pipelines || draggedPipelineId === targetId) {
+      setDraggedPipelineId(null)
+      return
+    }
+
+    const draggedIndex = pipelines.findIndex((p) => p.id === draggedPipelineId)
+    const targetIndex = pipelines.findIndex((p) => p.id === targetId)
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedPipelineId(null)
+      return
+    }
+
+    const newPipelines = [...pipelines]
+    const [dragged] = newPipelines.splice(draggedIndex, 1)
+    newPipelines.splice(targetIndex, 0, dragged)
+
+    onReorderPipelines?.(newPipelines)
+    setDraggedPipelineId(null)
   }
 
   return (
@@ -290,23 +357,88 @@ export function EditorToolbar({
         {pipelines && pipelines.length > 0 && (
           <>
             <div className="w-px h-5 bg-border mx-1" />
-            {pipelines.map(pipeline => {
-               const PipelineIcon = ICON_MAP[pipeline.icon]
-               return (
-                 <ToolbarButton 
-                    key={pipeline.id} 
-                    icon={() => PipelineIcon ? (
-                      <PipelineIcon className="size-4" />
-                    ) : (
-                       <span className="text-sm px-0.5" role="img" aria-label={pipeline.name}>
-                         {pipeline.icon}
-                       </span>
+            <div className="flex items-center gap-1">
+              {pipelines.map((pipeline) => {
+                const PipelineIcon = ICON_MAP[pipeline.icon]
+                return (
+                  <div
+                    key={pipeline.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, pipeline.id)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, pipeline.id)}
+                    onDragEnd={() => setDraggedPipelineId(null)}
+                    className={cn(
+                      'transition-opacity flex items-center cursor-grab',
+                      draggedPipelineId === pipeline.id && 'opacity-50 pointer-events-none',
+                      draggedPipelineId && draggedPipelineId !== pipeline.id && 'cursor-pointer'
                     )}
-                    label={pipeline.name}
-                    onClick={() => onApplyPipeline?.(pipeline)}
-                 />
-               )
-            })}
+                  >
+                    <ContextMenu>
+                      <ContextMenuTrigger asChild>
+                        <div>
+                          <ToolbarButton
+                            icon={() =>
+                              PipelineIcon ? (
+                                <PipelineIcon className="size-4" />
+                              ) : (
+                                <span className="text-sm px-0.5" role="img" aria-label={pipeline.name}>
+                                  {pipeline.icon}
+                                </span>
+                              )
+                            }
+                            label={pipeline.name}
+                            onClick={() => onApplyPipeline?.(pipeline)}
+                            allowDrag
+                          />
+                        </div>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent>
+                        <ContextMenuItem onClick={() => onEditPipeline?.(pipeline)}>
+                          <Pencil className="size-4" />
+                          Edit Formatter
+                        </ContextMenuItem>
+                        <ContextMenuItem
+                          variant="destructive"
+                          onClick={() => setPipelineToDelete(pipeline)}
+                        >
+                          <Trash2 className="size-4" />
+                          Delete Formatter
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
+                  </div>
+                )
+              })}
+            </div>
+            
+            <AlertDialog 
+              open={!!pipelineToDelete} 
+              onOpenChange={(open) => !open && setPipelineToDelete(null)}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Formatter?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete "{pipelineToDelete?.name}"? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={() => {
+                      if (pipelineToDelete) {
+                        onDeletePipeline?.(pipelineToDelete.id)
+                        setPipelineToDelete(null)
+                      }
+                    }}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
       </div>

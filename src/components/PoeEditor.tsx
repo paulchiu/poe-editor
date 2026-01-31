@@ -69,6 +69,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showSplash, setShowSplash] = useState(false)
   const [showFormatter, setShowFormatter] = useState(false)
   const [showImportExport, setShowImportExport] = useState(false)
+  const [editingPipeline, setEditingPipeline] = useState<TransformationPipeline | null>(null)
   const [, setCursorPosition] = useState({
     lineNumber: 1,
     column: 1,
@@ -112,7 +113,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
   
   // Formatters management
-  const { pipelines, addPipeline, replacePipelines } = useFormatters()
+  const { pipelines, addPipeline, updatePipeline, removePipeline, replacePipelines } = useFormatters()
 
   // Scroll synchronization
   const { sourceRef, targetRef } = useSyncScroll<HTMLDivElement>({
@@ -175,9 +176,29 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   }, [toast])
 
   const handleSavePipeline = useCallback((pipeline: TransformationPipeline) => {
-    addPipeline(pipeline)
-    toast({ description: 'Pipeline saved!' })
-  }, [addPipeline, toast])
+    if (editingPipeline) {
+      updatePipeline(pipeline)
+      toast({ description: 'Pipeline updated!' })
+      setEditingPipeline(null)
+    } else {
+      addPipeline(pipeline)
+      toast({ description: 'Pipeline saved!' })
+    }
+  }, [addPipeline, updatePipeline, editingPipeline, toast])
+
+  const handleEditPipeline = useCallback((pipeline: TransformationPipeline) => {
+    setEditingPipeline(pipeline)
+    setShowFormatter(true)
+  }, [])
+
+  const handleDeletePipeline = useCallback((id: string) => {
+    removePipeline(id)
+    toast({ description: 'Pipeline deleted' })
+  }, [removePipeline, toast])
+
+  const handleReorderPipelines = useCallback((reordered: TransformationPipeline[]) => {
+    replacePipelines(reordered)
+  }, [replacePipelines])
 
   // Document management functions
   const handleNew = useCallback((): void => {
@@ -316,12 +337,16 @@ ${htmlContent}
       
       <FormatterDialog
         open={showFormatter}
-        onOpenChange={setShowFormatter}
+        onOpenChange={(open) => {
+          setShowFormatter(open)
+          if (!open) setEditingPipeline(null)
+        }}
         onSave={handleSavePipeline}
+        editPipeline={editingPipeline}
       />
 
       <ToolbarImportExportDialog
-        key={String(showImportExport)}
+        key={`import-export-${showImportExport}`}
         open={showImportExport}
         onOpenChange={setShowImportExport}
         pipelines={pipelines}
@@ -335,7 +360,7 @@ ${htmlContent}
       />
 
       <RenameDialog
-        key={String(showRename)}
+        key={`rename-${showRename}`}
         open={showRename}
         onOpenChange={setShowRename}
         currentName={documentName}
@@ -378,6 +403,9 @@ ${htmlContent}
           onOpenFormatter={() => setShowFormatter(true)}
           onApplyPipeline={handleApplyPipeline}
           onOpenImportExport={() => setShowImportExport(true)}
+          onEditPipeline={handleEditPipeline}
+          onDeletePipeline={handleDeletePipeline}
+          onReorderPipelines={handleReorderPipelines}
         />
 
         <main className="flex-1 overflow-hidden">
