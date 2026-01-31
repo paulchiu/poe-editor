@@ -70,6 +70,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showFormatter, setShowFormatter] = useState(false)
   const [showImportExport, setShowImportExport] = useState(false)
   const [editingPipeline, setEditingPipeline] = useState<TransformationPipeline | null>(null)
+  const [selectedText, setSelectedText] = useState<string | undefined>(undefined)
   const [, setCursorPosition] = useState({
     lineNumber: 1,
     column: 1,
@@ -352,10 +353,15 @@ ${htmlContent}
         open={showFormatter}
         onOpenChange={(open) => {
           setShowFormatter(open)
-          if (!open) setEditingPipeline(null)
+          if (!open) {
+            setEditingPipeline(null)
+            setSelectedText(undefined)
+          }
         }}
         onSave={handleSavePipeline}
+        onApply={handleApplyPipeline}
         editPipeline={editingPipeline}
+        initialPreviewText={selectedText}
       />
 
       <ToolbarImportExportDialog
@@ -412,7 +418,11 @@ ${htmlContent}
           setShowAbout={setShowAbout}
           setShowSplash={setShowSplash}
           pipelines={pipelines}
-          onOpenFormatter={() => setShowFormatter(true)}
+          onOpenFormatter={() => {
+            const selection = editorRef.current?.getSelection()
+            setSelectedText(selection || undefined)
+            setShowFormatter(true)
+          }}
           onApplyPipeline={handleApplyPipeline}
           onOpenImportExport={() => setShowImportExport(true)}
           onEditPipeline={handleEditPipeline}

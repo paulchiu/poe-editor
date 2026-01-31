@@ -11,7 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Wand2, Save } from 'lucide-react'
+import { Wand2, Save, ChevronDown } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { IconPicker } from './IconPicker'
 import { Toolbox } from './Toolbox'
 import { PipelineWorkbench } from './PipelineWorkbench'
@@ -22,7 +28,9 @@ interface FormatterDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (pipeline: TransformationPipeline) => void
+  onApply?: (pipeline: TransformationPipeline) => void
   editPipeline?: TransformationPipeline | null
+  initialPreviewText?: string
 }
 
 const generateId = (): string => Math.random().toString(36).substring(2, 9)
@@ -36,7 +44,9 @@ export function FormatterDialog({
   open,
   onOpenChange,
   onSave,
+  onApply,
   editPipeline,
+  initialPreviewText,
 }: FormatterDialogProps): ReactElement {
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState('pipeline')
@@ -141,6 +151,54 @@ export function FormatterDialog({
     setPipelineIcon('🪄')
   }
 
+  const handleApply = () => {
+    if (steps.length === 0) {
+      toast({
+        description: 'Add at least one step to the pipeline before applying.',
+      })
+      return
+    }
+
+    if (onApply) {
+      onApply(currentPipeline)
+      onOpenChange(false)
+    }
+  }
+
+  const handleSaveAndApply = () => {
+    if (!pipelineName.trim()) {
+      toast({
+        description: 'Please enter a name for your pipeline.',
+      })
+      return
+    }
+
+    if (steps.length === 0) {
+      toast({
+        description: 'Add at least one step to the pipeline before saving and applying.',
+      })
+      return
+    }
+
+    const newPipeline: TransformationPipeline = {
+      id: editPipeline?.id || generateId(),
+      name: pipelineName,
+      icon: pipelineIcon || '🪄',
+      steps,
+    }
+
+    onSave(newPipeline)
+    if (onApply) {
+      onApply(newPipeline)
+    }
+    onOpenChange(false)
+
+    // Reset state
+    setSteps([])
+    setPipelineName('')
+    setPipelineIcon('🪄')
+  }
+
   // Construct temporary pipeline for preview
   const currentPipeline: TransformationPipeline = {
     id: 'preview',
@@ -173,10 +231,35 @@ export function FormatterDialog({
                 placeholder="Pipeline Name (e.g. Clean & Sort)"
               />
             </div>
-            <Button variant="ghost" onClick={handleSave} className="h-10">
-              <Save className="w-4 h-4 mr-2" />
-              Save
-            </Button>
+            {initialPreviewText ? (
+              <div className="flex items-center -space-x-px">
+                <Button variant="ghost" onClick={handleApply} className="h-10 rounded-r-none border-r">
+                  Apply
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-10 px-2 rounded-l-none">
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleSave}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Only
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSaveAndApply}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save & Apply
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            ) : (
+              <Button variant="ghost" onClick={handleSave} className="h-10">
+                <Save className="w-4 h-4 mr-2" />
+                Save
+              </Button>
+            )}
           </div>
         </DialogHeader>
 
@@ -226,7 +309,7 @@ export function FormatterDialog({
               value="preview"
               className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
             >
-              <LivePreview pipeline={currentPipeline} />
+              <LivePreview pipeline={currentPipeline} initialText={initialPreviewText} />
             </TabsContent>
           </Tabs>
         </div>
@@ -259,7 +342,7 @@ export function FormatterDialog({
 
             <ResizablePanel defaultSize={30} minSize={20}>
               <div className="h-full overflow-y-auto">
-                <LivePreview pipeline={currentPipeline} />
+                <LivePreview pipeline={currentPipeline} initialText={initialPreviewText} />
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>

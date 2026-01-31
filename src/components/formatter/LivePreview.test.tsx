@@ -51,6 +51,24 @@ describe('LivePreview', () => {
     expect(textarea.value).toContain('Hello World')
   })
 
+  it('should display initial text when provided via prop', () => {
+    const customText = 'Custom initial text'
+    render(<LivePreview pipeline={emptyPipeline} initialText={customText} />)
+
+    const textarea = screen.getByPlaceholderText(
+      'Paste text here to test...'
+    ) as HTMLTextAreaElement
+    expect(textarea.value).toBe(customText)
+  })
+
+  it('should update input text when initialText prop changes', () => {
+    const { rerender } = render(<LivePreview pipeline={emptyPipeline} initialText="First text" />)
+    expect(screen.getByPlaceholderText('Paste text here to test...')).toHaveValue('First text')
+
+    rerender(<LivePreview pipeline={emptyPipeline} initialText="Second text" />)
+    expect(screen.getByPlaceholderText('Paste text here to test...')).toHaveValue('Second text')
+  })
+
   it('should display character count for input', () => {
     render(<LivePreview pipeline={emptyPipeline} />)
 

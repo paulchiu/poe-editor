@@ -1,10 +1,11 @@
-import { useState, useMemo, type ReactElement } from 'react'
+import { useState, useMemo, useEffect, type ReactElement } from 'react'
 import { applyPipeline } from '@/utils/formatter-engine'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { TransformationPipeline } from './types'
 
 interface LivePreviewProps {
   pipeline: TransformationPipeline
+  initialText?: string
 }
 
 const SAMPLE_TEXT = `Hello World
@@ -18,8 +19,15 @@ duplicate line`
  * @param props - Component props
  * @returns Live preview component
  */
-export function LivePreview({ pipeline }: LivePreviewProps): ReactElement {
-  const [inputText, setInputText] = useState(SAMPLE_TEXT)
+export function LivePreview({ pipeline, initialText }: LivePreviewProps): ReactElement {
+  const [inputText, setInputText] = useState(initialText || SAMPLE_TEXT)
+
+  // Update input text if initialText prop changes (e.g. when opening dialog with different selection)
+  useEffect(() => {
+    if (initialText !== undefined) {
+      setInputText(initialText)
+    }
+  }, [initialText])
 
   const outputText = useMemo(() => {
     return applyPipeline(inputText, pipeline)
