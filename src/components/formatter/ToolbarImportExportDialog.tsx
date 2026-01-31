@@ -102,7 +102,7 @@ export function ToolbarImportExportDialog({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Download className="w-5 h-5 text-primary" />
-            <DialogTitle>Import / Export Toolbar</DialogTitle>
+            <DialogTitle>Import / Export Transformers</DialogTitle>
           </div>
           <DialogDescription>
             Export your current pipelines or paste a new configuration to update them.
@@ -113,7 +113,7 @@ export function ToolbarImportExportDialog({
           <div className="flex-1 flex flex-col gap-2 overflow-hidden">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Configuration (JSON)
+                Transformer Configuration (JSON)
               </label>
               <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8 gap-1.5">
                 <Copy className="w-3.5 h-3.5" />
@@ -151,7 +151,7 @@ export function ToolbarImportExportDialog({
             ) : (
               <Trash2 className="w-4 h-4" />
             )}
-            {isConfirmingClear ? 'Are you sure?' : 'Clear Toolbar'}
+            {isConfirmingClear ? 'Are you sure?' : 'Clear Configuration'}
           </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close

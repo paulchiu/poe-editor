@@ -57,6 +57,7 @@ import {
   Sparkles,
   AlertTriangle,
   Wand2,
+  ArrowRightLeft,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/formatter/constants'
 import { cn } from '@/utils/classnames'
@@ -505,8 +506,8 @@ export function EditorToolbar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={onOpenImportExport}>
-              <Settings className="size-4" />
-              Import/Export Toolbar
+              <ArrowRightLeft className="size-4" />
+              Import/Export Transformers
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowShortcuts(true)}>
               <Keyboard className="size-4" />
@@ -521,7 +522,6 @@ export function EditorToolbar({
               <Sparkles className="size-4" />
               Show Splash
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
