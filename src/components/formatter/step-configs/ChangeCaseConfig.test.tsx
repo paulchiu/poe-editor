@@ -55,58 +55,6 @@ describe('ChangeCaseConfig', () => {
     })
   })
 
-  it('should render "Apply to Each Line" checkbox', () => {
-    render(<ChangeCaseConfig config={{ mode: 'upper' }} onChange={mockOnChange} />)
-
-    expect(screen.getByText('Apply to Each Line')).toBeInTheDocument()
-  })
-
-  it('should check "Apply to Each Line" when lines is true', () => {
-    render(<ChangeCaseConfig config={{ mode: 'upper', lines: true }} onChange={mockOnChange} />)
-
-    const checkbox = screen.getByRole('checkbox')
-    expect(checkbox).toBeChecked()
-  })
-
-  it('should uncheck "Apply to Each Line" when lines is false', () => {
-    render(<ChangeCaseConfig config={{ mode: 'upper', lines: false }} onChange={mockOnChange} />)
-
-    const checkbox = screen.getByRole('checkbox')
-    expect(checkbox).not.toBeChecked()
-  })
-
-  it('should default "Apply to Each Line" to checked when lines is undefined', () => {
-    render(<ChangeCaseConfig config={{ mode: 'upper' }} onChange={mockOnChange} />)
-
-    const checkbox = screen.getByRole('checkbox')
-    expect(checkbox).toBeChecked()
-  })
-
-  it('should call onChange when "Apply to Each Line" is toggled', async () => {
-    const user = userEvent.setup()
-    render(<ChangeCaseConfig config={{ mode: 'upper', lines: true }} onChange={mockOnChange} />)
-
-    const checkbox = screen.getByRole('checkbox')
-    await user.click(checkbox)
-
-    expect(mockOnChange).toHaveBeenCalledWith({ mode: 'upper', lines: false })
-  })
-
-  it('should preserve other config values when toggling lines', async () => {
-    const user = userEvent.setup()
-    const config = { mode: 'upper', lines: true, customField: 'value' }
-    render(<ChangeCaseConfig config={config} onChange={mockOnChange} />)
-
-    const checkbox = screen.getByRole('checkbox')
-    await user.click(checkbox)
-
-    expect(mockOnChange).toHaveBeenCalledWith({
-      mode: 'upper',
-      lines: false,
-      customField: 'value',
-    })
-  })
-
   it('should handle all mode selections correctly', async () => {
     const user = userEvent.setup()
     const modes = [
@@ -139,17 +87,5 @@ describe('ChangeCaseConfig', () => {
     render(<ChangeCaseConfig config={{ mode: 'upper' }} onChange={mockOnChange} />)
 
     expect(screen.getByText('Case Mode')).toBeInTheDocument()
-  })
-
-  it('should toggle checkbox from unchecked to checked', async () => {
-    const user = userEvent.setup()
-    render(<ChangeCaseConfig config={{ mode: 'upper', lines: false }} onChange={mockOnChange} />)
-
-    const checkbox = screen.getByRole('checkbox')
-    expect(checkbox).not.toBeChecked()
-
-    await user.click(checkbox)
-
-    expect(mockOnChange).toHaveBeenCalledWith({ mode: 'upper', lines: true })
   })
 })

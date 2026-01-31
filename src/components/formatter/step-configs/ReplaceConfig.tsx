@@ -34,7 +34,7 @@ export function ReplaceConfig({ config, onChange }: ReplaceConfigProps): ReactEl
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-2">
         <label className="flex items-center gap-2 px-2 h-7 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors">
           <input
             type="checkbox"
@@ -53,16 +53,6 @@ export function ReplaceConfig({ config, onChange }: ReplaceConfigProps): ReactEl
             className="rounded border-input text-primary focus:ring-primary h-3 w-3"
           />
           Case Insensitive
-        </label>
-
-        <label className="flex items-center gap-2 px-2 h-7 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors">
-          <input
-            type="checkbox"
-            checked={!!config.lines}
-            onChange={(e) => onChange({ ...config, lines: e.target.checked })}
-            className="rounded border-input text-primary focus:ring-primary h-3 w-3"
-          />
-          Apply to Each Line
         </label>
       </div>
     </div>

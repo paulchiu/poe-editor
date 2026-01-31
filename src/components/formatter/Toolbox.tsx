@@ -4,7 +4,8 @@ import { OPERATIONS, ICON_MAP } from './constants'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import type { FormatterOperation } from './types'
+import { cn } from '@/utils/classnames'
+import type { FormatterOperation, OperationCategory } from './types'
 
 interface ToolboxProps {
   onAddStep: (operation: FormatterOperation) => void
@@ -17,10 +18,15 @@ interface ToolboxProps {
  */
 export function Toolbox({ onAddStep }: ToolboxProps): ReactElement {
   const [searchQuery, setSearchQuery] = useState('')
+  const [activeCategory, setActiveCategory] = useState<OperationCategory | 'All'>('All')
 
-  const filteredOperations = OPERATIONS.filter((op) =>
-    op.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const categories: (OperationCategory | 'All')[] = ['All', 'Lines', 'Text']
+
+  const filteredOperations = OPERATIONS.filter((op) => {
+    const matchesSearch = op.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesCategory = activeCategory === 'All' || op.category === activeCategory
+    return matchesSearch && matchesCategory
+  })
 
   return (
     <div className="flex flex-col h-full bg-muted/10">
@@ -36,6 +42,22 @@ export function Toolbox({ onAddStep }: ToolboxProps): ReactElement {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-8 bg-background"
           />
+        </div>
+        <div className="flex gap-1">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={cn(
+                'px-3 py-1 text-xs font-medium rounded-full transition-colors',
+                activeCategory === cat
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {cat.toLowerCase()}
+            </button>
+          ))}
         </div>
       </div>
 

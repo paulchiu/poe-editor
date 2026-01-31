@@ -39,16 +39,6 @@ export function ChangeCaseConfig({ config, onChange }: ChangeCaseConfigProps): R
             </button>
           ))}
         </div>
-
-        <label className="flex items-center gap-2 h-7 px-2 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors w-fit mt-1">
-          <input
-            type="checkbox"
-            checked={config.lines !== false} // Default to true if undefined
-            onChange={(e) => onChange({ ...config, lines: e.target.checked })}
-            className="rounded border-input text-primary focus:ring-primary h-3 w-3"
-          />
-          Apply to Each Line
-        </label>
       </div>
     </div>
   )

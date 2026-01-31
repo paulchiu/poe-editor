@@ -7,11 +7,14 @@ export type OperationId =
   | 'split-lines'
   | 'filter-lines'
 
+export type OperationCategory = 'Lines' | 'Text'
+
 export interface FormatterOperation {
   id: OperationId
   name: string
   description: string
   icon: string // Lucide icon name
+  category: OperationCategory
   defaultConfig: Record<string, unknown>
 }
 

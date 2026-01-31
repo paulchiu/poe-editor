@@ -1,5 +1,5 @@
 import { useState, type ReactElement } from 'react'
-import { GripVertical, Settings2, Trash2 } from 'lucide-react'
+import { GripVertical, Settings2, Trash2, WrapText, TextSelect } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { OPERATIONS, ICON_MAP } from './constants'
@@ -22,6 +22,9 @@ interface PipelineStepCardProps {
   onDragEnter: (index: number) => void
   onDragEnd: () => void
 }
+
+// Operations that support line-by-line mode
+const LINE_MODE_OPERATIONS = ['trim', 'change-case', 'replace']
 
 /**
  * Card component representing a single step in a transformation pipeline.
@@ -51,9 +54,15 @@ export function PipelineStepCard({
      Simpler check: these operations have no config in this app.
   */
   const hasConfig = !['unique'].includes(step.operationId)
+  const supportsLineMode = LINE_MODE_OPERATIONS.includes(step.operationId)
+  const isLineMode = step.config.lines !== false // Default to true
 
   const handleConfigChange = (newConfig: Record<string, unknown>) => {
     onUpdate(step.id, newConfig)
+  }
+
+  const toggleLineMode = () => {
+    onUpdate(step.id, { ...step.config, lines: !isLineMode })
   }
 
   const renderConfig = () => {
@@ -129,6 +138,17 @@ export function PipelineStepCard({
           </span>
 
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {supportsLineMode && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className={cn('h-7 w-7', isLineMode && 'bg-muted')}
+                onClick={toggleLineMode}
+                title={isLineMode ? 'Apply to Each Line (click for Whole Selection)' : 'Apply to Whole Selection (click for Each Line)'}
+              >
+                {isLineMode ? <WrapText className="h-3.5 w-3.5" /> : <TextSelect className="h-3.5 w-3.5" />}
+              </Button>
+            )}
             {hasConfig && (
               <Button
                 variant="ghost"
