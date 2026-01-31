@@ -5,6 +5,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
+import { Github } from 'lucide-react'
 import type { ReactElement } from 'react'
 
 interface AboutDialogProps {
@@ -34,31 +35,47 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps): ReactElem
               <li>Dark and light theme support</li>
               <li>Export to Markdown or HTML</li>
               <li>URL-based document persistence</li>
+              <li>Custom formatters</li>
+              <li>Toolbar import/export</li>
             </ul>
           </div>
           <div className="text-xs text-muted-foreground border-t border-border pt-4">
-            <p className="font-semibold mb-1">Version 1.0.0</p>
-            <p className="mb-1">
-              Inspired by{' '}
+            <p className="font-semibold mb-2">Version 1.0.0</p>
+            <div className="flex gap-4 items-start">
+              <div className="flex-1">
+                <p className="mb-1">
+                  Inspired by{' '}
+                  <a
+                    href="https://dillinger.io"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium hover:underline"
+                  >
+                    dillinger.io
+                  </a>{' '}
+                  and{' '}
+                  <a
+                    href="https://www.typescriptlang.org/play"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium hover:underline"
+                  >
+                    TypeScript playground
+                  </a>
+                </p>
+                <p>&copy; 2026 Paul Chiu</p>
+              </div>
               <a
-                href="https://dillinger.io"
+                href="https://github.com/paulchiu/poe-editor"
                 target="_blank"
                 rel="noreferrer"
-                className="font-medium hover:underline"
+                className="inline-flex items-center gap-1 font-medium hover:underline shrink-0"
+                aria-label="View source on GitHub"
               >
-                dillinger.io
-              </a>{' '}
-              and{' '}
-              <a
-                href="https://www.typescriptlang.org/play"
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium hover:underline"
-              >
-                TypeScript playground
+                <Github className="h-4 w-4" />
+                GitHub
               </a>
-            </p>
-            <p>&copy; 2026 Paul Chiu</p>
+            </div>
           </div>
         </div>
       </DialogContent>
