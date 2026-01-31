@@ -8,10 +8,10 @@ interface EncodeDecodeConfigProps {
 
 export function EncodeDecodeConfig({ config, onChange }: EncodeDecodeConfigProps): ReactElement {
   const mode = (config.mode as string) || 'url-encode'
-  
+
   // Parse format and operation from mode
-  const [format, operation] = mode.includes('-') 
-    ? mode.split('-') as [string, string]
+  const [format, operation] = mode.includes('-')
+    ? (mode.split('-') as [string, string])
     : ['url', 'encode']
 
   const formatOptions = [

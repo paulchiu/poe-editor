@@ -91,6 +91,7 @@ When an input field appears **next to** toggle button groups in a grid layout (e
 ```
 
 **Why 38px?** Toggle button groups have:
+
 - Container: `p-1` (8px total padding)
 - Buttons: `py-1.5` (12px total padding)
 - Border: 2px

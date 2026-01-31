@@ -8,10 +8,10 @@ interface EscapeConfigProps {
 
 export function EscapeConfig({ config, onChange }: EscapeConfigProps): ReactElement {
   const mode = (config.mode as string) || 'json-escape'
-  
+
   // Parse type and operation from mode
-  const [type, operation] = mode.includes('-') 
-    ? mode.split('-') as [string, string]
+  const [type, operation] = mode.includes('-')
+    ? (mode.split('-') as [string, string])
     : ['json', 'escape']
 
   const typeOptions = [

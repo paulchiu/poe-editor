@@ -418,7 +418,7 @@ function applyStep(text: string, step: PipelineStep): string {
     case 'quote': {
       const mode = (config.mode as string) || 'add'
       const char = String(config.char || '"')
-      
+
       const quoteText = (str: string) => {
         if (mode === 'add') {
           return char + str + char

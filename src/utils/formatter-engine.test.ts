@@ -427,7 +427,6 @@ describe('formatter-engine', () => {
     )
   })
 
-
   it('should quote/unquote lines (default line mode)', () => {
     const pipelineAdd = createPipeline([
       { id: '1', operationId: 'quote', config: { mode: 'add', char: '"' }, enabled: true },
@@ -443,10 +442,20 @@ describe('formatter-engine', () => {
 
   it('should quote/unquote whole selection', () => {
     const pipelineAdd = createPipeline([
-      { id: '1', operationId: 'quote', config: { mode: 'add', char: '"', lines: false }, enabled: true },
+      {
+        id: '1',
+        operationId: 'quote',
+        config: { mode: 'add', char: '"', lines: false },
+        enabled: true,
+      },
     ])
     const pipelineRem = createPipeline([
-      { id: '2', operationId: 'quote', config: { mode: 'remove', char: '"', lines: false }, enabled: true },
+      {
+        id: '2',
+        operationId: 'quote',
+        config: { mode: 'remove', char: '"', lines: false },
+        enabled: true,
+      },
     ])
     const input = 'a\nb'
     const quoted = applyPipeline(input, pipelineAdd)
@@ -463,7 +472,12 @@ describe('formatter-engine', () => {
 
   it('should quote with custom character (whole selection)', () => {
     const pipeline = createPipeline([
-      { id: '1', operationId: 'quote', config: { mode: 'add', char: "'", lines: false }, enabled: true },
+      {
+        id: '1',
+        operationId: 'quote',
+        config: { mode: 'add', char: "'", lines: false },
+        enabled: true,
+      },
     ])
     expect(applyPipeline('hello\nworld', pipeline)).toBe("'hello\nworld'")
   })
