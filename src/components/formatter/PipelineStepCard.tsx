@@ -11,6 +11,20 @@ import { FilterLinesConfig } from './step-configs/FilterLinesConfig'
 import { ChangeCaseConfig } from './step-configs/ChangeCaseConfig'
 import { SortLinesConfig } from './step-configs/SortLinesConfig'
 import { JoinSplitLinesConfig } from './step-configs/JoinSplitLinesConfig'
+import { DedupeConfig } from './step-configs/DedupeConfig'
+import { NumberLinesConfig } from './step-configs/NumberLinesConfig'
+import { WrapLinesConfig } from './step-configs/WrapLinesConfig'
+import { WordWrapConfig } from './step-configs/WordWrapConfig'
+import { IndentConfig } from './step-configs/IndentConfig'
+import { ExtractMatchesConfig } from './step-configs/ExtractMatchesConfig'
+import { MatchLinesConfig } from './step-configs/MatchLinesConfig'
+import { RemoveCharsConfig } from './step-configs/RemoveCharsConfig'
+import { EncodeDecodeConfig } from './step-configs/EncodeDecodeConfig'
+import { EscapeConfig } from './step-configs/EscapeConfig'
+import { PadAlignConfig } from './step-configs/PadAlignConfig'
+import { FormatNumbersConfig } from './step-configs/FormatNumbersConfig'
+import { IncrementNumbersConfig } from './step-configs/IncrementNumbersConfig'
+import { QuoteConfig } from './step-configs/QuoteConfig'
 
 interface PipelineStepCardProps {
   step: PipelineStep
@@ -24,7 +38,7 @@ interface PipelineStepCardProps {
 }
 
 // Operations that support line-by-line mode
-const LINE_MODE_OPERATIONS = ['trim', 'change-case', 'replace']
+const LINE_MODE_OPERATIONS = ['trim', 'change-case', 'replace', 'slugify', 'quote']
 
 /**
  * Card component representing a single step in a transformation pipeline.
@@ -91,6 +105,35 @@ export function PipelineStepCard({
             operationId={step.operationId}
           />
         )
+      case 'dedupe-lines':
+        return <DedupeConfig config={step.config} onChange={handleConfigChange} />
+      case 'number-lines':
+        return <NumberLinesConfig config={step.config} onChange={handleConfigChange} />
+      case 'wrap-lines':
+        return <WrapLinesConfig config={step.config} onChange={handleConfigChange} />
+      case 'word-wrap':
+        return <WordWrapConfig config={step.config} onChange={handleConfigChange} />
+      case 'indent':
+        return <IndentConfig config={step.config} onChange={handleConfigChange} />
+      case 'extract-matches':
+        return <ExtractMatchesConfig config={step.config} onChange={handleConfigChange} />
+      case 'keep-lines':
+      case 'remove-lines':
+        return <MatchLinesConfig config={step.config} onChange={handleConfigChange} />
+      case 'remove-chars':
+        return <RemoveCharsConfig config={step.config} onChange={handleConfigChange} />
+      case 'encode-decode':
+        return <EncodeDecodeConfig config={step.config} onChange={handleConfigChange} />
+      case 'escape':
+        return <EscapeConfig config={step.config} onChange={handleConfigChange} />
+      case 'pad-align':
+        return <PadAlignConfig config={step.config} onChange={handleConfigChange} />
+      case 'format-numbers':
+        return <FormatNumbersConfig config={step.config} onChange={handleConfigChange} />
+      case 'increment-numbers':
+        return <IncrementNumbersConfig config={step.config} onChange={handleConfigChange} />
+      case 'quote':
+        return <QuoteConfig config={step.config} onChange={handleConfigChange} />
 
       default:
         return null
@@ -144,9 +187,17 @@ export function PipelineStepCard({
                 size="icon-sm"
                 className={cn('h-7 w-7', isLineMode && 'bg-muted')}
                 onClick={toggleLineMode}
-                title={isLineMode ? 'Apply to Each Line (click for Whole Selection)' : 'Apply to Whole Selection (click for Each Line)'}
+                title={
+                  isLineMode
+                    ? 'Apply to Each Line (click for Whole Selection)'
+                    : 'Apply to Whole Selection (click for Each Line)'
+                }
               >
-                {isLineMode ? <WrapText className="h-3.5 w-3.5" /> : <TextSelect className="h-3.5 w-3.5" />}
+                {isLineMode ? (
+                  <WrapText className="h-3.5 w-3.5" />
+                ) : (
+                  <TextSelect className="h-3.5 w-3.5" />
+                )}
               </Button>
             )}
             {hasConfig && (

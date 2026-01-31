@@ -20,7 +20,14 @@ export function Toolbox({ onAddStep }: ToolboxProps): ReactElement {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<OperationCategory | 'All'>('All')
 
-  const categories: (OperationCategory | 'All')[] = ['All', 'Lines', 'Text']
+  const categories: (OperationCategory | 'All')[] = [
+    'All',
+    'Text',
+    'Lines',
+    'Structure',
+    'Search',
+    'Data',
+  ]
 
   const filteredOperations = OPERATIONS.filter((op) => {
     const matchesSearch = op.name.toLowerCase().includes(searchQuery.toLowerCase())

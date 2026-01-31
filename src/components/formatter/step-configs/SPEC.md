@@ -24,8 +24,8 @@ export function [OperationName]Config({ config, onChange }: [OperationName]Confi
 
 ### Key Requirements
 
-1. **Accept `config` object** – Current configuration values  
-2. **Call `onChange` with spread** – Always preserve existing config: `onChange({ ...config, key: value })`  
+1. **Accept `config` object** – Current configuration values
+2. **Call `onChange` with spread** – Always preserve existing config: `onChange({ ...config, key: value })`
 3. **Return `ReactElement | null`** – Return `null` if no UI is needed
 
 ---
@@ -60,10 +60,43 @@ Use `@/components/ui/input` component:
 />
 ```
 
-- Height: `h-8`
+- Height: `h-8` (standalone inputs)
 - Text size: `text-xs`
 - Background: `bg-muted/20`
 - Optional: `font-mono` for technical inputs
+
+#### Height Alignment with Toggle Buttons
+
+When an input field appears **next to** toggle button groups in a grid layout (e.g., `grid-cols-2`), use `h-[38px]` to match the toggle button group height:
+
+```tsx
+<div className="grid grid-cols-2 gap-2">
+  <div className="space-y-1">
+    <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+      Mode
+    </label>
+    <div className="grid grid-cols-2 gap-1 bg-muted/20 p-1 rounded-md border text-[10px]">
+      {/* Toggle buttons with py-1.5 */}
+    </div>
+  </div>
+  <div className="space-y-1">
+    <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+      Value
+    </label>
+    <Input
+      className="h-[38px] text-xs bg-muted/20"  {/* Matches toggle height */}
+    />
+  </div>
+</div>
+```
+
+**Why 38px?** Toggle button groups have:
+- Container: `p-1` (8px total padding)
+- Buttons: `py-1.5` (12px total padding)
+- Border: 2px
+- Total: ~38px
+
+Use `h-[38px]` for inputs in the same row as toggle buttons to ensure visual alignment.
 
 ### Checkbox Options
 
@@ -143,9 +176,7 @@ Use grid for related fields:
     {/* Field 1 */}
     {/* Field 2 */}
   </div>
-  <div className="flex gap-2">
-    {/* Checkbox options */}
-  </div>
+  <div className="flex gap-2">{/* Checkbox options */}</div>
 </div>
 ```
 
@@ -181,7 +212,7 @@ When creating a new step config:
 Tests should verify:
 
 - All options render correctly
-- Selected state is visually distinguished  
+- Selected state is visually distinguished
 - `onChange` is called with correct merged config
 - Existing config values are preserved on change
 

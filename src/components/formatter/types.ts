@@ -6,8 +6,32 @@ export type OperationId =
   | 'join-lines'
   | 'split-lines'
   | 'filter-lines'
+  // Phase 1
+  | 'dedupe-lines'
+  | 'reverse-lines'
+  | 'number-lines'
+  | 'shuffle-lines'
+  // Phase 2
+  | 'wrap-lines'
+  | 'word-wrap'
+  | 'indent'
+  // Phase 3
+  | 'extract-matches'
+  | 'keep-lines'
+  | 'remove-lines'
+  // Phase 4
+  | 'remove-chars'
+  | 'encode-decode'
+  | 'escape'
+  // Phase 5
+  | 'pad-align'
+  | 'format-numbers'
+  | 'increment-numbers'
+  // Phase 6
+  | 'slugify'
+  | 'quote'
 
-export type OperationCategory = 'Lines' | 'Text'
+export type OperationCategory = 'Text' | 'Lines' | 'Structure' | 'Search' | 'Data'
 
 export interface FormatterOperation {
   id: OperationId

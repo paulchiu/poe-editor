@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import { Toolbox } from './Toolbox'
 import { OPERATIONS } from './constants'
-import type { FormatterOperation } from './types'
 
 describe('Toolbox', () => {
   const mockOnAddStep = vi.fn()
@@ -155,6 +154,35 @@ describe('Toolbox', () => {
 
     const replaceOp = OPERATIONS.find((op) => op.id === 'replace')
     expect(mockOnAddStep).toHaveBeenCalledWith(replaceOp)
+  })
+
+  it('should filter operations by categories', async () => {
+    const user = userEvent.setup()
+    render(<Toolbox onAddStep={mockOnAddStep} />)
+
+    // Initially "All" is active, find "Text" category button
+    const textCategoryButton = screen.getByText('text', { selector: 'button' })
+    await user.click(textCategoryButton)
+
+    // "Trim Whitespace" is in Text category
+    expect(screen.getByText('Trim Whitespace')).toBeInTheDocument()
+    // "Sort Lines" is in Lines category, should be hidden
+    expect(screen.queryByText('Sort Lines')).not.toBeInTheDocument()
+
+    // Switch to "Lines" category
+    const linesCategoryButton = screen.getByText('lines', { selector: 'button' })
+    await user.click(linesCategoryButton)
+
+    // "Sort Lines" should now be visible
+    expect(screen.getByText('Sort Lines')).toBeInTheDocument()
+    // "Trim Whitespace" should be hidden
+    expect(screen.queryByText('Trim Whitespace')).not.toBeInTheDocument()
+
+    // Switch to "Structure" category
+    const structureCategoryButton = screen.getByText('structure', { selector: 'button' })
+    await user.click(structureCategoryButton)
+    expect(screen.getByText('Join Lines')).toBeInTheDocument()
+    expect(screen.queryByText('Sort Lines')).not.toBeInTheDocument()
   })
 
   it('should handle multiple search queries sequentially', async () => {
