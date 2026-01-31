@@ -118,4 +118,34 @@ test.describe('Formatter Dialog', () => {
       await expect(page.getByRole('button', { name: 'Trim Whitespace Remove' })).not.toBeVisible()
     })
   })
+  test.describe('Icon Picker Interactions', () => {
+    test('should allow typing custom text/emoji in icon picker', async ({ page }) => {
+      // Open dialog
+      await page.getByRole('button', { name: 'Formatter Builder' }).click()
+
+      // Open Icon Picker
+      // The button text defaults to '🪄' if no icon is selected
+      await page.getByRole('button', { name: '🪄' }).click()
+
+      // Expect popover to be visible
+      await expect(page.getByRole('dialog', { name: '' }).last()).toBeVisible() // Popover often has role dialog but might not have name
+
+      // Type into the input
+      const input = page.getByPlaceholder('Type emoji or text...')
+      await input.click()
+      await input.fill('🚀')
+
+      // Verify input value
+      await expect(input).toHaveValue('🚀')
+
+      // Verify the trigger button updates (although in the current implementation,
+      // the trigger updates only on change, filling input triggers onChange)
+      // We might need to close the popover to see the trigger update clearly or check the state
+      // Clicking outside to close
+      await page.keyboard.press('Escape')
+
+      // Verify trigger now shows the rocket
+      await expect(page.getByRole('button', { name: '🚀' })).toBeVisible()
+    })
+  })
 })
