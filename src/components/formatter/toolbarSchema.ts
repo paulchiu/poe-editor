@@ -13,6 +13,7 @@ const PipelineStepSchema = z.object({
     'sort-lines',
     'join-lines',
     'split-lines',
+    'filter-lines',
   ]),
   config: z.record(z.string(), z.unknown()),
   enabled: z.boolean(),

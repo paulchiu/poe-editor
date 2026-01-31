@@ -1,11 +1,16 @@
 import { useState, type ReactElement } from 'react'
 import { GripVertical, Settings2, Trash2 } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { OPERATIONS, ICON_MAP } from './constants'
 import { cn } from '@/utils/classnames'
 import type { PipelineStep } from './types'
+import { ReplaceConfig } from './step-configs/ReplaceConfig'
+import { TrimConfig } from './step-configs/TrimConfig'
+import { FilterLinesConfig } from './step-configs/FilterLinesConfig'
+import { ChangeCaseConfig } from './step-configs/ChangeCaseConfig'
+import { SortLinesConfig } from './step-configs/SortLinesConfig'
+import { JoinSplitLinesConfig } from './step-configs/JoinSplitLinesConfig'
 
 interface PipelineStepCardProps {
   step: PipelineStep
@@ -45,126 +50,37 @@ export function PipelineStepCard({
      We check if the renderConfig returns null, but we need to know *before* rendering.
      Simpler check: these operations have no config in this app.
   */
-  const hasConfig = !['trim', 'unique'].includes(step.operationId)
+  const hasConfig = !['unique'].includes(step.operationId)
 
-  // ... (renderConfig function remains same, but we use hasConfig for toggle visibility)
+  const handleConfigChange = (newConfig: Record<string, unknown>) => {
+    onUpdate(step.id, newConfig)
+  }
 
   const renderConfig = () => {
     switch (step.operationId) {
       case 'replace':
-        return (
-          <div className="grid grid-cols-2 gap-2 mt-3 animate-in slide-in-from-top-2 duration-200">
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                Find
-              </label>
-              <Input
-                value={(step.config.from as string) || ''}
-                onChange={(e) => onUpdate(step.id, { ...step.config, from: e.target.value })}
-                placeholder="Text to find..."
-                className="h-8 text-xs bg-muted/20"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                Replace With
-              </label>
-              <Input
-                value={(step.config.to as string) || ''}
-                onChange={(e) => onUpdate(step.id, { ...step.config, to: e.target.value })}
-                placeholder="Replacement..."
-                className="h-8 text-xs bg-muted/20"
-              />
-            </div>
-          </div>
-        )
+        return <ReplaceConfig config={step.config} onChange={handleConfigChange} />
+
+      case 'trim':
+        return <TrimConfig config={step.config} onChange={handleConfigChange} />
+
+      case 'filter-lines':
+        return <FilterLinesConfig config={step.config} onChange={handleConfigChange} />
 
       case 'change-case':
-        return (
-          <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                Case Mode
-              </label>
-              <div className="flex bg-muted/20 p-1 rounded-md border text-xs">
-                {['upper', 'lower', 'title'].map((mode) => (
-                  <button
-                    key={mode}
-                    className={cn(
-                      'flex-1 py-1 rounded-sm capitalize transition-colors',
-                      step.config.mode === mode
-                        ? 'bg-background shadow-sm text-foreground font-medium'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                    onClick={() => onUpdate(step.id, { ...step.config, mode })}
-                  >
-                    {mode}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )
+        return <ChangeCaseConfig config={step.config} onChange={handleConfigChange} />
 
       case 'sort-lines':
-        return (
-          <div className="flex gap-3 mt-3 animate-in slide-in-from-top-2 duration-200 text-left items-end">
-            <div className="flex-1 space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                Direction
-              </label>
-              <div className="flex bg-muted/20 p-1 rounded-md border text-xs h-[34px] items-center">
-                {['asc', 'desc'].map((dir) => (
-                  <button
-                    key={dir}
-                    className={cn(
-                      'flex-1 py-1 rounded-sm capitalize transition-colors h-full flex items-center justify-center',
-                      step.config.direction === dir
-                        ? 'bg-background shadow-sm text-foreground font-medium'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                    onClick={() => onUpdate(step.id, { ...step.config, direction: dir })}
-                  >
-                    {dir === 'asc' ? 'A-Z' : 'Z-A'}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
-                &nbsp;
-              </label>
-              <label className="flex items-center gap-2 h-[34px] px-3 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={!!step.config.numeric}
-                  onChange={(e) => onUpdate(step.id, { ...step.config, numeric: e.target.checked })}
-                  className="rounded border-input text-primary focus:ring-primary h-3 w-3"
-                />
-                Numeric Sort
-              </label>
-            </div>
-          </div>
-        )
+        return <SortLinesConfig config={step.config} onChange={handleConfigChange} />
 
       case 'join-lines':
       case 'split-lines':
         return (
-          <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
-            <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                Separator
-              </label>
-              <Input
-                value={(step.config.separator as string) || ''}
-                onChange={(e) => onUpdate(step.id, { ...step.config, separator: e.target.value })}
-                placeholder={
-                  step.operationId === 'join-lines' ? 'Space, comma, etc.' : 'Separator character'
-                }
-                className="h-8 text-xs bg-muted/20 font-mono"
-              />
-            </div>
-          </div>
+          <JoinSplitLinesConfig
+            config={step.config}
+            onChange={handleConfigChange}
+            operationId={step.operationId}
+          />
         )
 
       default:

@@ -5,6 +5,7 @@ export type OperationId =
   | 'sort-lines'
   | 'join-lines'
   | 'split-lines'
+  | 'filter-lines'
 
 export interface FormatterOperation {
   id: OperationId

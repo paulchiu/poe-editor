@@ -49,7 +49,14 @@ export const OPERATIONS: FormatterOperation[] = [
     name: 'Trim Whitespace',
     icon: 'Scissors',
     description: 'Remove leading/trailing whitespace',
-    defaultConfig: {},
+    defaultConfig: { lines: false },
+  },
+  {
+    id: 'filter-lines',
+    name: 'Remove Empty Lines',
+    icon: 'Filter',
+    description: 'Remove empty or whitespace-only lines',
+    defaultConfig: { trim: false },
   },
   {
     id: 'sort-lines',
@@ -77,15 +84,15 @@ export const OPERATIONS: FormatterOperation[] = [
     id: 'change-case',
     name: 'Change Case',
     icon: 'CaseSensitive',
-    description: 'Convert text case (Upper, Lower, Title)',
-    defaultConfig: { mode: 'upper' },
+    description: 'Convert text case (Upper, Lower, Title, etc.)',
+    defaultConfig: { mode: 'upper', lines: true },
   },
   {
     id: 'replace',
     name: 'Replace Text',
     icon: 'Replace',
     description: 'Find and replace text',
-    defaultConfig: { from: '', to: '' },
+    defaultConfig: { from: '', to: '', regex: false, caseInsensitive: false, lines: false },
   },
 ]
 
