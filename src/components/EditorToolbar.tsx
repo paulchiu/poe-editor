@@ -355,7 +355,7 @@ export function EditorToolbar({
 
         <div className="w-px h-5 bg-border mx-1" />
 
-        <ToolbarButton icon={Wand2} label="Formatter Builder" onClick={onOpenFormatter} />
+        <ToolbarButton icon={Wand2} label="Transform Selection" onClick={onOpenFormatter} />
 
         {pipelines && pipelines.length > 0 && (
           <>

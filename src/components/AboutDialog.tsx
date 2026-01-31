@@ -35,7 +35,7 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps): ReactElem
               <li>Dark and light theme support</li>
               <li>Export to Markdown or HTML</li>
               <li>URL-based document persistence</li>
-              <li>Custom formatters</li>
+              <li>Custom text transformers</li>
               <li>Toolbar import/export</li>
             </ul>
           </div>

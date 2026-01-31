@@ -216,7 +216,7 @@ export function FormatterDialog({
         <DialogHeader className="px-4 py-3 border-b shrink-0 flex flex-row items-center justify-between space-y-0 pr-12">
           <div className="flex items-center gap-2">
             <Wand2 className="w-5 h-5 text-primary" />
-            <DialogTitle>{editPipeline ? 'Edit Formatter' : 'Formatter Builder'}</DialogTitle>
+            <DialogTitle>{editPipeline ? 'Edit Transformer' : 'Transform Selection'}</DialogTitle>
           </div>
           <DialogDescription className="sr-only">
             Create and edit custom text transformation pipelines
