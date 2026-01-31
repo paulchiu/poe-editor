@@ -39,9 +39,12 @@ import {
   ListOrdered,
   Sparkles,
   AlertTriangle,
+  Wand2,
 } from 'lucide-react'
+import { ICON_MAP } from '@/components/formatter/constants'
 import { cn } from '@/utils/classnames'
 import type { ReactElement } from 'react'
+import type { TransformationPipeline } from '@/components/formatter/types'
 
 interface ToolbarButtonProps {
   icon: ElementType
@@ -109,6 +112,10 @@ interface EditorToolbarProps {
   setShowShortcuts: (show: boolean) => void
   setShowAbout: (show: boolean) => void
   setShowSplash: (show: boolean) => void
+  
+  pipelines?: TransformationPipeline[]
+  onOpenFormatter?: () => void
+  onApplyPipeline?: (pipeline: TransformationPipeline) => void
 }
 
 /**
@@ -142,6 +149,9 @@ export function EditorToolbar({
   setShowShortcuts,
   setShowAbout,
   setShowSplash,
+  pipelines,
+  onOpenFormatter,
+  onApplyPipeline,
 }: EditorToolbarProps): ReactElement {
   return (
     <header
@@ -239,6 +249,33 @@ export function EditorToolbar({
         <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={onFormatNumberedList} />
         <div className="w-px h-5 bg-border mx-1" />
         <ToolbarButton icon={CodeSquare} label="Code Block" onClick={onFormatCodeBlock} />
+        
+        <div className="w-px h-5 bg-border mx-1" />
+        
+        <ToolbarButton icon={Wand2} label="Formatter Builder" onClick={onOpenFormatter} />
+        
+        {pipelines && pipelines.length > 0 && (
+          <>
+            <div className="w-px h-5 bg-border mx-1" />
+            {pipelines.map(pipeline => {
+               const PipelineIcon = ICON_MAP[pipeline.icon]
+               return (
+                 <ToolbarButton 
+                    key={pipeline.id} 
+                    icon={() => PipelineIcon ? (
+                      <PipelineIcon className="size-4" />
+                    ) : (
+                       <span className="text-sm px-0.5" role="img" aria-label={pipeline.name}>
+                         {pipeline.icon}
+                       </span>
+                    )}
+                    label={pipeline.name}
+                    onClick={() => onApplyPipeline?.(pipeline)}
+                 />
+               )
+            })}
+          </>
+        )}
       </div>
 
       <div className="flex items-center gap-1">

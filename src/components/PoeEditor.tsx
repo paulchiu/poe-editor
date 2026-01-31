@@ -5,8 +5,10 @@ import { useUrlState } from '@/hooks/useUrlState'
 import { useVimMode } from '@/hooks/useVimMode'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSyncScroll } from '@/hooks/useSyncScroll'
+import { useFormatters } from '@/hooks/useFormatters'
 import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
+import { applyPipeline } from '@/utils/formatter-engine'
 import { EditorPane, type EditorPaneHandle } from '@/components/EditorPane'
 import { PreviewPane } from '@/components/PreviewPane'
 import { SplashScreen } from '@/components/SplashScreen'
@@ -17,6 +19,8 @@ import { AboutDialog } from '@/components/AboutDialog'
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { EditorToolbar } from '@/components/EditorToolbar'
 import { RenameDialog } from '@/components/RenameDialog'
+import { FormatterDialog } from '@/components/formatter/FormatterDialog'
+import type { TransformationPipeline } from '@/components/formatter/types'
 import { useToast } from '@/hooks/useToast'
 
 import {
@@ -62,6 +66,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showRename, setShowRename] = useState(false)
   const [showSplash, setShowSplash] = useState(false)
+  const [showFormatter, setShowFormatter] = useState(false)
   const [, setCursorPosition] = useState({
     lineNumber: 1,
     column: 1,
@@ -103,6 +108,9 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Vim mode management
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
+  
+  // Formatters management
+  const { pipelines, addPipeline } = useFormatters()
 
   // Scroll synchronization
   const { sourceRef, targetRef } = useSyncScroll<HTMLDivElement>({
@@ -148,6 +156,26 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const handleFormatNumberedList = useCallback((): void => {
     formatNumberedList(editorRef.current)
   }, [])
+  
+  const handleApplyPipeline = useCallback((pipeline: TransformationPipeline) => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const selection = editor.getSelection()
+    if (!selection) {
+      toast({ description: 'No text selected' })
+      return
+    }
+    
+    const transformed = applyPipeline(selection, pipeline)
+    editor.replaceSelection(transformed)
+    toast({ description: `Applied ${pipeline.name}` })
+  }, [toast])
+
+  const handleSavePipeline = useCallback((pipeline: TransformationPipeline) => {
+    addPipeline(pipeline)
+    toast({ description: 'Pipeline saved!' })
+  }, [addPipeline, toast])
 
   // Document management functions
   const handleNew = useCallback((): void => {
@@ -285,6 +313,12 @@ ${htmlContent}
   return (
     <TooltipProvider>
       <AboutDialog open={showAbout} onOpenChange={setShowAbout} />
+      
+      <FormatterDialog
+        open={showFormatter}
+        onOpenChange={setShowFormatter}
+        onSave={handleSavePipeline}
+      />
 
       <KeyboardShortcutsDialog
         open={showShortcuts}
@@ -331,6 +365,10 @@ ${htmlContent}
           setShowShortcuts={setShowShortcuts}
           setShowAbout={setShowAbout}
           setShowSplash={setShowSplash}
+          
+          pipelines={pipelines}
+          onOpenFormatter={() => setShowFormatter(true)}
+          onApplyPipeline={handleApplyPipeline}
         />
 
         <main className="flex-1 overflow-hidden">

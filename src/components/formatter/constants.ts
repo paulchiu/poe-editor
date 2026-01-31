@@ -1,0 +1,116 @@
+import {
+  Wand2,
+  Sparkles,
+  Stars,
+  Zap,
+  Flame,
+  Rocket,
+  Hammer,
+  Wrench,
+  Scissors,
+  Eraser,
+  Filter,
+  SortAsc,
+  AlignLeft,
+  Type,
+  Code2,
+  FileText,
+  ArrowDownAZ,
+  CaseSensitive,
+  Replace,
+  Minimize2,
+  Maximize2,
+} from 'lucide-react'
+import type { FormatterOperation } from './types'
+
+export const COMMON_ICONS = [
+  { icon: Wand2, label: 'Wand' },
+  { icon: Sparkles, label: 'Sparkles' },
+  { icon: Stars, label: 'Stars' },
+  { icon: Zap, label: 'Zap' },
+  { icon: Flame, label: 'Flame' },
+  { icon: Rocket, label: 'Rocket' },
+  { icon: Hammer, label: 'Hammer' },
+  { icon: Wrench, label: 'Wrench' },
+  { icon: Scissors, label: 'Scissors' },
+  { icon: Eraser, label: 'Eraser' },
+  { icon: Filter, label: 'Filter' },
+  { icon: SortAsc, label: 'Sort' },
+  { icon: AlignLeft, label: 'Align' },
+  { icon: Type, label: 'Text' },
+  { icon: Code2, label: 'Code' },
+  { icon: FileText, label: 'File' },
+]
+
+export const OPERATIONS: FormatterOperation[] = [
+  // Lines
+  {
+    id: 'trim',
+    name: 'Trim Whitespace',
+    icon: 'Scissors',
+    description: 'Remove leading/trailing whitespace',
+    defaultConfig: {},
+  },
+  {
+    id: 'sort-lines',
+    name: 'Sort Lines',
+    icon: 'ArrowDownAZ',
+    description: 'Sort lines alphabetically or numerically',
+    defaultConfig: { direction: 'asc', numeric: false },
+  },
+  {
+    id: 'join-lines',
+    name: 'Join Lines',
+    icon: 'Minimize2',
+    description: 'Join all lines into one',
+    defaultConfig: { separator: ' ' },
+  },
+  {
+    id: 'split-lines',
+    name: 'Split Lines',
+    icon: 'Maximize2',
+    description: 'Split text into lines by separator',
+    defaultConfig: { separator: ',' },
+  },
+  // Text
+  {
+    id: 'change-case',
+    name: 'Change Case',
+    icon: 'CaseSensitive',
+    description: 'Convert text case (Upper, Lower, Title)',
+    defaultConfig: { mode: 'upper' },
+  },
+  {
+    id: 'replace',
+    name: 'Replace Text',
+    icon: 'Replace',
+    description: 'Find and replace text',
+    defaultConfig: { from: '', to: '' },
+  },
+]
+
+export const ICON_MAP: Record<string, any> = {
+  // Common Icons
+  Wand: Wand2,
+  Sparkles,
+  Stars,
+  Zap,
+  Flame,
+  Rocket,
+  Hammer,
+  Wrench,
+  Scissors,
+  Eraser,
+  Filter,
+  Sort: SortAsc,
+  Align: AlignLeft,
+  Text: Type,
+  Code: Code2,
+  File: FileText,
+  // Operation Icons
+  ArrowDownAZ,
+  CaseSensitive,
+  Replace,
+  Minimize2,
+  Maximize2,
+}
