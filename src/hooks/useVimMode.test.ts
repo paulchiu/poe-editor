@@ -35,18 +35,18 @@ describe('useVimMode', () => {
 
   it('should toggle mode', () => {
     const { result } = renderHook(() => useVimMode())
-    
+
     act(() => {
       result.current.toggleVimMode()
     })
-    
+
     expect(result.current.vimMode).toBe(true)
     expect(localStorage.getItem('poe-editor-vim-mode')).toBe('true')
-    
+
     act(() => {
       result.current.toggleVimMode()
     })
-    
+
     expect(result.current.vimMode).toBe(false)
     expect(localStorage.getItem('poe-editor-vim-mode')).toBe('false')
   })

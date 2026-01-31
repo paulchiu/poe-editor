@@ -13,7 +13,7 @@ describe('SplashScreen', () => {
 
   it('refreshes tagline when "r" is pressed in debug mode', () => {
     render(<SplashScreen onComplete={() => {}} isLoading={false} debug={true} />)
-    
+
     // Get initial tagline
     const initialTagline = screen.getByText((content) => TAGLINES.includes(content)).textContent
 
@@ -33,12 +33,12 @@ describe('SplashScreen', () => {
 
   it('does not refresh tagline when "r" is pressed if not in debug mode', () => {
     render(<SplashScreen onComplete={() => {}} isLoading={false} debug={false} />)
-    
+
     const initialTagline = screen.getByText((content) => TAGLINES.includes(content)).textContent
-    
+
     fireEvent.keyDown(window, { key: 'r' })
     const postPressTagline = screen.getByText((content) => TAGLINES.includes(content)).textContent
-    
+
     expect(postPressTagline).toBe(initialTagline)
   })
 })

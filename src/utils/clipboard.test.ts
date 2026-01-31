@@ -35,10 +35,10 @@ describe('clipboard utils', () => {
       const originalClipboardItem = global.ClipboardItem
       // @ts-expect-error - testing fallback
       delete global.ClipboardItem
-      
+
       await copyToClipboard('plain text')
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith('plain text')
-      
+
       global.ClipboardItem = originalClipboardItem
     })
 

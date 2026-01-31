@@ -85,6 +85,7 @@
 - **Dev:** `npm dev`
 - **Test:** `npm test` (Unit), `npm test:e2e` (E2E)
 - **Lint:** `npm lint` (Zero warnings tolerance).
+- **Format:** `npm run format` (Apply Prettier formatting after code changes).
 
 ## 7. Git Commit Convention
 

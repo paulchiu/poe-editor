@@ -42,7 +42,6 @@ export function ToolbarImportExportDialog({
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(jsonText)
@@ -88,7 +87,7 @@ export function ToolbarImportExportDialog({
 
     if (clearTimerRef.current) clearTimeout(clearTimerRef.current)
     setIsConfirmingClear(false)
-    
+
     const emptyExport = createToolbarExport([])
     setJsonText(JSON.stringify(emptyExport, null, 2))
     setError(null)
@@ -96,7 +95,6 @@ export function ToolbarImportExportDialog({
       description: 'Configuration reset to empty. Click "Update Configuration" to save.',
     })
   }, [isConfirmingClear, toast])
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -139,15 +137,20 @@ export function ToolbarImportExportDialog({
         </div>
 
         <DialogFooter className="flex gap-2 sm:gap-2">
-          <Button 
-            variant={isConfirmingClear ? "destructive" : "ghost"}
-            onClick={handleClear} 
+          <Button
+            variant={isConfirmingClear ? 'destructive' : 'ghost'}
+            onClick={handleClear}
             className={cn(
-              !isConfirmingClear && "text-destructive hover:text-destructive hover:bg-destructive/10",
-              "gap-1.5 mr-auto transition-all"
+              !isConfirmingClear &&
+                'text-destructive hover:text-destructive hover:bg-destructive/10',
+              'gap-1.5 mr-auto transition-all'
             )}
           >
-            {isConfirmingClear ? <AlertCircle className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+            {isConfirmingClear ? (
+              <AlertCircle className="w-4 h-4" />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
             {isConfirmingClear ? 'Are you sure?' : 'Clear Toolbar'}
           </Button>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

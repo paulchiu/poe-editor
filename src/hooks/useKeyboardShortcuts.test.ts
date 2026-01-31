@@ -52,18 +52,18 @@ describe('useKeyboardShortcuts', () => {
     renderHook(() => useKeyboardShortcuts(handlers))
     triggerKeyDown('k', { metaKey: true, shiftKey: true })
     expect(handlers.onCodeBlock).toHaveBeenCalled()
-    expect(handlers.onLink).not.toHaveBeenCalled() 
+    expect(handlers.onLink).not.toHaveBeenCalled()
   })
-  
+
   it('should trigger onHelp with ? outside of inputs', () => {
-     renderHook(() => useKeyboardShortcuts(handlers))
-     triggerKeyDown('?')
-     expect(handlers.onHelp).toHaveBeenCalled()
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('?')
+    expect(handlers.onHelp).toHaveBeenCalled()
   })
 
   it('should NOT trigger shortcuts when typing in an input', () => {
     renderHook(() => useKeyboardShortcuts(handlers))
-    
+
     // Create an input and focus it
     const input = document.createElement('input')
     document.body.appendChild(input)
@@ -73,21 +73,21 @@ describe('useKeyboardShortcuts', () => {
     // The previous failure means the handler was invoked.
     // The handler checks event.target.
     // When we use input.dispatchEvent, event.target should be the input.
-    
+
     const event = new KeyboardEvent('keydown', {
-        key: 'b',
-        metaKey: true,
-        bubbles: true,
-        cancelable: true
+      key: 'b',
+      metaKey: true,
+      bubbles: true,
+      cancelable: true,
     })
-    
+
     // Define a getter for target if JSDOM is being weird?
     // No, standard dispatch should work.
-    
+
     input.dispatchEvent(event)
 
     expect(handlers.onBold).not.toHaveBeenCalled()
-    
+
     document.body.removeChild(input)
   })
 })

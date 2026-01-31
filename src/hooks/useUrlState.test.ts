@@ -13,7 +13,7 @@ describe('useUrlState', () => {
     // Reset window.location.hash
     window.location.hash = ''
     vi.clearAllMocks()
-    
+
     // Mock window.scrollTo to avoid jsdom errors if any
     window.scrollTo = vi.fn()
   })
@@ -27,7 +27,7 @@ describe('useUrlState', () => {
     window.location.hash = '#compressed-data'
     vi.mocked(compression.decompressDocumentFromHash).mockReturnValue({
       content: 'Decoded Content',
-      name: 'decoded.md'
+      name: 'decoded.md',
     })
 
     const { result } = renderHook(() => useUrlState())
@@ -38,13 +38,13 @@ describe('useUrlState', () => {
   it('should update hash when content changes', () => {
     vi.useFakeTimers()
     const { result } = renderHook(() => useUrlState())
-    
+
     vi.mocked(compression.compressDocumentToHash).mockReturnValue('new-hash')
 
     act(() => {
       result.current.setContent('New Content')
     })
-    
+
     // Fast-forward debounce
     act(() => {
       vi.advanceTimersByTime(500)
@@ -52,28 +52,28 @@ describe('useUrlState', () => {
 
     expect(compression.compressDocumentToHash).toHaveBeenCalledWith({
       content: 'New Content',
-      name: 'untitled.md' // default name
+      name: 'untitled.md', // default name
     })
-    
+
     // Verify replaceState was called (implicitly by checking hash? no replaceState doesn't update hash prop in jsdom immediately usually? or does it?)
     // In JSDOM, replaceState updates the history object. window.location.hash usually reflects it.
     // However, the hook uses window.history.replaceState(null, '', newHash)
-    
+
     // Let's spy on replaceState
     const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
-    
+
     // Retrigger with spy active
     act(() => {
-        result.current.setContent('Newer Content')
+      result.current.setContent('Newer Content')
     })
-    
-     act(() => {
+
+    act(() => {
       vi.advanceTimersByTime(500)
     })
-    
+
     expect(replaceStateSpy).toHaveBeenCalled()
     expect(replaceStateSpy.mock.calls[0][2]).toBe('#new-hash')
-    
+
     vi.useRealTimers()
   })
 
@@ -82,10 +82,10 @@ describe('useUrlState', () => {
     vi.mocked(compression.decompressDocumentFromHash).mockImplementation(() => {
       throw new Error('Decompression failed')
     })
-    
+
     const onError = vi.fn()
     const { result } = renderHook(() => useUrlState({ onError, defaultContent: 'Fallback' }))
-    
+
     expect(result.current.content).toBe('Fallback')
     expect(onError).toHaveBeenCalled()
   })

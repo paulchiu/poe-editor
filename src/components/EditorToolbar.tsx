@@ -131,7 +131,7 @@ interface EditorToolbarProps {
   setShowShortcuts: (show: boolean) => void
   setShowAbout: (show: boolean) => void
   setShowSplash: (show: boolean) => void
-  
+
   pipelines?: TransformationPipeline[]
   onOpenFormatter?: () => void
   onApplyPipeline?: (pipeline: TransformationPipeline) => void
@@ -245,7 +245,6 @@ export function EditorToolbar({
   }
 
   return (
-
     <header
       className={cn(
         'h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 transition-colors',
@@ -297,9 +296,12 @@ export function EditorToolbar({
             Copy Link
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={handleClearClick}
-            className={cn(isConfirmingClear && "text-destructive bg-destructive/10 focus:bg-destructive/10 focus:text-destructive")}
+            className={cn(
+              isConfirmingClear &&
+                'text-destructive bg-destructive/10 focus:bg-destructive/10 focus:text-destructive'
+            )}
           >
             {isConfirmingClear ? (
               <AlertTriangle className="size-4 animate-pulse" />
@@ -308,7 +310,6 @@ export function EditorToolbar({
             )}
             {isConfirmingClear ? 'Confirm Clear' : 'Clear'}
           </DropdownMenuItem>
-
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -349,11 +350,11 @@ export function EditorToolbar({
         <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={onFormatNumberedList} />
         <div className="w-px h-5 bg-border mx-1" />
         <ToolbarButton icon={CodeSquare} label="Code Block" onClick={onFormatCodeBlock} />
-        
+
         <div className="w-px h-5 bg-border mx-1" />
-        
+
         <ToolbarButton icon={Wand2} label="Formatter Builder" onClick={onOpenFormatter} />
-        
+
         {pipelines && pipelines.length > 0 && (
           <>
             <div className="w-px h-5 bg-border mx-1" />
@@ -382,7 +383,11 @@ export function EditorToolbar({
                               PipelineIcon ? (
                                 <PipelineIcon className="size-4" />
                               ) : (
-                                <span className="text-sm px-0.5" role="img" aria-label={pipeline.name}>
+                                <span
+                                  className="text-sm px-0.5"
+                                  role="img"
+                                  aria-label={pipeline.name}
+                                >
                                   {pipeline.icon}
                                 </span>
                               )
@@ -411,16 +416,17 @@ export function EditorToolbar({
                 )
               })}
             </div>
-            
-            <AlertDialog 
-              open={!!pipelineToDelete} 
+
+            <AlertDialog
+              open={!!pipelineToDelete}
               onOpenChange={(open) => !open && setPipelineToDelete(null)}
             >
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Formatter?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete "{pipelineToDelete?.name}"? This action cannot be undone.
+                    Are you sure you want to delete &ldquo;{pipelineToDelete?.name}&rdquo;? This
+                    action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

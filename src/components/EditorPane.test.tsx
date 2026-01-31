@@ -34,26 +34,16 @@ describe('EditorPane', () => {
   })
 
   it('renders progress and editor', () => {
-    render(
-      <EditorPane 
-        value={value} 
-        onChange={() => {}} 
-      />
-    )
+    render(<EditorPane value={value} onChange={() => {}} />)
     expect(screen.getByTestId('monaco-editor')).toBeInTheDocument()
   })
 
   it('calls copyToClipboard when copy button is clicked', async () => {
-    render(
-      <EditorPane 
-        value={value} 
-        onChange={() => {}} 
-      />
-    )
-    
+    render(<EditorPane value={value} onChange={() => {}} />)
+
     const copyButton = screen.getByRole('button')
     fireEvent.click(copyButton)
-    
+
     await waitFor(() => {
       expect(copyToClipboard).toHaveBeenCalledWith(value)
       expect(toast.success).toHaveBeenCalledWith('Markdown copied to clipboard!')
@@ -62,16 +52,11 @@ describe('EditorPane', () => {
 
   it('shows error toast when copy fails', async () => {
     vi.mocked(copyToClipboard).mockRejectedValueOnce(new Error('Failed'))
-    render(
-      <EditorPane 
-        value={value} 
-        onChange={() => {}} 
-      />
-    )
-    
+    render(<EditorPane value={value} onChange={() => {}} />)
+
     const copyButton = screen.getByRole('button')
     fireEvent.click(copyButton)
-    
+
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to copy to clipboard')
     })

@@ -5,6 +5,7 @@ const STORAGE_KEY = 'poe-editor-pipelines'
 
 /**
  * Gets initial pipelines from localStorage or URL param clear.
+ * @returns Array of saved transformation pipelines
  */
 function getInitialPipelines(): TransformationPipeline[] {
   if (typeof window === 'undefined') return []
@@ -13,7 +14,6 @@ function getInitialPipelines(): TransformationPipeline[] {
     const params = new URLSearchParams(window.location.search)
     if (params.get('clear') === 'toolbar') {
       localStorage.removeItem(STORAGE_KEY)
-      console.log('Cleared formatter storage')
       return []
     }
 
@@ -21,8 +21,9 @@ function getInitialPipelines(): TransformationPipeline[] {
     if (stored) {
       return JSON.parse(stored)
     }
-  } catch (e) {
-    console.error('Failed to load formatters', e)
+  } catch {
+    // Silently fail and return empty pipelines - localStorage may be unavailable or corrupted
+    // The user can always re-create pipelines via the UI
   }
   return []
 }
@@ -36,7 +37,7 @@ export function useFormatters() {
   const [loaded] = useState(true)
 
   const addPipeline = useCallback((pipeline: TransformationPipeline) => {
-    setPipelines(prev => {
+    setPipelines((prev) => {
       const next = [...prev, pipeline]
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
       return next
@@ -44,16 +45,16 @@ export function useFormatters() {
   }, [])
 
   const updatePipeline = useCallback((pipeline: TransformationPipeline) => {
-    setPipelines(prev => {
-      const next = prev.map(p => p.id === pipeline.id ? pipeline : p)
+    setPipelines((prev) => {
+      const next = prev.map((p) => (p.id === pipeline.id ? pipeline : p))
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
       return next
     })
   }, [])
 
   const removePipeline = useCallback((id: string) => {
-    setPipelines(prev => {
-      const next = prev.filter(p => p.id !== id)
+    setPipelines((prev) => {
+      const next = prev.filter((p) => p.id !== id)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
       return next
     })
@@ -70,6 +71,6 @@ export function useFormatters() {
     updatePipeline,
     removePipeline,
     replacePipelines,
-    loaded
+    loaded,
   }
 }

@@ -31,10 +31,10 @@ describe('PreviewPane', () => {
 
   it('calls copyToClipboard when copy button is clicked', async () => {
     render(<PreviewPane htmlContent={htmlContent} />)
-    
+
     const copyButton = screen.getByRole('button')
     fireEvent.click(copyButton)
-    
+
     await waitFor(() => {
       expect(copyToClipboard).toHaveBeenCalledWith('Test content', htmlContent)
       expect(toast.success).toHaveBeenCalledWith('Rich text copied to clipboard!')
@@ -44,10 +44,10 @@ describe('PreviewPane', () => {
   it('shows error toast when copy fails', async () => {
     vi.mocked(copyToClipboard).mockRejectedValueOnce(new Error('Failed'))
     render(<PreviewPane htmlContent={htmlContent} />)
-    
+
     const copyButton = screen.getByRole('button')
     fireEvent.click(copyButton)
-    
+
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith('Failed to copy to clipboard')
     })

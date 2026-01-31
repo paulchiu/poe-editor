@@ -28,11 +28,17 @@ export const TAGLINES = [
  * @param props.isLoading - Boolean indicating if the application is still loading resources.
  * @returns The rendered splash screen or null if not visible.
  */
-export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScreenProps): ReactElement | null {
+export function SplashScreen({
+  onComplete,
+  isLoading,
+  debug = false,
+}: SplashScreenProps): ReactElement | null {
   const [isVisible, setIsVisible] = useState(true)
   const [isFading, setIsFading] = useState(false)
   const [showLoading, setShowLoading] = useState(isLoading)
-  const [tagline, setTagline] = useState(() => TAGLINES[Math.floor(Math.random() * TAGLINES.length)])
+  const [tagline, setTagline] = useState(
+    () => TAGLINES[Math.floor(Math.random() * TAGLINES.length)]
+  )
 
   useEffect(() => {
     setShowLoading(isLoading)
@@ -105,26 +111,20 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
 
         {/* Content Section */}
         <div className="flex flex-1 flex-col justify-center">
-          <h1 className="text-5xl font-bold tracking-tight text-foreground">
-            Poe
-          </h1>
-          <p className="mt-2 text-2xl font-light text-muted-foreground">
-            Markdown Editor
-          </p>
+          <h1 className="text-5xl font-bold tracking-tight text-foreground">Poe</h1>
+          <p className="mt-2 text-2xl font-light text-muted-foreground">Markdown Editor</p>
 
           <div className="mt-8 space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Version 1.0.0
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {tagline}
-            </p>
+            <p className="text-sm text-muted-foreground">Version 1.0.0</p>
+            <p className="text-sm text-muted-foreground">{tagline}</p>
           </div>
 
           {/* Loading Indicator */}
           <div className="mt-10 flex items-center gap-3">
             <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
-              {showLoading && <div className="h-full w-full animate-progress-indeterminate bg-primary" />}
+              {showLoading && (
+                <div className="h-full w-full animate-progress-indeterminate bg-primary" />
+              )}
               {!showLoading && debug && <div className="h-full w-full bg-primary" />}
             </div>
           </div>
@@ -136,7 +136,8 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
             </p>
             {debug && (
               <p className="mt-2 text-xs font-medium text-yellow-500">
-                Debug Mode: Press Esc to exit, &apos;L&apos; toggles loading, &apos;R&apos; refreshes tagline
+                Debug Mode: Press Esc to exit, &apos;L&apos; toggles loading, &apos;R&apos;
+                refreshes tagline
               </p>
             )}
           </div>

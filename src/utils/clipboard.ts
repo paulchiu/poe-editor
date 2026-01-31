@@ -1,6 +1,6 @@
 /**
  * Utility for copying text and HTML to the clipboard.
- * 
+ *
  * @param text - Plain text to copy
  * @param html - HTML content to copy
  * @returns Promise that resolves when the copy operation completes
@@ -9,7 +9,7 @@ export async function copyToClipboard(text: string, html?: string): Promise<void
   if (html && typeof ClipboardItem !== 'undefined') {
     const textBlob = new Blob([text], { type: 'text/plain' })
     const htmlBlob = new Blob([html], { type: 'text/html' })
-    
+
     await navigator.clipboard.write([
       new ClipboardItem({
         'text/plain': textBlob,
@@ -23,7 +23,7 @@ export async function copyToClipboard(text: string, html?: string): Promise<void
 
 /**
  * Strips HTML tags from a string and returns plain text.
- * 
+ *
  * @param html - HTML content
  * @returns Plain text content
  */

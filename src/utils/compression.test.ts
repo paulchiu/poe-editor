@@ -52,9 +52,9 @@ describe('compression', () => {
     it('should return null for completely invalid hash', () => {
       expect(decompressDocumentFromHash('invalid-hash')).toBe(null)
     })
-    
+
     it('should handle empty hash', () => {
-        expect(decompressDocumentFromHash('')).toEqual({ content: '' })
+      expect(decompressDocumentFromHash('')).toEqual({ content: '' })
     })
   })
 })

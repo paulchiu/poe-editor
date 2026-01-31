@@ -52,7 +52,11 @@ describe('EditorToolbar', () => {
     const onApplyPipeline = vi.fn()
     render(
       <TooltipProvider>
-        <EditorToolbar {...defaultProps} pipelines={mockPipelines} onApplyPipeline={onApplyPipeline} />
+        <EditorToolbar
+          {...defaultProps}
+          pipelines={mockPipelines}
+          onApplyPipeline={onApplyPipeline}
+        />
       </TooltipProvider>
     )
 
@@ -69,7 +73,7 @@ describe('EditorToolbar', () => {
 
     const pipeline1 = screen.getByLabelText('Pipeline 1').closest('div[draggable="true"]')
     expect(pipeline1).toBeDefined()
-    
+
     const dragStartEvent = fireEvent.dragStart(pipeline1!, {
       dataTransfer: {
         setDragImage: vi.fn(),

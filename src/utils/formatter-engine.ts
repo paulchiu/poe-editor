@@ -10,11 +10,11 @@ function applyStep(text: string, step: PipelineStep): string {
   if (!step.enabled) return text
 
   const { config } = step
-  
+
   switch (step.operationId) {
     case 'trim':
       return text.trim()
-    
+
     case 'replace': {
       const from = String(config.from || '')
       const to = String(config.to || '')
@@ -44,7 +44,7 @@ function applyStep(text: string, step: PipelineStep): string {
       const direction = config.direction === 'desc' ? 'desc' : 'asc'
       const numeric = !!config.numeric
       const lines = text.split('\n')
-      
+
       lines.sort((a, b) => {
         if (numeric) {
           const numA = parseFloat(a) || 0
@@ -53,10 +53,10 @@ function applyStep(text: string, step: PipelineStep): string {
         }
         return direction === 'asc' ? a.localeCompare(b) : b.localeCompare(a)
       })
-      
+
       return lines.join('\n')
     }
-    
+
     case 'join-lines': {
       const separator = String(config.separator ?? ' ')
       return text.split('\n').join(separator)

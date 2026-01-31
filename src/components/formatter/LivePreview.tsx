@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, type ReactElement } from 'react'
 import { applyPipeline } from '@/utils/formatter-engine'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { TransformationPipeline } from './types'
@@ -13,7 +13,12 @@ HELLO WORLD
 duplicate line
 duplicate line`
 
-export function LivePreview({ pipeline }: LivePreviewProps) {
+/**
+ * Live preview pane showing the output of a transformation pipeline.
+ * @param props - Component props
+ * @returns Live preview component
+ */
+export function LivePreview({ pipeline }: LivePreviewProps): ReactElement {
   const [inputText, setInputText] = useState(SAMPLE_TEXT)
 
   const outputText = useMemo(() => {
@@ -24,7 +29,9 @@ export function LivePreview({ pipeline }: LivePreviewProps) {
     <div className="flex flex-col h-full bg-background">
       <div className="flex-1 flex flex-col min-h-0 border-b">
         <div className="p-3 border-b bg-muted/10 flex items-center justify-between">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Input</span>
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Input
+          </span>
           <span className="text-xs text-muted-foreground font-mono">{inputText.length} chars</span>
         </div>
         <textarea

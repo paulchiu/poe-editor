@@ -1,17 +1,21 @@
-import { useState } from 'react'
+import { useState, type ReactElement } from 'react'
 import { Search, Plus } from 'lucide-react'
 import { OPERATIONS, ICON_MAP } from './constants'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn } from '@/utils/classnames'
 import type { FormatterOperation } from './types'
 
 interface ToolboxProps {
   onAddStep: (operation: FormatterOperation) => void
 }
 
-export function Toolbox({ onAddStep }: ToolboxProps) {
+/**
+ * Toolbox component displaying available formatter operations for pipeline building.
+ * @param props - Component props
+ * @returns Toolbox component
+ */
+export function Toolbox({ onAddStep }: ToolboxProps): ReactElement {
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredOperations = OPERATIONS.filter((op) =>
@@ -34,12 +38,12 @@ export function Toolbox({ onAddStep }: ToolboxProps) {
           />
         </div>
       </div>
-      
+
       <ScrollArea className="flex-1">
         <div className="p-4 grid gap-2">
           {filteredOperations.map((op) => {
-             const Icon = ICON_MAP[op.icon] || Plus
-             return (
+            const Icon = ICON_MAP[op.icon] || Plus
+            return (
               <Button
                 key={op.id}
                 variant="outline"
@@ -61,11 +65,11 @@ export function Toolbox({ onAddStep }: ToolboxProps) {
               </Button>
             )
           })}
-          
+
           {filteredOperations.length === 0 && (
-             <div className="text-center py-8 text-sm text-muted-foreground">
-               No operations found.
-             </div>
+            <div className="text-center py-8 text-sm text-muted-foreground">
+              No operations found.
+            </div>
           )}
         </div>
       </ScrollArea>

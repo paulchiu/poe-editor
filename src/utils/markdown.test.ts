@@ -21,10 +21,10 @@ describe('renderMarkdown', () => {
   it('should handle empty input', () => {
     expect(renderMarkdown('')).toBe('')
   })
-  
+
   it('should render links', () => {
-      const markdown = '[link](https://example.com)'
-      const html = renderMarkdown(markdown)
-      expect(html).toContain('<a href="https://example.com">link</a>')
+    const markdown = '[link](https://example.com)'
+    const html = renderMarkdown(markdown)
+    expect(html).toContain('<a href="https://example.com">link</a>')
   })
 })

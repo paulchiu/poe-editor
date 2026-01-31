@@ -6,7 +6,14 @@ import type { TransformationPipeline } from './types'
  */
 const PipelineStepSchema = z.object({
   id: z.string(),
-  operationId: z.enum(['trim', 'replace', 'change-case', 'sort-lines', 'join-lines', 'split-lines']),
+  operationId: z.enum([
+    'trim',
+    'replace',
+    'change-case',
+    'sort-lines',
+    'join-lines',
+    'split-lines',
+  ]),
   config: z.record(z.string(), z.unknown()),
   enabled: z.boolean(),
 })
@@ -63,7 +70,9 @@ export function parseToolbarImport(json: string): TransformationPipeline[] {
     return validated.pipelines
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new Error(`Invalid configuration format: ${error.issues.map((issue: z.ZodIssue) => issue.message).join(', ')}`)
+      throw new Error(
+        `Invalid configuration format: ${error.issues.map((issue: z.ZodIssue) => issue.message).join(', ')}`
+      )
     }
     if (error instanceof SyntaxError) {
       throw new Error('Invalid JSON format')

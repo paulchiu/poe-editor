@@ -24,8 +24,12 @@ describe('downloadFile', () => {
     } as unknown as HTMLAnchorElement
 
     const createElementMock = vi.spyOn(document, 'createElement').mockReturnValue(linkMock)
-    const appendChildMock = vi.spyOn(document.body, 'appendChild').mockImplementation(() => linkMock)
-    const removeChildMock = vi.spyOn(document.body, 'removeChild').mockImplementation(() => linkMock)
+    const appendChildMock = vi
+      .spyOn(document.body, 'appendChild')
+      .mockImplementation(() => linkMock)
+    const removeChildMock = vi
+      .spyOn(document.body, 'removeChild')
+      .mockImplementation(() => linkMock)
 
     createObjectURLMock.mockReturnValue('blob:http://localhost/mock-url')
 
@@ -37,7 +41,7 @@ describe('downloadFile', () => {
     expect(createObjectURLMock).toHaveBeenCalled()
     const blobArg = createObjectURLMock.mock.calls[0][0]
     expect(blobArg).toBeInstanceOf(Blob)
-    
+
     // Verify link attributes
     expect(linkMock.download).toBe(filename)
     expect(linkMock.href).toBe('blob:http://localhost/mock-url')
@@ -51,7 +55,7 @@ describe('downloadFile', () => {
   })
 
   it('should use correct mime type', () => {
-     // Mock document methods
+    // Mock document methods
     const clickMock = vi.fn()
     const linkMock = {
       href: '',
@@ -64,7 +68,7 @@ describe('downloadFile', () => {
     vi.spyOn(document.body, 'removeChild').mockImplementation(() => linkMock)
 
     downloadFile('test.json', '{}', 'application/json')
-    
+
     expect(createObjectURLMock).toHaveBeenCalled()
     const blobArg = createObjectURLMock.mock.calls[0][0] as Blob
     expect(blobArg.type).toBe('application/json')

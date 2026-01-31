@@ -111,9 +111,10 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Vim mode management
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
-  
+
   // Formatters management
-  const { pipelines, addPipeline, updatePipeline, removePipeline, replacePipelines } = useFormatters()
+  const { pipelines, addPipeline, updatePipeline, removePipeline, replacePipelines } =
+    useFormatters()
 
   // Scroll synchronization
   const { sourceRef, targetRef } = useSyncScroll<HTMLDivElement>({
@@ -159,46 +160,58 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const handleFormatNumberedList = useCallback((): void => {
     formatNumberedList(editorRef.current)
   }, [])
-  
-  const handleApplyPipeline = useCallback((pipeline: TransformationPipeline) => {
-    const editor = editorRef.current
-    if (!editor) return
 
-    const selection = editor.getSelection()
-    if (!selection) {
-      toast({ description: 'No text selected' })
-      return
-    }
-    
-    const transformed = applyPipeline(selection, pipeline)
-    editor.replaceSelection(transformed)
-    toast({ description: `Applied ${pipeline.name}` })
-  }, [toast])
+  const handleApplyPipeline = useCallback(
+    (pipeline: TransformationPipeline) => {
+      const editor = editorRef.current
+      if (!editor) return
 
-  const handleSavePipeline = useCallback((pipeline: TransformationPipeline) => {
-    if (editingPipeline) {
-      updatePipeline(pipeline)
-      toast({ description: 'Pipeline updated!' })
-      setEditingPipeline(null)
-    } else {
-      addPipeline(pipeline)
-      toast({ description: 'Pipeline saved!' })
-    }
-  }, [addPipeline, updatePipeline, editingPipeline, toast])
+      const selection = editor.getSelection()
+      if (!selection) {
+        toast({ description: 'No text selected' })
+        return
+      }
+
+      const transformed = applyPipeline(selection, pipeline)
+      editor.replaceSelection(transformed)
+      toast({ description: `Applied ${pipeline.name}` })
+    },
+    [toast]
+  )
+
+  const handleSavePipeline = useCallback(
+    (pipeline: TransformationPipeline) => {
+      if (editingPipeline) {
+        updatePipeline(pipeline)
+        toast({ description: 'Pipeline updated!' })
+        setEditingPipeline(null)
+      } else {
+        addPipeline(pipeline)
+        toast({ description: 'Pipeline saved!' })
+      }
+    },
+    [addPipeline, updatePipeline, editingPipeline, toast]
+  )
 
   const handleEditPipeline = useCallback((pipeline: TransformationPipeline) => {
     setEditingPipeline(pipeline)
     setShowFormatter(true)
   }, [])
 
-  const handleDeletePipeline = useCallback((id: string) => {
-    removePipeline(id)
-    toast({ description: 'Pipeline deleted' })
-  }, [removePipeline, toast])
+  const handleDeletePipeline = useCallback(
+    (id: string) => {
+      removePipeline(id)
+      toast({ description: 'Pipeline deleted' })
+    },
+    [removePipeline, toast]
+  )
 
-  const handleReorderPipelines = useCallback((reordered: TransformationPipeline[]) => {
-    replacePipelines(reordered)
-  }, [replacePipelines])
+  const handleReorderPipelines = useCallback(
+    (reordered: TransformationPipeline[]) => {
+      replacePipelines(reordered)
+    },
+    [replacePipelines]
+  )
 
   // Document management functions
   const handleNew = useCallback((): void => {
@@ -334,7 +347,7 @@ ${htmlContent}
   return (
     <TooltipProvider>
       <AboutDialog open={showAbout} onOpenChange={setShowAbout} />
-      
+
       <FormatterDialog
         open={showFormatter}
         onOpenChange={(open) => {
@@ -398,7 +411,6 @@ ${htmlContent}
           setShowShortcuts={setShowShortcuts}
           setShowAbout={setShowAbout}
           setShowSplash={setShowSplash}
-          
           pipelines={pipelines}
           onOpenFormatter={() => setShowFormatter(true)}
           onApplyPipeline={handleApplyPipeline}

@@ -89,7 +89,7 @@ export const OPERATIONS: FormatterOperation[] = [
   },
 ]
 
-export const ICON_MAP: Record<string, any> = {
+export const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   // Common Icons
   Wand: Wand2,
   Sparkles,

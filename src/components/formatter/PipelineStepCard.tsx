@@ -1,20 +1,8 @@
-import { useState } from 'react'
-import {
-  GripVertical,
-  X,
-  Settings2,
-  Trash2,
-} from 'lucide-react'
+import { useState, type ReactElement } from 'react'
+import { GripVertical, Settings2, Trash2 } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../ui/select'
 import { OPERATIONS, ICON_MAP } from './constants'
 import { cn } from '@/utils/classnames'
 import type { PipelineStep } from './types'
@@ -22,7 +10,7 @@ import type { PipelineStep } from './types'
 interface PipelineStepCardProps {
   step: PipelineStep
   index: number
-  onUpdate: (id: string, config: Record<string, any>) => void
+  onUpdate: (id: string, config: Record<string, unknown>) => void
   onRemove: (id: string) => void
   onToggle: (id: string) => void
   onDragStart: (index: number) => void
@@ -30,6 +18,11 @@ interface PipelineStepCardProps {
   onDragEnd: () => void
 }
 
+/**
+ * Card component representing a single step in a transformation pipeline.
+ * @param props - Component props
+ * @returns Pipeline step card component
+ */
 export function PipelineStepCard({
   step,
   index,
@@ -39,9 +32,9 @@ export function PipelineStepCard({
   onDragStart,
   onDragEnter,
   onDragEnd,
-}: PipelineStepCardProps) {
+}: PipelineStepCardProps): ReactElement | null {
   const [showConfig, setShowConfig] = useState(true) // Default open configuration
-  
+
   const operation = OPERATIONS.find((op) => op.id === step.operationId)
   if (!operation) return null
 
@@ -62,18 +55,22 @@ export function PipelineStepCard({
         return (
           <div className="grid grid-cols-2 gap-2 mt-3 animate-in slide-in-from-top-2 duration-200">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Find</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                Find
+              </label>
               <Input
-                value={step.config.from as string || ''}
+                value={(step.config.from as string) || ''}
                 onChange={(e) => onUpdate(step.id, { ...step.config, from: e.target.value })}
                 placeholder="Text to find..."
                 className="h-8 text-xs bg-muted/20"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Replace With</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                Replace With
+              </label>
               <Input
-                value={step.config.to as string || ''}
+                value={(step.config.to as string) || ''}
                 onChange={(e) => onUpdate(step.id, { ...step.config, to: e.target.value })}
                 placeholder="Replacement..."
                 className="h-8 text-xs bg-muted/20"
@@ -81,19 +78,23 @@ export function PipelineStepCard({
             </div>
           </div>
         )
-      
+
       case 'change-case':
         return (
           <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
-             <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Case Mode</label>
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                Case Mode
+              </label>
               <div className="flex bg-muted/20 p-1 rounded-md border text-xs">
                 {['upper', 'lower', 'title'].map((mode) => (
                   <button
                     key={mode}
                     className={cn(
-                      "flex-1 py-1 rounded-sm capitalize transition-colors",
-                      step.config.mode === mode ? "bg-background shadow-sm text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+                      'flex-1 py-1 rounded-sm capitalize transition-colors',
+                      step.config.mode === mode
+                        ? 'bg-background shadow-sm text-foreground font-medium'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                     onClick={() => onUpdate(step.id, { ...step.config, mode })}
                   >
@@ -106,17 +107,21 @@ export function PipelineStepCard({
         )
 
       case 'sort-lines':
-         return (
+        return (
           <div className="flex gap-3 mt-3 animate-in slide-in-from-top-2 duration-200 text-left items-end">
             <div className="flex-1 space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Direction</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                Direction
+              </label>
               <div className="flex bg-muted/20 p-1 rounded-md border text-xs h-[34px] items-center">
                 {['asc', 'desc'].map((dir) => (
-                   <button
+                  <button
                     key={dir}
                     className={cn(
-                      "flex-1 py-1 rounded-sm capitalize transition-colors h-full flex items-center justify-center",
-                      step.config.direction === dir ? "bg-background shadow-sm text-foreground font-medium" : "text-muted-foreground hover:text-foreground"
+                      'flex-1 py-1 rounded-sm capitalize transition-colors h-full flex items-center justify-center',
+                      step.config.direction === dir
+                        ? 'bg-background shadow-sm text-foreground font-medium'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                     onClick={() => onUpdate(step.id, { ...step.config, direction: dir })}
                   >
@@ -125,31 +130,37 @@ export function PipelineStepCard({
                 ))}
               </div>
             </div>
-             <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">&nbsp;</label>
-               <label className="flex items-center gap-2 h-[34px] px-3 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={!!step.config.numeric}
-                    onChange={(e) => onUpdate(step.id, { ...step.config, numeric: e.target.checked })}
-                    className="rounded border-input text-primary focus:ring-primary h-3 w-3"
-                  />
-                  Numeric Sort
-               </label>
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
+                &nbsp;
+              </label>
+              <label className="flex items-center gap-2 h-[34px] px-3 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={!!step.config.numeric}
+                  onChange={(e) => onUpdate(step.id, { ...step.config, numeric: e.target.checked })}
+                  className="rounded border-input text-primary focus:ring-primary h-3 w-3"
+                />
+                Numeric Sort
+              </label>
             </div>
           </div>
-         )
-      
+        )
+
       case 'join-lines':
       case 'split-lines':
         return (
           <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Separator</label>
+              <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                Separator
+              </label>
               <Input
-                value={step.config.separator as string || ''}
+                value={(step.config.separator as string) || ''}
                 onChange={(e) => onUpdate(step.id, { ...step.config, separator: e.target.value })}
-                placeholder={step.operationId === 'join-lines' ? 'Space, comma, etc.' : 'Separator character'}
+                placeholder={
+                  step.operationId === 'join-lines' ? 'Space, comma, etc.' : 'Separator character'
+                }
                 className="h-8 text-xs bg-muted/20 font-mono"
               />
             </div>
@@ -162,10 +173,12 @@ export function PipelineStepCard({
   }
 
   return (
-    <div 
+    <div
       className={cn(
-        "group relative flex items-start gap-3 p-3 rounded-xl border bg-card transition-all duration-200 w-full max-w-full min-w-0",
-        step.enabled ? "shadow-sm border-muted-foreground/10 hover:border-primary/30" : "opacity-60 border-transparent bg-muted/5",
+        'group relative flex items-start gap-3 p-3 rounded-xl border bg-card transition-all duration-200 w-full max-w-full min-w-0',
+        step.enabled
+          ? 'shadow-sm border-muted-foreground/10 hover:border-primary/30'
+          : 'opacity-60 border-transparent bg-muted/5'
       )}
       draggable
       onDragStart={() => onDragStart(index)}
@@ -178,29 +191,33 @@ export function PipelineStepCard({
         <GripVertical className="h-4 w-4" />
       </div>
 
-       {/* Icon */}
-       <div className={cn(
-        "p-2 rounded-lg transition-colors mt-0",
-        step.enabled ? "bg-primary/5 text-primary" : "bg-muted text-muted-foreground"
-       )}>
-          {Icon && <Icon className="h-4 w-4" />}
-       </div>
+      {/* Icon */}
+      <div
+        className={cn(
+          'p-2 rounded-lg transition-colors mt-0',
+          step.enabled ? 'bg-primary/5 text-primary' : 'bg-muted text-muted-foreground'
+        )}
+      >
+        {Icon && <Icon className="h-4 w-4" />}
+      </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between h-8">
-          <span className={cn(
-            "font-medium text-sm transition-colors",
-             step.enabled ? "text-foreground" : "text-muted-foreground"
-          )}>
+          <span
+            className={cn(
+              'font-medium text-sm transition-colors',
+              step.enabled ? 'text-foreground' : 'text-muted-foreground'
+            )}
+          >
             {operation.name}
           </span>
-          
+
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {hasConfig && (
               <Button
                 variant="ghost"
                 size="icon-sm"
-                className={cn("h-7 w-7", showConfig && "bg-muted text-foreground")}
+                className={cn('h-7 w-7', showConfig && 'bg-muted text-foreground')}
                 onClick={() => setShowConfig(!showConfig)}
               >
                 <Settings2 className="h-3.5 w-3.5" />

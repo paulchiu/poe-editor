@@ -26,7 +26,10 @@ export interface EditorPaneHandle {
 }
 
 export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
-  ({ value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode, scrollRef }, ref) => {
+  (
+    { value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode, scrollRef },
+    ref
+  ) => {
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
     const vimInstanceRef = useRef<VimAdapter | null>(null)
     const statusBarRef = useRef<HTMLDivElement | null>(null)
@@ -44,7 +47,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
             // We need to use a type assertion or just set current directly if it's a mutable ref object
             // eslint-disable-next-line
             ;(scrollRef as React.MutableRefObject<HTMLElement | null>).current = scrollable
-            
+
             // Override scroll properties to use Monaco's internal state
             // since the DOM element uses virtual scrolling/transform
             Object.defineProperty(scrollable, 'scrollTop', {
@@ -137,7 +140,6 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         if (editorRef.current && statusBarRef.current && !vimInstanceRef.current) {
           try {
             vimInstanceRef.current = initVimMode(editorRef.current, statusBarRef.current)
-
           } catch {
             toast.error('Error initializing vim mode')
           }
