@@ -8,16 +8,16 @@ interface SplashScreenProps {
 }
 
 export const TAGLINES = [
-  'Finally, a Vim you can exit.',
-  'Modal editing for writers.',
-  'Compiles to English.',
-  'Refactoring your sentences.',
-  'Syntax highlighting for your soul.',
-  'Supports tabs AND spaces.',
-  'Elegant, efficient, and definitely not Emacs.',
-  'Because plain text never crashes.',
-  'Markdown without the meltdown.',
-  'Rubber duck debugging for novelists.',
+  'Finally, a Vim you can exit',
+  'Modal editing for writers',
+  'Compiles to English',
+  'Refactoring your sentences',
+  'Syntax highlighting for your soul',
+  'Supports tabs AND spaces',
+  'Elegant, efficient, and definitely not Emacs',
+  'Because plain text never crashes',
+  'Markdown without the meltdown',
+  'Rubber duck debugging for novelists',
 ]
 
 /**
@@ -132,12 +132,11 @@ export function SplashScreen({ onComplete, isLoading, debug = false }: SplashScr
           {/* Footer */}
           <div className="mt-5">
             <p className="text-xs text-muted-foreground">
-              &copy; 2026 Paul Chiu. All rights reserved.
+              &copy; 2026 Paul Chiu - All rights reserved
             </p>
             {debug && (
               <p className="mt-2 text-xs font-medium text-yellow-500">
                 Debug Mode: Press Esc to exit, &apos;L&apos; toggles loading, &apos;R&apos; refreshes tagline
-
               </p>
             )}
           </div>

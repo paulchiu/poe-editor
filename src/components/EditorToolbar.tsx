@@ -495,6 +495,10 @@ export function EditorToolbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onOpenImportExport}>
+              <Settings className="size-4" />
+              Import/Export Toolbar
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowShortcuts(true)}>
               <Keyboard className="size-4" />
               Keyboard Shortcuts
@@ -509,10 +513,6 @@ export function EditorToolbar({
               Show Splash
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onOpenImportExport}>
-              <Settings className="size-4" />
-              Import/Export Toolbar
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
