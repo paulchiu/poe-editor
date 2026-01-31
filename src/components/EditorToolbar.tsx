@@ -348,7 +348,6 @@ export function EditorToolbar({
         <ToolbarButton icon={Quote} label="Quote" onClick={onFormatQuote} />
         <ToolbarButton icon={List} label="Bullet List" onClick={onFormatBulletList} />
         <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={onFormatNumberedList} />
-        <div className="w-px h-5 bg-border mx-1" />
         <ToolbarButton icon={CodeSquare} label="Code Block" onClick={onFormatCodeBlock} />
 
         <div className="w-px h-5 bg-border mx-1" />
