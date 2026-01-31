@@ -69,6 +69,7 @@ interface ToolbarButtonProps {
   onClick?: () => void
   active?: boolean
   allowDrag?: boolean
+  className?: string
 }
 
 /**
@@ -82,6 +83,7 @@ function ToolbarButton({
   onClick,
   active = false,
   allowDrag = false,
+  className,
 }: ToolbarButtonProps): ReactElement {
   return (
     <Tooltip>
@@ -93,7 +95,8 @@ function ToolbarButton({
           onMouseDown={allowDrag ? undefined : (e) => e.preventDefault()}
           className={cn(
             'text-muted-foreground hover:text-foreground',
-            active && 'bg-accent text-foreground'
+            active && 'bg-accent text-foreground',
+            className
           )}
         >
           <Icon className="size-4" />
@@ -394,6 +397,7 @@ export function EditorToolbar({
                             label={pipeline.name}
                             onClick={() => onApplyPipeline?.(pipeline)}
                             allowDrag
+                            className={!PipelineIcon ? 'w-auto px-2 min-w-8' : undefined}
                           />
                         </div>
                       </ContextMenuTrigger>
