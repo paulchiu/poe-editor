@@ -35,6 +35,7 @@ import {
   Heading2,
   Heading3,
   Keyboard,
+  Settings,
   CodeSquare,
   ListOrdered,
   Sparkles,
@@ -116,10 +117,14 @@ interface EditorToolbarProps {
   pipelines?: TransformationPipeline[]
   onOpenFormatter?: () => void
   onApplyPipeline?: (pipeline: TransformationPipeline) => void
+  onOpenImportExport?: () => void
 }
+
+import { useState, useRef } from 'react'
 
 /**
  * Main editor toolbar with document controls, formatting tools, and settings
+
  * @param props - Component props
  * @returns Editor toolbar component
  */
@@ -152,8 +157,28 @@ export function EditorToolbar({
   pipelines,
   onOpenFormatter,
   onApplyPipeline,
+  onOpenImportExport,
 }: EditorToolbarProps): ReactElement {
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false)
+  const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const handleClearClick = (e: React.MouseEvent) => {
+    if (!isConfirmingClear) {
+      e.preventDefault()
+      setIsConfirmingClear(true)
+      if (clearTimerRef.current) clearTimeout(clearTimerRef.current)
+      clearTimerRef.current = setTimeout(() => {
+        setIsConfirmingClear(false)
+      }, 3000)
+    } else {
+      if (clearTimerRef.current) clearTimeout(clearTimerRef.current)
+      setIsConfirmingClear(false)
+      onClear()
+    }
+  }
+
   return (
+
     <header
       className={cn(
         'h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 transition-colors',
@@ -205,10 +230,18 @@ export function EditorToolbar({
             Copy Link
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onClear}>
-            <Trash2 className="size-4" />
-            Clear
+          <DropdownMenuItem 
+            onClick={handleClearClick}
+            className={cn(isConfirmingClear && "text-destructive bg-destructive/10 focus:bg-destructive/10 focus:text-destructive")}
+          >
+            {isConfirmingClear ? (
+              <AlertTriangle className="size-4 animate-pulse" />
+            ) : (
+              <Trash2 className="size-4" />
+            )}
+            {isConfirmingClear ? 'Confirm Clear' : 'Clear'}
           </DropdownMenuItem>
+
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -342,6 +375,11 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={() => setShowSplash(true)}>
               <Sparkles className="size-4" />
               Show Splash
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onOpenImportExport}>
+              <Settings className="size-4" />
+              Import/Export Toolbar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

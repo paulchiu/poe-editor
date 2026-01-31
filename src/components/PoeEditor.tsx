@@ -20,6 +20,7 @@ import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { EditorToolbar } from '@/components/EditorToolbar'
 import { RenameDialog } from '@/components/RenameDialog'
 import { FormatterDialog } from '@/components/formatter/FormatterDialog'
+import { ToolbarImportExportDialog } from '@/components/formatter/ToolbarImportExportDialog'
 import type { TransformationPipeline } from '@/components/formatter/types'
 import { useToast } from '@/hooks/useToast'
 
@@ -67,6 +68,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showRename, setShowRename] = useState(false)
   const [showSplash, setShowSplash] = useState(false)
   const [showFormatter, setShowFormatter] = useState(false)
+  const [showImportExport, setShowImportExport] = useState(false)
   const [, setCursorPosition] = useState({
     lineNumber: 1,
     column: 1,
@@ -110,7 +112,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
   
   // Formatters management
-  const { pipelines, addPipeline } = useFormatters()
+  const { pipelines, addPipeline, replacePipelines } = useFormatters()
 
   // Scroll synchronization
   const { sourceRef, targetRef } = useSyncScroll<HTMLDivElement>({
@@ -242,10 +244,8 @@ ${htmlContent}
   }, [toast])
 
   const handleClear = useCallback((): void => {
-    if (confirm('Clear all content? This cannot be undone.')) {
-      setContent('')
-      toast({ description: 'Content cleared' })
-    }
+    setContent('')
+    toast({ description: 'Content cleared' })
   }, [setContent, toast])
 
   const handleSave = useCallback((): void => {
@@ -320,6 +320,14 @@ ${htmlContent}
         onSave={handleSavePipeline}
       />
 
+      <ToolbarImportExportDialog
+        key={String(showImportExport)}
+        open={showImportExport}
+        onOpenChange={setShowImportExport}
+        pipelines={pipelines}
+        onImport={replacePipelines}
+      />
+
       <KeyboardShortcutsDialog
         open={showShortcuts}
         onOpenChange={setShowShortcuts}
@@ -369,6 +377,7 @@ ${htmlContent}
           pipelines={pipelines}
           onOpenFormatter={() => setShowFormatter(true)}
           onApplyPipeline={handleApplyPipeline}
+          onOpenImportExport={() => setShowImportExport(true)}
         />
 
         <main className="flex-1 overflow-hidden">
