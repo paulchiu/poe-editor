@@ -1,84 +1,82 @@
 # Poe Markdown Editor
 
-A modern, persistent Markdown editor with Vim keybinding support.
+A Markdown editor with live preview, Vim keybindings, and custom text transformation pipelines. Documents persist in the URL, no accounts or storage required.
 
-## Inspiration
+[Try it now](https://poemd.dev)
 
-This project draws inspiration from [dillinger.io](https://dillinger.io) and the [TypeScript Playground](https://www.typescriptlang.org/play).
+## Overview
+
+Poe combines a clean writing interface with practical tools for text manipulation. It is built for developers and technical writers who need more than a basic editor, without the overhead of account management or cloud dependencies.
+
+### URL-Based Persistence
+
+Document state is compressed and stored in the URL fragment. Copy the URL to share, bookmark for later, or access offline. No backend storage or user accounts.
+
+### Text Transformation Pipelines
+
+The editor includes 25+ text operations that can be chained into reusable pipelines:
+
+- Clean up data: remove duplicates, sort lines, trim whitespace, filter empty lines.
+- Restructure content: join lines, split by delimiter, wrap at width, add line numbers.
+- Transform text: change case, slugify, indent or dedent, add or remove quotes.
+- Extract and filter: regex pattern matching, extract matches, keep or remove lines.
+- Encode and escape: URL, Base64, HTML entities, JSON escaping, regex escaping.
+- Format numbers: add thousands separators, format decimals, increment sequences.
 
 ## Features
 
-- **Vim Mode**: Full Vim keybinding support via Monaco Editor.
-- **Live Preview**: Real-time rendering with split-pane layout.
-- **State Persistence**: Content automatically saved to URL for easy sharing.
-- **Theme Support**: Built-in dark and light modes.
-- **Export**: Options to export content as Markdown or HTML.
+- Live preview with synchronised scrolling.
+- Vim mode via Monaco Editor and monaco-vim.
+- 25+ text transformers with custom pipeline support.
+- One-click export to Markdown or HTML.
+- Dark and light themes with system detection.
+- Mobile-optimised tab interface.
+- Zero backend; all processing occurs in browser.
 
-## Built With
+## Use Cases
 
-- **Core**: React 19, Vite, TypeScript
-- **Styling**: Tailwind CSS v4, Shadcn UI
-- **Editor**: Monaco Editor (with `monaco-vim`)
-- **Deployment**: Cloudflare Workers
+- Documentation: write READMEs, API docs, and wikis with live preview.
+- Data cleaning: transform CSVs, logs, and structured text with custom pipelines.
+- Note taking: capture thoughts and share via URL without account setup.
+- Blogging: draft posts in Markdown and export clean HTML.
+- Quick sharing: create temporary documents that do not require storage.
+
+## Technical Stack
+
+- [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/).
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/) with [monaco-vim](https://github.com/brijeshb42/monaco-vim) bindings.
+- [Tailwind CSS v4](https://tailwindcss.com/) and [Shadcn UI](https://ui.shadcn.com/) components.
+- [Markdown-it](https://github.com/markdown-it/markdown-it) for parsing with [highlight.js](https://highlightjs.org/) for syntax highlighting.
+- [LZ-String](https://github.com/pieroxy/lz-string) for URL compression.
+- Deployed on [Cloudflare Workers](https://workers.cloudflare.com/).
 
 ## Development
 
-### Local Server
-
 ```bash
-npm dev
+npm install
+npm run dev        # Start development server
+npm run test       # Run unit tests
+npm run test:e2e   # Run end-to-end tests
+npm run deploy     # Deploy to Cloudflare Workers
 ```
 
-### Worker Preview
+## Keyboard Shortcuts
 
-Preview application behaviour in the Workers environment:
+| Shortcut               | Action                  |
+| ---------------------- | ----------------------- |
+| `Cmd/Ctrl + B`         | Bold                    |
+| `Cmd/Ctrl + I`         | Italic                  |
+| `Cmd/Ctrl + K`         | Link                    |
+| `Cmd/Ctrl + E`         | Inline code             |
+| `Cmd/Ctrl + Shift + K` | Code block              |
+| `Cmd/Ctrl + S`         | Save (persists to URL)  |
+| `?`                    | Show keyboard shortcuts |
+| `Esc`                  | Close dialogs           |
 
-```bash
-npm preview:worker
-```
+When Vim mode is enabled: Esc for normal mode, i for insert, v for visual.
 
-## Testing
+## Acknowledgements
 
-```bash
-npm test        # Unit tests
-npm test:e2e    # End-to-end tests
-npm lint        # Linting
-```
+Inspired by [Dillinger](https://dillinger.io) and the [TypeScript Playground](https://www.typescriptlang.org/play).
 
-## Deployment
-
-### Cloudflare Workers
-
-Configured as a Single Page Application (SPA).
-
-1.  **Install dependencies**:
-
-    ```bash
-    npm install
-    ```
-
-2.  **Login**:
-
-    ```bash
-    npx wrangler login
-    ```
-
-3.  **Deploy**:
-    ```bash
-    npm deploy
-    ```
-
-### Custom Domain
-
-Default: `poemd.dev`.
-
-To initialise a custom domain:
-
-1.  Add domain to Cloudflare account.
-2.  Update `wrangler.jsonc`:
-    ```json
-    {
-      "routes": [{ "pattern": "your-domain.com", "custom_domain": true }]
-    }
-    ```
-3.  Deploy (DNS/SSL handled automatically).
+MIT License &copy; 2026 Paul Chiu
