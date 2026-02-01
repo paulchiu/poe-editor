@@ -11,6 +11,7 @@ interface TransformerWorkbenchProps {
   onToggleStep: (id: string) => void
   onMoveStep: (dragIndex: number, hoverIndex: number) => void
   onAddOperation: (operation: TransformerOperation) => void
+  onAddRequest?: () => void
 }
 
 /**
@@ -25,6 +26,7 @@ export function TransformerWorkbench({
   onToggleStep,
   onMoveStep,
   onAddOperation,
+  onAddRequest,
 }: TransformerWorkbenchProps): ReactElement {
   const dragItem = useRef<number | null>(null)
   const dragOverItem = useRef<number | null>(null)
@@ -51,6 +53,12 @@ export function TransformerWorkbench({
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
+
+    // Validations: only accept drops from the toolbox
+    if (!e.dataTransfer.types.includes('application/x-poe-operation')) {
+      return
+    }
+
     try {
       const data = e.dataTransfer.getData('application/json')
       if (data) {
@@ -86,35 +94,57 @@ export function TransformerWorkbench({
       <ScrollArea className="flex-1">
         <div className="p-4 flex flex-col gap-3 min-h-[500px]">
           {steps.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-xl m-4 text-center p-8 transition-colors hover:border-primary/40 hover:bg-primary/5">
+            <div
+              className={
+                onAddRequest
+                  ? 'flex-1 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-xl m-4 text-center p-8 transition-colors hover:border-primary/40 hover:bg-primary/5 cursor-pointer'
+                  : 'flex-1 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-xl m-4 text-center p-8 transition-colors hover:border-primary/40 hover:bg-primary/5'
+              }
+              onClick={onAddRequest}
+            >
               <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
                 <Plus className="w-6 h-6 text-muted-foreground" />
               </div>
               <h4 className="font-medium text-foreground mb-1">Build your pipeline</h4>
               <p className="text-sm text-muted-foreground max-w-[200px]">
-                Drag items from the toolbox on the left to start building.
+                {onAddRequest
+                  ? 'Tap here to add your first step.'
+                  : 'Drag items from the toolbox on the left to start building.'}
               </p>
             </div>
           ) : (
-            steps.map((step, index) => (
-              <div key={step.id} className="relative">
-                {/* Connector Line */}
-                {index < steps.length - 1 && (
-                  <div className="absolute left-6 top-full h-3 w-0.5 bg-border -ml-px z-0" />
-                )}
+            <>
+              {steps.map((step, index) => (
+                <div key={step.id} className="relative">
+                  {/* Connector Line */}
+                  {index < steps.length - 1 && (
+                    <div className="absolute left-6 top-full h-3 w-0.5 bg-border -ml-px z-0" />
+                  )}
 
-                <TransformerStep
-                  step={step}
-                  index={index}
-                  onUpdate={onUpdateStep}
-                  onRemove={onRemoveStep}
-                  onToggle={onToggleStep}
-                  onDragStart={handleDragStart}
-                  onDragEnter={handleDragEnter}
-                  onDragEnd={handleDragEnd}
-                />
-              </div>
-            ))
+                  <TransformerStep
+                    step={step}
+                    index={index}
+                    onUpdate={onUpdateStep}
+                    onRemove={onRemoveStep}
+                    onToggle={onToggleStep}
+                    onDragStart={handleDragStart}
+                    onDragEnter={handleDragEnter}
+                    onDragEnd={handleDragEnd}
+                  />
+                </div>
+              ))}
+              {onAddRequest && (
+                <div className="pt-2 flex justify-center">
+                  <button
+                    onClick={onAddRequest}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Step
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </ScrollArea>

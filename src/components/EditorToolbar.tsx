@@ -269,53 +269,53 @@ export function EditorToolbar({
               <ChevronDown className="size-3 text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-48">
-          <DropdownMenuItem onClick={onNew}>
-            <FilePlus className="size-4" />
-            New
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={onRename}>
-            <Pencil className="size-4" />
-            Rename
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <Download className="size-4" />
-              Download
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={onDownloadMarkdown}>
+          <DropdownMenuContent align="start" className="w-48">
+            <DropdownMenuItem onClick={onNew}>
+              <FilePlus className="size-4" />
+              New
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onRename}>
+              <Pencil className="size-4" />
+              Rename
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
                 <Download className="size-4" />
-                Markdown (.md)
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onDownloadHTML}>
-                <Download className="size-4" />
-                HTML (.html)
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-          <DropdownMenuItem onClick={onCopyLink}>
-            <Link2 className="size-4" />
-            Copy Link
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={handleClearClick}
-            className={cn(
-              isConfirmingClear &&
-                'text-destructive bg-destructive/10 focus:bg-destructive/10 focus:text-destructive'
-            )}
-          >
-            {isConfirmingClear ? (
-              <AlertTriangle className="size-4 animate-pulse" />
-            ) : (
-              <Trash2 className="size-4" />
-            )}
-            {isConfirmingClear ? 'Confirm Clear' : 'Clear'}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+                Download
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={onDownloadMarkdown}>
+                  <Download className="size-4" />
+                  Markdown (.md)
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onDownloadHTML}>
+                  <Download className="size-4" />
+                  HTML (.html)
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuItem onClick={onCopyLink}>
+              <Link2 className="size-4" />
+              Copy Link
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={handleClearClick}
+              className={cn(
+                isConfirmingClear &&
+                  'text-destructive bg-destructive/10 focus:bg-destructive/10 focus:text-destructive'
+              )}
+            >
+              {isConfirmingClear ? (
+                <AlertTriangle className="size-4 animate-pulse" />
+              ) : (
+                <Trash2 className="size-4" />
+              )}
+              {isConfirmingClear ? 'Confirm Clear' : 'Clear'}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="order-3 md:order-none w-full md:w-auto mt-2 md:mt-0 flex-none overflow-x-auto flex items-center gap-1 bg-muted/50 rounded-lg p-1 scrollbar-hide">

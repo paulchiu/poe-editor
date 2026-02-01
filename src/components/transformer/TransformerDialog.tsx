@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Wand2, Save, ChevronDown } from 'lucide-react'
+import { Wand2, Save, ChevronDown, X } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +53,7 @@ export function TransformerDialog({
   const [pipelineName, setPipelineName] = useState('')
   const [pipelineIcon, setPipelineIcon] = useState('🪄')
   const [steps, setSteps] = useState<PipelineStep[]>([])
+  const [isToolboxOpen, setIsToolboxOpen] = useState(false)
 
   // Track previous open state to detect dialog open transition
   const wasOpenRef = useRef(open)
@@ -82,6 +83,7 @@ export function TransformerDialog({
       }
 
       setActiveTab('pipeline')
+      setIsToolboxOpen(false)
     }
   }, [open, editPipeline])
 
@@ -93,10 +95,9 @@ export function TransformerDialog({
       enabled: true,
     }
     setSteps((prev) => [...prev, newStep])
-    // Switch to pipeline tab on mobile if added
-    if (window.innerWidth < 1024) {
-      setActiveTab('pipeline')
-    }
+    setIsToolboxOpen(false)
+    setSteps((prev) => [...prev, newStep])
+    setIsToolboxOpen(false)
   }, [])
 
   const handleUpdateStep = useCallback((id: string, config: Record<string, unknown>) => {
@@ -221,7 +222,7 @@ export function TransformerDialog({
           <DialogDescription className="sr-only">
             Create and edit custom text transformation pipelines
           </DialogDescription>
-          
+
           <div className="flex items-center gap-2 ml-auto sm:ml-0 order-2 sm:order-3">
             {initialPreviewText ? (
               <div className="flex items-center -space-x-px">
@@ -270,20 +271,14 @@ export function TransformerDialog({
         </DialogHeader>
 
         {/* Mobile View */}
-        <div className="flex-1 lg:hidden overflow-hidden flex flex-col">
+        <div className="flex-1 lg:hidden overflow-hidden flex flex-col relative">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
             <TabsList className="w-full justify-start rounded-none border-b bg-background p-0 h-10">
-              <TabsTrigger
-                value="toolbox"
-                className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
-              >
-                Toolbox
-              </TabsTrigger>
               <TabsTrigger
                 value="pipeline"
                 className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
               >
-                Pipeline ({steps.length})
+                Edit ({steps.length})
               </TabsTrigger>
               <TabsTrigger
                 value="preview"
@@ -292,12 +287,6 @@ export function TransformerDialog({
                 Preview
               </TabsTrigger>
             </TabsList>
-            <TabsContent
-              value="toolbox"
-              className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
-            >
-              <TransformerToolbox onAddStep={handleAddOperation} />
-            </TabsContent>
             <TabsContent
               value="pipeline"
               className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
@@ -309,6 +298,7 @@ export function TransformerDialog({
                 onToggleStep={handleToggleStep}
                 onMoveStep={handleMoveStep}
                 onAddOperation={handleAddOperation}
+                onAddRequest={() => setIsToolboxOpen(true)}
               />
             </TabsContent>
             <TabsContent
@@ -318,6 +308,21 @@ export function TransformerDialog({
               <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
             </TabsContent>
           </Tabs>
+
+          {/* Toolbox Overlay */}
+          {isToolboxOpen && (
+            <div className="absolute inset-0 z-50 bg-background flex flex-col animate-in slide-in-from-bottom duration-200">
+              <div className="flex items-center justify-between p-3 border-b bg-background">
+                <h3 className="font-semibold text-lg">Add Operation</h3>
+                <Button variant="ghost" size="icon" onClick={() => setIsToolboxOpen(false)}>
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <TransformerToolbox onAddStep={handleAddOperation} />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Desktop View */}

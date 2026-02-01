@@ -81,6 +81,7 @@ export function TransformerToolbox({ onAddStep }: TransformerToolboxProps): Reac
                 draggable
                 onDragStart={(e) => {
                   e.dataTransfer.setData('application/json', JSON.stringify(op))
+                  e.dataTransfer.setData('application/x-poe-operation', 'true')
                 }}
               >
                 <div className="p-2 rounded-md bg-muted group-hover:bg-primary/10 text-muted-foreground group-hover:text-primary mr-3 transition-colors">

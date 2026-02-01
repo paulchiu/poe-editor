@@ -140,8 +140,33 @@ export function TransformerStep({
     }
   }
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Prevent scrolling when starting drag on handle
+    if (e.cancelable) e.preventDefault()
+    onDragStart(index)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    // Prevent scrolling
+    const touch = e.touches[0]
+    const target = document.elementFromPoint(touch.clientX, touch.clientY)
+    const stepElement = target?.closest('[data-index]') as HTMLElement
+
+    if (stepElement && stepElement.dataset.index) {
+      const targetIndex = parseInt(stepElement.dataset.index, 10)
+      if (!isNaN(targetIndex)) {
+        onDragEnter(targetIndex)
+      }
+    }
+  }
+
+  const handleTouchEnd = () => {
+    onDragEnd()
+  }
+
   return (
     <div
+      data-index={index}
       className={cn(
         'group relative flex items-start gap-3 p-3 rounded-xl border bg-card transition-all duration-200 w-full max-w-full min-w-0',
         step.enabled
@@ -153,9 +178,15 @@ export function TransformerStep({
       onDragEnter={() => onDragEnter(index)}
       onDragEnd={onDragEnd}
       onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => e.stopPropagation()}
     >
       {/* Drag Handle - Aligned with icon */}
-      <div className="mt-2 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors self-start pt-0.5">
+      <div
+        className="mt-2 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors self-start pt-0.5 touch-none"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <GripVertical className="h-4 w-4" />
       </div>
 

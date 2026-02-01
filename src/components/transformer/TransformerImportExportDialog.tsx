@@ -138,11 +138,7 @@ export function TransformerImportExportDialog({
 
         <DialogFooter className="flex gap-2 sm:gap-2">
           {/* Mobile: Bottom, Desktop: Middle/Right (2) */}
-          <Button 
-            variant="outline" 
-            onClick={() => onOpenChange(false)}
-            className="sm:order-2"
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="sm:order-2">
             Close
           </Button>
 
