@@ -32,6 +32,7 @@ export function DraggableToolboxItem({
       {...listeners}
       {...attributes}
       variant="outline"
+      style={{ touchAction: 'none' }}
       className={cn(
         'justify-start h-auto py-3 px-4 w-full text-left font-normal bg-background hover:bg-accent border-muted-foreground/20 hover:border-primary/50 group transition-all',
         isDragging ? 'opacity-50' : ''

@@ -5,8 +5,6 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-  TouchSensor,
-  MouseSensor,
   type DragStartEvent,
   type DragEndEvent,
   closestCenter,
@@ -76,18 +74,12 @@ export function TransformerDialog({
   const wasOpenRef = useRef(open)
 
   // Configure sensors for drag and drop
+  // Using PointerSensor exclusively provides the best compatibility for both mouse and touch
+  // when touch-action: none is applied to draggable elements.
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
-      },
-    }),
-    useSensor(MouseSensor),
-    useSensor(TouchSensor, {
-      // Small delay helps distinguish between scroll and drag
-      activationConstraint: {
-        delay: 150,
-        tolerance: 5,
       },
     })
   )

@@ -165,7 +165,8 @@ export function TransformerStep({
     >
       {/* Drag Handle - Aligned with icon */}
       <div
-        className="mt-2 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors self-start pt-0.5 touch-none outline-none"
+        className="mt-2 -ml-2 p-2 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors self-start outline-none"
+        style={{ touchAction: 'none' }}
         {...attributes}
         {...listeners}
       >

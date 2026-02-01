@@ -5,8 +5,6 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-  TouchSensor,
-  MouseSensor,
   type DragStartEvent,
   type DragEndEvent,
   closestCenter,
@@ -123,6 +121,7 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
             size="icon-sm"
             onClick={onClick}
             onMouseDown={allowDrag ? undefined : (e) => e.preventDefault()}
+            style={{ touchAction: allowDrag ? 'none' : undefined }}
             className={cn(
               'text-muted-foreground hover:text-foreground',
               active && 'bg-accent text-foreground',
@@ -318,13 +317,6 @@ export function EditorToolbar({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
-      },
-    }),
-    useSensor(MouseSensor),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 150,
-        tolerance: 5,
       },
     })
   )
