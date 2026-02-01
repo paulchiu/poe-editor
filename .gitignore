@@ -40,3 +40,4 @@ playwright/.cache/
 screenshots/
 videos/
 traces/
+coverage/
