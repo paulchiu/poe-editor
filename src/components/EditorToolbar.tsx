@@ -250,24 +250,25 @@ export function EditorToolbar({
   return (
     <header
       className={cn(
-        'h-14 border-b border-border/60 bg-background/80 backdrop-blur-sm flex items-center justify-between px-4 transition-colors',
+        'min-h-14 md:h-14 h-auto border-b border-border/60 bg-background/80 backdrop-blur-sm flex flex-wrap md:flex-nowrap items-center justify-between px-4 py-2 md:py-0 transition-colors',
         isOverLimit && 'border-destructive/50 bg-destructive/10'
       )}
     >
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className={cn(
-              'gap-2 text-sm font-medium',
-              isOverLimit && 'text-destructive hover:text-destructive hover:bg-destructive/20'
-            )}
-          >
-            {isOverLimit ? <AlertTriangle className="size-4" /> : <FileText className="size-4" />}
-            {documentName}
-            <ChevronDown className="size-3 text-muted-foreground" />
-          </Button>
-        </DropdownMenuTrigger>
+      <div className="order-1 md:order-none">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className={cn(
+                'gap-2 text-sm font-medium',
+                isOverLimit && 'text-destructive hover:text-destructive hover:bg-destructive/20'
+              )}
+            >
+              {isOverLimit ? <AlertTriangle className="size-4" /> : <FileText className="size-4" />}
+              {documentName}
+              <ChevronDown className="size-3 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-48">
           <DropdownMenuItem onClick={onNew}>
             <FilePlus className="size-4" />
@@ -315,8 +316,9 @@ export function EditorToolbar({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
 
-      <div className="hidden md:flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+      <div className="order-3 md:order-none w-full md:w-auto mt-2 md:mt-0 flex-none overflow-x-auto flex items-center gap-1 bg-muted/50 rounded-lg p-1 scrollbar-hide">
         <ToolbarButton icon={Bold} label="Bold (Cmd+B)" onClick={onFormatBold} />
         <ToolbarButton icon={Italic} label="Italic (Cmd+I)" onClick={onFormatItalic} />
         <ToolbarButton icon={Link} label="Link (Cmd+K)" onClick={onFormatLink} />
@@ -452,7 +454,7 @@ export function EditorToolbar({
         )}
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 order-2 md:order-none ml-auto md:ml-0">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
