@@ -442,7 +442,11 @@ function applyStep(text: string, step: PipelineStep): string {
   }
 }
 
-// Helper functions for case conversion
+/**
+ * Converts a string to camelCase format.
+ * @param str - The input string to convert
+ * @returns The camelCase formatted string
+ */
 function toCamelCase(str: string): string {
   // Simple implementation: split by non-alphanumeric, then map
   return str
@@ -453,6 +457,11 @@ function toCamelCase(str: string): string {
     .replace(/[-_]+/g, '') // remove separators if any remaining
 }
 
+/**
+ * Converts a string to snake_case format.
+ * @param str - The input string to convert
+ * @returns The snake_case formatted string
+ */
 function toSnakeCase(str: string): string {
   return str
     .replace(/([a-z])([A-Z])/g, '$1_$2')
@@ -460,6 +469,11 @@ function toSnakeCase(str: string): string {
     .toLowerCase()
 }
 
+/**
+ * Converts a string to kebab-case format.
+ * @param str - The input string to convert
+ * @returns The kebab-case formatted string
+ */
 function toKebabCase(str: string): string {
   return str
     .replace(/([a-z])([A-Z])/g, '$1-$2')
@@ -467,6 +481,11 @@ function toKebabCase(str: string): string {
     .toLowerCase()
 }
 
+/**
+ * Converts a string to PascalCase format.
+ * @param str - The input string to convert
+ * @returns The PascalCase formatted string
+ */
 function toPascalCase(str: string): string {
   return str
     .replace(new RegExp(/[-_]+/, 'g'), ' ')
@@ -475,6 +494,11 @@ function toPascalCase(str: string): string {
     .replace(new RegExp(/\w/), (s) => s.toUpperCase())
 }
 
+/**
+ * Converts a string to CONSTANT_CASE format.
+ * @param str - The input string to convert
+ * @returns The CONSTANT_CASE formatted string
+ */
 function toConstantCase(str: string): string {
   return toSnakeCase(str).toUpperCase()
 }
