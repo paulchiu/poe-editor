@@ -59,9 +59,15 @@ console.log(\`Welcome to \${editor}\`);
 `
 
 interface PoeEditorProps {
+  /** Callback fired when the editor is fully mounted and ready */
   onReady?: () => void
 }
 
+/**
+ * Main editor component with markdown editing, preview, and toolbar functionality.
+ * @param props - Component props
+ * @returns The PoeEditor component
+ */
 export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const { theme, setTheme } = useTheme()
   const { toast } = useToast()
