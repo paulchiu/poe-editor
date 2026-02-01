@@ -19,7 +19,7 @@
   - **Immutability:** Avoid mutation. Use `const` by default.
   - **No Classes:** Use closures or module-level functions.
 - **Type-Based Architecture:**
-  - `/src/components` - React components (Shadcn in `/components/ui`).
+  - `/src/components` - React components (Shadcn in `/src/components/ui`).
   - `/src/hooks` - Custom hooks (prefix with `use`).
   - `/src/utils` - Pure utility functions (e.g., business logic, `classnames.ts`).
   - `/src/test` - Test setup and global mocks. _(Planned: Not yet configured)_
@@ -43,7 +43,7 @@
   - **Types:** `PascalCase` (e.g., `UserProfileProps`).
 - **Exports:**
   - Simple Components: Default export allowed.
-  - `forwardRef` Components: Named export (`export const`) + `displayName`.
+  - `forwardRef` Components: Named export with `displayName` (e.g., `export const Button = forwardRef(...); Button.displayName = 'Button'`).
   - Functions: Explicit return types required on ALL exported functions.
 
 ## 4. Coding Standards (Strict)
@@ -82,9 +82,9 @@
 ## 6. Operation Manual
 
 - **Install:** `npm install`
-- **Dev:** `npm dev`
+- **Dev:** `npm run dev`
 - **Test:** `npm test` (Unit), `npm test:e2e` (E2E)
-- **Lint:** `npm lint` (Zero warnings tolerance).
+- **Lint:** `npm run lint` (Zero warnings tolerance).
 - **Format:** `npm run format` (Apply Prettier formatting after code changes).
 
 ## 7. Git Commit Convention
