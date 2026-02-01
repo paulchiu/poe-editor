@@ -96,8 +96,6 @@ export function TransformerDialog({
     }
     setSteps((prev) => [...prev, newStep])
     setIsToolboxOpen(false)
-    setSteps((prev) => [...prev, newStep])
-    setIsToolboxOpen(false)
   }, [])
 
   const handleUpdateStep = useCallback((id: string, config: Record<string, unknown>) => {
