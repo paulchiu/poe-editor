@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect, type ReactElement } from 'react'
-import { applyPipeline } from '@/utils/formatter-engine'
+import { useState, useMemo, type ReactElement } from 'react'
+import { applyPipeline } from '@/utils/transformer-engine'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { TransformationPipeline } from './types'
 
-interface LivePreviewProps {
+interface TransformerPreviewProps {
   pipeline: TransformationPipeline
   initialText?: string
 }
@@ -15,19 +15,22 @@ duplicate line
 duplicate line`
 
 /**
- * Live preview pane showing the output of a transformation pipeline.
+ * Transformer preview pane showing the output of a transformation pipeline.
  * @param props - Component props
- * @returns Live preview component
+ * @returns Transformer preview component
  */
-export function LivePreview({ pipeline, initialText }: LivePreviewProps): ReactElement {
+export function TransformerPreview({
+  pipeline,
+  initialText,
+}: TransformerPreviewProps): ReactElement {
   const [inputText, setInputText] = useState(initialText || SAMPLE_TEXT)
+  const [prevInitialText, setPrevInitialText] = useState(initialText)
 
-  // Update input text if initialText prop changes (e.g. when opening dialog with different selection)
-  useEffect(() => {
-    if (initialText !== undefined) {
-      setInputText(initialText)
-    }
-  }, [initialText])
+  // Update input text if initialText prop changes (derived state)
+  if (initialText !== prevInitialText) {
+    setInputText(initialText || SAMPLE_TEXT)
+    setPrevInitialText(initialText)
+  }
 
   const outputText = useMemo(() => {
     return applyPipeline(inputText, pipeline)

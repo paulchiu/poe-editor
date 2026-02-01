@@ -1,31 +1,31 @@
 import { useRef, type ReactElement } from 'react'
 import { Plus, Sparkles } from 'lucide-react'
-import { PipelineStepCard } from './PipelineStepCard'
+import { TransformerStep } from './TransformerStep'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import type { PipelineStep, FormatterOperation } from './types'
+import type { PipelineStep, TransformerOperation } from './types'
 
-interface PipelineWorkbenchProps {
+interface TransformerWorkbenchProps {
   steps: PipelineStep[]
   onUpdateStep: (id: string, config: Record<string, unknown>) => void
   onRemoveStep: (id: string) => void
   onToggleStep: (id: string) => void
   onMoveStep: (dragIndex: number, hoverIndex: number) => void
-  onAddOperation: (operation: FormatterOperation) => void
+  onAddOperation: (operation: TransformerOperation) => void
 }
 
 /**
  * Workbench for building transformation pipelines with drag-and-drop interface.
  * @param props - Component props
- * @returns Pipeline workbench component
+ * @returns Transformer workbench component
  */
-export function PipelineWorkbench({
+export function TransformerWorkbench({
   steps,
   onUpdateStep,
   onRemoveStep,
   onToggleStep,
   onMoveStep,
   onAddOperation,
-}: PipelineWorkbenchProps): ReactElement {
+}: TransformerWorkbenchProps): ReactElement {
   const dragItem = useRef<number | null>(null)
   const dragOverItem = useRef<number | null>(null)
 
@@ -54,7 +54,7 @@ export function PipelineWorkbench({
     try {
       const data = e.dataTransfer.getData('application/json')
       if (data) {
-        const operation = JSON.parse(data) as FormatterOperation
+        const operation = JSON.parse(data) as TransformerOperation
         if (operation.id) {
           onAddOperation(operation)
         }
@@ -103,7 +103,7 @@ export function PipelineWorkbench({
                   <div className="absolute left-6 top-full h-3 w-0.5 bg-border -ml-px z-0" />
                 )}
 
-                <PipelineStepCard
+                <TransformerStep
                   step={step}
                   index={index}
                   onUpdate={onUpdateStep}

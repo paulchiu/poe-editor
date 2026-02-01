@@ -1,17 +1,17 @@
 import type { ReactElement } from 'react'
 import { Input } from '@/components/ui/input'
 
-interface JoinSplitLinesConfigProps {
+interface JoinSplitConfigProps {
   config: Record<string, unknown>
   onChange: (config: Record<string, unknown>) => void
   operationId: string
 }
 
-export function JoinSplitLinesConfig({
+export function JoinSplitConfig({
   config,
   onChange,
   operationId,
-}: JoinSplitLinesConfigProps): ReactElement {
+}: JoinSplitConfigProps): ReactElement {
   // Determine placeholder based on operation
   const placeholder = operationId === 'join-lines' ? 'Space, comma, etc.' : 'Separator character'
 

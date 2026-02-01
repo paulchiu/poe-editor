@@ -1,12 +1,12 @@
 import { Input } from '@/components/ui/input'
 import type { ReactElement } from 'react'
 
-interface MatchLinesConfigProps {
+interface LineMatchConfigProps {
   config: Record<string, unknown>
   onChange: (config: Record<string, unknown>) => void
 }
 
-export function MatchLinesConfig({ config, onChange }: MatchLinesConfigProps): ReactElement {
+export function LineMatchConfig({ config, onChange }: LineMatchConfigProps): ReactElement {
   return (
     <div className="grid gap-2 mt-3 animate-in slide-in-from-top-2 duration-200">
       <div className="space-y-1">

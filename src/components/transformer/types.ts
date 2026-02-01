@@ -33,7 +33,7 @@ export type OperationId =
 
 export type OperationCategory = 'Text' | 'Lines' | 'Structure' | 'Search' | 'Data'
 
-export interface FormatterOperation {
+export interface TransformerOperation {
   id: OperationId
   name: string
   description: string

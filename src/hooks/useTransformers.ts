@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react'
-import type { TransformationPipeline } from '@/components/formatter/types'
+import type { TransformationPipeline } from '@/components/transformer/types'
 
 const STORAGE_KEY = 'poe-editor-pipelines'
 
-interface UseFormattersReturn {
+interface UseTransformersReturn {
   pipelines: TransformationPipeline[]
   addPipeline: (pipeline: TransformationPipeline) => void
   updatePipeline: (pipeline: TransformationPipeline) => void
@@ -38,10 +38,10 @@ function getInitialPipelines(): TransformationPipeline[] {
 }
 
 /**
- * Hook to manage custom formatter pipelines with localStorage persistence.
+ * Hook to manage custom transformer pipelines with localStorage persistence.
  * @returns Pipelines state and management functions
  */
-export function useFormatters(): UseFormattersReturn {
+export function useTransformers(): UseTransformersReturn {
   const [pipelines, setPipelines] = useState<TransformationPipeline[]>(getInitialPipelines)
   const [loaded] = useState(true)
 

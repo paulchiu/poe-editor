@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import userEvent from '@testing-library/user-event'
-import { LivePreview } from './LivePreview'
+import { TransformerPreview } from './TransformerPreview'
 import type { TransformationPipeline } from './types'
 
 // Mock the formatter-engine
@@ -13,7 +13,7 @@ vi.mock('@/utils/formatter-engine', () => ({
   }),
 }))
 
-describe('LivePreview', () => {
+describe('TransformerPreview', () => {
   const mockPipeline: TransformationPipeline = {
     id: 'test-pipeline',
     name: 'Test Pipeline',
@@ -36,14 +36,14 @@ describe('LivePreview', () => {
   }
 
   it('should render input and output sections', () => {
-    render(<LivePreview pipeline={emptyPipeline} />)
+    render(<TransformerPreview pipeline={emptyPipeline} />)
 
     expect(screen.getByText('Input')).toBeInTheDocument()
     expect(screen.getByText('Output')).toBeInTheDocument()
   })
 
   it('should display sample text initially', () => {
-    render(<LivePreview pipeline={emptyPipeline} />)
+    render(<TransformerPreview pipeline={emptyPipeline} />)
 
     const textarea = screen.getByPlaceholderText(
       'Paste text here to test...'
@@ -53,7 +53,7 @@ describe('LivePreview', () => {
 
   it('should display initial text when provided via prop', () => {
     const customText = 'Custom initial text'
-    render(<LivePreview pipeline={emptyPipeline} initialText={customText} />)
+    render(<TransformerPreview pipeline={emptyPipeline} initialText={customText} />)
 
     const textarea = screen.getByPlaceholderText(
       'Paste text here to test...'
@@ -62,15 +62,17 @@ describe('LivePreview', () => {
   })
 
   it('should update input text when initialText prop changes', () => {
-    const { rerender } = render(<LivePreview pipeline={emptyPipeline} initialText="First text" />)
+    const { rerender } = render(
+      <TransformerPreview pipeline={emptyPipeline} initialText="First text" />
+    )
     expect(screen.getByPlaceholderText('Paste text here to test...')).toHaveValue('First text')
 
-    rerender(<LivePreview pipeline={emptyPipeline} initialText="Second text" />)
+    rerender(<TransformerPreview pipeline={emptyPipeline} initialText="Second text" />)
     expect(screen.getByPlaceholderText('Paste text here to test...')).toHaveValue('Second text')
   })
 
   it('should display character count for input', () => {
-    render(<LivePreview pipeline={emptyPipeline} />)
+    render(<TransformerPreview pipeline={emptyPipeline} />)
 
     // Sample text has a known length - there are two char counts (input and output)
     const charCounts = screen.getAllByText(/\d+ chars/)
@@ -79,7 +81,7 @@ describe('LivePreview', () => {
 
   it('should update output when input changes', async () => {
     const user = userEvent.setup()
-    render(<LivePreview pipeline={mockPipeline} />)
+    render(<TransformerPreview pipeline={mockPipeline} />)
 
     const textarea = screen.getByPlaceholderText('Paste text here to test...')
 
@@ -92,7 +94,7 @@ describe('LivePreview', () => {
   })
 
   it('should display character count for output', () => {
-    render(<LivePreview pipeline={mockPipeline} />)
+    render(<TransformerPreview pipeline={mockPipeline} />)
 
     // Should have two character count displays (input and output)
     const charCounts = screen.getAllByText(/\d+ chars/)
@@ -100,7 +102,7 @@ describe('LivePreview', () => {
   })
 
   it('should apply pipeline transformation to input text', () => {
-    render(<LivePreview pipeline={mockPipeline} />)
+    render(<TransformerPreview pipeline={mockPipeline} />)
 
     // With our mock, the output should be uppercase version of sample text
     // Text appears in both input (original) and output (transformed)
@@ -110,7 +112,7 @@ describe('LivePreview', () => {
 
   it('should handle empty input', async () => {
     const user = userEvent.setup()
-    render(<LivePreview pipeline={emptyPipeline} />)
+    render(<TransformerPreview pipeline={emptyPipeline} />)
 
     const textarea = screen.getByPlaceholderText('Paste text here to test...')
 
@@ -122,7 +124,7 @@ describe('LivePreview', () => {
   })
 
   it('should update output when pipeline changes', () => {
-    const { rerender } = render(<LivePreview pipeline={emptyPipeline} />)
+    const { rerender } = render(<TransformerPreview pipeline={emptyPipeline} />)
 
     // Initially with empty pipeline (no transformation)
     // Text appears in both input and output
@@ -130,7 +132,7 @@ describe('LivePreview', () => {
     expect(initialElements.length).toBeGreaterThan(0)
 
     // Rerender with transformation pipeline
-    rerender(<LivePreview pipeline={mockPipeline} />)
+    rerender(<TransformerPreview pipeline={mockPipeline} />)
 
     // Now should show transformed output (uppercase)
     const transformedElements = screen.getAllByText(/HELLO WORLD/)
@@ -139,7 +141,7 @@ describe('LivePreview', () => {
 
   it('should allow editing input text', async () => {
     const user = userEvent.setup()
-    render(<LivePreview pipeline={emptyPipeline} />)
+    render(<TransformerPreview pipeline={emptyPipeline} />)
 
     const textarea = screen.getByPlaceholderText('Paste text here to test...')
 
@@ -152,7 +154,7 @@ describe('LivePreview', () => {
   })
 
   it('should have proper accessibility labels', () => {
-    render(<LivePreview pipeline={emptyPipeline} />)
+    render(<TransformerPreview pipeline={emptyPipeline} />)
 
     expect(screen.getByText('Input')).toBeInTheDocument()
     expect(screen.getByText('Output')).toBeInTheDocument()

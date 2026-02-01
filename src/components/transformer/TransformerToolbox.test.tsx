@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import userEvent from '@testing-library/user-event'
-import { Toolbox } from './Toolbox'
+import { TransformerToolbox } from './TransformerToolbox'
 import { OPERATIONS } from './constants'
 
-describe('Toolbox', () => {
+describe('TransformerToolbox', () => {
   const mockOnAddStep = vi.fn()
 
   beforeEach(() => {
@@ -12,7 +12,7 @@ describe('Toolbox', () => {
   })
 
   it('should render all operations initially', () => {
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     OPERATIONS.forEach((op) => {
       expect(screen.getByText(op.name)).toBeInTheDocument()
@@ -20,7 +20,7 @@ describe('Toolbox', () => {
   })
 
   it('should display operation descriptions', () => {
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     OPERATIONS.forEach((op) => {
       expect(screen.getByText(op.description)).toBeInTheDocument()
@@ -28,7 +28,7 @@ describe('Toolbox', () => {
   })
 
   it('should have a search input', () => {
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const searchInput = screen.getByPlaceholderText('Search operations...')
     expect(searchInput).toBeInTheDocument()
@@ -36,7 +36,7 @@ describe('Toolbox', () => {
 
   it('should filter operations by search query', async () => {
     const user = userEvent.setup()
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const searchInput = screen.getByPlaceholderText('Search operations...')
 
@@ -52,7 +52,7 @@ describe('Toolbox', () => {
 
   it('should filter operations case-insensitively', async () => {
     const user = userEvent.setup()
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const searchInput = screen.getByPlaceholderText('Search operations...')
 
@@ -63,7 +63,7 @@ describe('Toolbox', () => {
 
   it('should show empty state when no operations match', async () => {
     const user = userEvent.setup()
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const searchInput = screen.getByPlaceholderText('Search operations...')
 
@@ -74,7 +74,7 @@ describe('Toolbox', () => {
 
   it('should call onAddStep when operation is clicked', async () => {
     const user = userEvent.setup()
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const trimButton = screen.getByText('Trim Whitespace').closest('button')
     expect(trimButton).not.toBeNull()
@@ -91,7 +91,7 @@ describe('Toolbox', () => {
   })
 
   it('should set drag data when operation is dragged', () => {
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const trimButton = screen.getByText('Trim Whitespace').closest('button')
     expect(trimButton).not.toBeNull()
@@ -109,7 +109,7 @@ describe('Toolbox', () => {
   })
 
   it('should make all operation buttons draggable', () => {
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const buttons = screen.getAllByRole('button').filter((btn) => {
       return OPERATIONS.some((op) => btn.textContent?.includes(op.name))
@@ -122,7 +122,7 @@ describe('Toolbox', () => {
 
   it('should clear search when input is cleared', async () => {
     const user = userEvent.setup()
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const searchInput = screen.getByPlaceholderText('Search operations...')
 
@@ -140,14 +140,14 @@ describe('Toolbox', () => {
   })
 
   it('should display "Operations" header', () => {
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     expect(screen.getByText('Operations')).toBeInTheDocument()
   })
 
   it('should pass complete operation object to onAddStep', async () => {
     const user = userEvent.setup()
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const replaceButton = screen.getByText('Replace Text').closest('button')
     await user.click(replaceButton!)
@@ -158,7 +158,7 @@ describe('Toolbox', () => {
 
   it('should filter operations by categories', async () => {
     const user = userEvent.setup()
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     // Initially "All" is active, find "Text" category button
     const textCategoryButton = screen.getByText('text', { selector: 'button' })
@@ -187,7 +187,7 @@ describe('Toolbox', () => {
 
   it('should handle multiple search queries sequentially', async () => {
     const user = userEvent.setup()
-    render(<Toolbox onAddStep={mockOnAddStep} />)
+    render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const searchInput = screen.getByPlaceholderText('Search operations...')
 

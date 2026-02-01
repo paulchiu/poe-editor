@@ -1,12 +1,12 @@
 import { cn } from '@/utils/classnames'
 import type { ReactElement } from 'react'
 
-interface DedupeConfigProps {
+interface DedupeLinesConfigProps {
   config: Record<string, unknown>
   onChange: (config: Record<string, unknown>) => void
 }
 
-export function DedupeConfig({ config, onChange }: DedupeConfigProps): ReactElement {
+export function DedupeLinesConfig({ config, onChange }: DedupeLinesConfigProps): ReactElement {
   const keep = (config.keep as string) || 'first'
 
   return (

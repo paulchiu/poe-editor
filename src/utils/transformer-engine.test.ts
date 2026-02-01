@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { applyPipeline } from './formatter-engine'
-import type { TransformationPipeline } from '@/components/formatter/types'
+import { applyPipeline } from './transformer-engine'
+import type { TransformationPipeline } from '@/components/transformer/types'
 
-describe('formatter-engine', () => {
+describe('transformer-engine', () => {
   const createPipeline = (steps: TransformationPipeline['steps']): TransformationPipeline => ({
     id: 'test',
     name: 'Test Pipeline',

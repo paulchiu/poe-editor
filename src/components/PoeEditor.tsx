@@ -5,10 +5,10 @@ import { useUrlState } from '@/hooks/useUrlState'
 import { useVimMode } from '@/hooks/useVimMode'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSyncScroll } from '@/hooks/useSyncScroll'
-import { useFormatters } from '@/hooks/useFormatters'
+import { useTransformers } from '@/hooks/useTransformers'
 import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
-import { applyPipeline } from '@/utils/formatter-engine'
+import { applyPipeline } from '@/utils/transformer-engine'
 import { EditorPane, type EditorPaneHandle } from '@/components/EditorPane'
 import { PreviewPane } from '@/components/PreviewPane'
 import { SplashScreen } from '@/components/SplashScreen'
@@ -19,9 +19,9 @@ import { AboutDialog } from '@/components/AboutDialog'
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { EditorToolbar } from '@/components/EditorToolbar'
 import { RenameDialog } from '@/components/RenameDialog'
-import { FormatterDialog } from '@/components/formatter/FormatterDialog'
-import { ToolbarImportExportDialog } from '@/components/formatter/ToolbarImportExportDialog'
-import type { TransformationPipeline } from '@/components/formatter/types'
+import { TransformerDialog } from '@/components/transformer/TransformerDialog'
+import { TransformerImportExportDialog } from '@/components/transformer/TransformerImportExportDialog'
+import type { TransformationPipeline } from '@/components/transformer/types'
 import { useToast } from '@/hooks/useToast'
 
 import {
@@ -70,7 +70,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showRename, setShowRename] = useState(false)
   const [showSplash, setShowSplash] = useState(false)
-  const [showFormatter, setShowFormatter] = useState(false)
+  const [showTransformer, setShowTransformer] = useState(false)
   const [showImportExport, setShowImportExport] = useState(false)
   const [editingPipeline, setEditingPipeline] = useState<TransformationPipeline | null>(null)
   const [selectedText, setSelectedText] = useState<string | undefined>(undefined)
@@ -116,9 +116,9 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   // Vim mode management
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
 
-  // Formatters management
+  // Transformers management
   const { pipelines, addPipeline, updatePipeline, removePipeline, replacePipelines } =
-    useFormatters()
+    useTransformers()
 
   // Scroll synchronization
   const { sourceRef, targetRef } = useSyncScroll<HTMLDivElement>({
@@ -199,7 +199,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   const handleEditPipeline = useCallback((pipeline: TransformationPipeline) => {
     setEditingPipeline(pipeline)
-    setShowFormatter(true)
+    setShowTransformer(true)
   }, [])
 
   const handleDeletePipeline = useCallback(
@@ -352,10 +352,10 @@ ${htmlContent}
     <TooltipProvider>
       <AboutDialog open={showAbout} onOpenChange={setShowAbout} />
 
-      <FormatterDialog
-        open={showFormatter}
+      <TransformerDialog
+        open={showTransformer}
         onOpenChange={(open) => {
-          setShowFormatter(open)
+          setShowTransformer(open)
           if (!open) {
             setEditingPipeline(null)
             setSelectedText(undefined)
@@ -367,7 +367,7 @@ ${htmlContent}
         initialPreviewText={selectedText}
       />
 
-      <ToolbarImportExportDialog
+      <TransformerImportExportDialog
         key={`import-export-${showImportExport}`}
         open={showImportExport}
         onOpenChange={setShowImportExport}
@@ -421,10 +421,10 @@ ${htmlContent}
           setShowAbout={setShowAbout}
           setShowSplash={setShowSplash}
           pipelines={pipelines}
-          onOpenFormatter={() => {
+          onOpenTransformer={() => {
             const selection = editorRef.current?.getSelection()
             setSelectedText(selection || undefined)
-            setShowFormatter(true)
+            setShowTransformer(true)
           }}
           onApplyPipeline={handleApplyPipeline}
           onOpenImportExport={() => setShowImportExport(true)}

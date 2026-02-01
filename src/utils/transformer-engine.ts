@@ -1,4 +1,4 @@
-import type { TransformationPipeline, PipelineStep } from '@/components/formatter/types'
+import type { TransformationPipeline, PipelineStep } from '@/components/transformer/types'
 
 /**
  * Applies a single transformation step to the text.

@@ -51,7 +51,6 @@ import {
   Heading2,
   Heading3,
   Keyboard,
-  Settings,
   CodeSquare,
   ListOrdered,
   Sparkles,
@@ -59,10 +58,10 @@ import {
   Wand2,
   ArrowRightLeft,
 } from 'lucide-react'
-import { ICON_MAP } from '@/components/formatter/constants'
+import { ICON_MAP } from '@/components/transformer/constants'
 import { cn } from '@/utils/classnames'
 import type { ReactElement } from 'react'
-import type { TransformationPipeline } from '@/components/formatter/types'
+import type { TransformationPipeline } from '@/components/transformer/types'
 
 interface ToolbarButtonProps {
   icon: ElementType
@@ -137,7 +136,7 @@ interface EditorToolbarProps {
   setShowSplash: (show: boolean) => void
 
   pipelines?: TransformationPipeline[]
-  onOpenFormatter?: () => void
+  onOpenTransformer?: () => void
   onApplyPipeline?: (pipeline: TransformationPipeline) => void
   onOpenImportExport?: () => void
   onEditPipeline?: (pipeline: TransformationPipeline) => void
@@ -180,7 +179,7 @@ export function EditorToolbar({
   setShowAbout,
   setShowSplash,
   pipelines,
-  onOpenFormatter,
+  onOpenTransformer,
   onApplyPipeline,
   onOpenImportExport,
   onEditPipeline,
@@ -356,7 +355,7 @@ export function EditorToolbar({
 
         <div className="w-px h-5 bg-border mx-1" />
 
-        <ToolbarButton icon={Wand2} label="Transform Selection" onClick={onOpenFormatter} />
+        <ToolbarButton icon={Wand2} label="Transform Selection" onClick={onOpenTransformer} />
 
         {pipelines && pipelines.length > 0 && (
           <>
@@ -405,14 +404,14 @@ export function EditorToolbar({
                       <ContextMenuContent>
                         <ContextMenuItem onClick={() => onEditPipeline?.(pipeline)}>
                           <Pencil className="size-4" />
-                          Edit Formatter
+                          Edit Transformer
                         </ContextMenuItem>
                         <ContextMenuItem
                           variant="destructive"
                           onClick={() => setPipelineToDelete(pipeline)}
                         >
                           <Trash2 className="size-4" />
-                          Delete Formatter
+                          Delete Transformer
                         </ContextMenuItem>
                       </ContextMenuContent>
                     </ContextMenu>
@@ -427,7 +426,7 @@ export function EditorToolbar({
             >
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Formatter?</AlertDialogTitle>
+                  <AlertDialogTitle>Delete Transformer?</AlertDialogTitle>
                   <AlertDialogDescription>
                     Are you sure you want to delete &ldquo;{pipelineToDelete?.name}&rdquo;? This
                     action cannot be undone.

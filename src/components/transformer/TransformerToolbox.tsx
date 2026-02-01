@@ -5,18 +5,18 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/utils/classnames'
-import type { FormatterOperation, OperationCategory } from './types'
+import type { TransformerOperation, OperationCategory } from './types'
 
-interface ToolboxProps {
-  onAddStep: (operation: FormatterOperation) => void
+interface TransformerToolboxProps {
+  onAddStep: (operation: TransformerOperation) => void
 }
 
 /**
- * Toolbox component displaying available formatter operations for pipeline building.
+ * Toolbox component displaying available transformer operations for pipeline building.
  * @param props - Component props
- * @returns Toolbox component
+ * @returns Transformer toolbox component
  */
-export function Toolbox({ onAddStep }: ToolboxProps): ReactElement {
+export function TransformerToolbox({ onAddStep }: TransformerToolboxProps): ReactElement {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<OperationCategory | 'All'>('All')
 

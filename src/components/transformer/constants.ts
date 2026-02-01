@@ -38,7 +38,7 @@ import {
   Link,
   Quote,
 } from 'lucide-react'
-import type { FormatterOperation } from './types'
+import type { TransformerOperation } from './types'
 
 export const COMMON_ICONS = [
   { icon: Wand2, label: 'Wand' },
@@ -58,7 +58,7 @@ export const COMMON_ICONS = [
   { icon: FileText, label: 'File' },
 ]
 
-export const OPERATIONS: FormatterOperation[] = [
+export const OPERATIONS: TransformerOperation[] = [
   // Lines
   {
     id: 'trim',

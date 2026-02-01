@@ -7,17 +7,17 @@ import { cn } from '@/utils/classnames'
 import type { PipelineStep } from './types'
 import { ReplaceConfig } from './step-configs/ReplaceConfig'
 import { TrimConfig } from './step-configs/TrimConfig'
-import { FilterLinesConfig } from './step-configs/FilterLinesConfig'
+import { EmptyLinesConfig } from './step-configs/EmptyLinesConfig'
 import { ChangeCaseConfig } from './step-configs/ChangeCaseConfig'
 import { SortLinesConfig } from './step-configs/SortLinesConfig'
-import { JoinSplitLinesConfig } from './step-configs/JoinSplitLinesConfig'
-import { DedupeConfig } from './step-configs/DedupeConfig'
+import { JoinSplitConfig } from './step-configs/JoinSplitConfig'
+import { DedupeLinesConfig } from './step-configs/DedupeLinesConfig'
 import { NumberLinesConfig } from './step-configs/NumberLinesConfig'
 import { WrapLinesConfig } from './step-configs/WrapLinesConfig'
 import { WordWrapConfig } from './step-configs/WordWrapConfig'
 import { IndentConfig } from './step-configs/IndentConfig'
 import { ExtractMatchesConfig } from './step-configs/ExtractMatchesConfig'
-import { MatchLinesConfig } from './step-configs/MatchLinesConfig'
+import { LineMatchConfig } from './step-configs/LineMatchConfig'
 import { RemoveCharsConfig } from './step-configs/RemoveCharsConfig'
 import { EncodeDecodeConfig } from './step-configs/EncodeDecodeConfig'
 import { EscapeConfig } from './step-configs/EscapeConfig'
@@ -26,7 +26,7 @@ import { FormatNumbersConfig } from './step-configs/FormatNumbersConfig'
 import { IncrementNumbersConfig } from './step-configs/IncrementNumbersConfig'
 import { QuoteConfig } from './step-configs/QuoteConfig'
 
-interface PipelineStepCardProps {
+interface TransformerStepProps {
   step: PipelineStep
   index: number
   onUpdate: (id: string, config: Record<string, unknown>) => void
@@ -41,11 +41,11 @@ interface PipelineStepCardProps {
 const LINE_MODE_OPERATIONS = ['trim', 'change-case', 'replace', 'slugify', 'quote']
 
 /**
- * Card component representing a single step in a transformation pipeline.
+ * Component representing a single step in a transformation pipeline.
  * @param props - Component props
- * @returns Pipeline step card component
+ * @returns Transformer step component
  */
-export function PipelineStepCard({
+export function TransformerStep({
   step,
   index,
   onUpdate,
@@ -54,7 +54,7 @@ export function PipelineStepCard({
   onDragStart,
   onDragEnter,
   onDragEnd,
-}: PipelineStepCardProps): ReactElement | null {
+}: TransformerStepProps): ReactElement | null {
   const [showConfig, setShowConfig] = useState(true) // Default open configuration
 
   const operation = OPERATIONS.find((op) => op.id === step.operationId)
@@ -88,7 +88,7 @@ export function PipelineStepCard({
         return <TrimConfig config={step.config} onChange={handleConfigChange} />
 
       case 'filter-lines':
-        return <FilterLinesConfig config={step.config} onChange={handleConfigChange} />
+        return <EmptyLinesConfig config={step.config} onChange={handleConfigChange} />
 
       case 'change-case':
         return <ChangeCaseConfig config={step.config} onChange={handleConfigChange} />
@@ -99,14 +99,14 @@ export function PipelineStepCard({
       case 'join-lines':
       case 'split-lines':
         return (
-          <JoinSplitLinesConfig
+          <JoinSplitConfig
             config={step.config}
             onChange={handleConfigChange}
             operationId={step.operationId}
           />
         )
       case 'dedupe-lines':
-        return <DedupeConfig config={step.config} onChange={handleConfigChange} />
+        return <DedupeLinesConfig config={step.config} onChange={handleConfigChange} />
       case 'number-lines':
         return <NumberLinesConfig config={step.config} onChange={handleConfigChange} />
       case 'wrap-lines':
@@ -119,7 +119,7 @@ export function PipelineStepCard({
         return <ExtractMatchesConfig config={step.config} onChange={handleConfigChange} />
       case 'keep-lines':
       case 'remove-lines':
-        return <MatchLinesConfig config={step.config} onChange={handleConfigChange} />
+        return <LineMatchConfig config={step.config} onChange={handleConfigChange} />
       case 'remove-chars':
         return <RemoveCharsConfig config={step.config} onChange={handleConfigChange} />
       case 'encode-decode':

@@ -15,7 +15,7 @@ import { createToolbarExport, parseToolbarImport } from './toolbarSchema'
 import { cn } from '@/utils/classnames'
 import type { TransformationPipeline } from './types'
 
-interface ToolbarImportExportDialogProps {
+interface TransformerImportExportDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   pipelines: TransformationPipeline[]
@@ -23,16 +23,16 @@ interface ToolbarImportExportDialogProps {
 }
 
 /**
- * Dialog for importing and exporting toolbar configuration.
+ * Dialog for importing and exporting transformer configuration.
  * @param props - Component props
  * @returns Dialog component
  */
-export function ToolbarImportExportDialog({
+export function TransformerImportExportDialog({
   open,
   onOpenChange,
   pipelines,
   onImport,
-}: ToolbarImportExportDialogProps): ReactElement {
+}: TransformerImportExportDialogProps): ReactElement {
   const { toast } = useToast()
   const [jsonText, setJsonText] = useState(() => {
     const exportData = createToolbarExport(pipelines)

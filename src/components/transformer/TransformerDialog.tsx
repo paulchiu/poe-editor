@@ -19,12 +19,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { IconPicker } from './IconPicker'
-import { Toolbox } from './Toolbox'
-import { PipelineWorkbench } from './PipelineWorkbench'
-import { LivePreview } from './LivePreview'
-import type { TransformationPipeline, PipelineStep, FormatterOperation } from './types'
+import { TransformerToolbox } from './TransformerToolbox'
+import { TransformerWorkbench } from './TransformerWorkbench'
+import { TransformerPreview } from './TransformerPreview'
+import type { TransformationPipeline, PipelineStep, TransformerOperation } from './types'
 
-interface FormatterDialogProps {
+interface TransformerDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (pipeline: TransformationPipeline) => void
@@ -38,16 +38,16 @@ const generateId = (): string => Math.random().toString(36).substring(2, 9)
 /**
  * Dialog for creating and editing custom text transformation pipelines.
  * @param props - Component props
- * @returns Formatter dialog component
+ * @returns Transformer dialog component
  */
-export function FormatterDialog({
+export function TransformerDialog({
   open,
   onOpenChange,
   onSave,
   onApply,
   editPipeline,
   initialPreviewText,
-}: FormatterDialogProps): ReactElement {
+}: TransformerDialogProps): ReactElement {
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState('pipeline')
   const [pipelineName, setPipelineName] = useState('')
@@ -85,7 +85,7 @@ export function FormatterDialog({
     }
   }, [open, editPipeline])
 
-  const handleAddOperation = useCallback((operation: FormatterOperation) => {
+  const handleAddOperation = useCallback((operation: TransformerOperation) => {
     const newStep: PipelineStep = {
       id: generateId(),
       operationId: operation.id,
@@ -233,7 +233,11 @@ export function FormatterDialog({
             </div>
             {initialPreviewText ? (
               <div className="flex items-center -space-x-px">
-                <Button variant="ghost" onClick={handleApply} className="h-10 rounded-r-none border-r">
+                <Button
+                  variant="ghost"
+                  onClick={handleApply}
+                  className="h-10 rounded-r-none border-r"
+                >
                   Apply
                 </Button>
                 <DropdownMenu>
@@ -290,13 +294,13 @@ export function FormatterDialog({
               value="toolbox"
               className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
             >
-              <Toolbox onAddStep={handleAddOperation} />
+              <TransformerToolbox onAddStep={handleAddOperation} />
             </TabsContent>
             <TabsContent
               value="pipeline"
               className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
             >
-              <PipelineWorkbench
+              <TransformerWorkbench
                 steps={steps}
                 onUpdateStep={handleUpdateStep}
                 onRemoveStep={handleRemoveStep}
@@ -309,7 +313,7 @@ export function FormatterDialog({
               value="preview"
               className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
             >
-              <LivePreview pipeline={currentPipeline} initialText={initialPreviewText} />
+              <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
             </TabsContent>
           </Tabs>
         </div>
@@ -319,7 +323,7 @@ export function FormatterDialog({
           <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
             <ResizablePanel defaultSize={30} minSize={20}>
               <div className="h-full overflow-y-auto bg-muted/5">
-                <Toolbox onAddStep={handleAddOperation} />
+                <TransformerToolbox onAddStep={handleAddOperation} />
               </div>
             </ResizablePanel>
 
@@ -327,7 +331,7 @@ export function FormatterDialog({
 
             <ResizablePanel defaultSize={40} minSize={30}>
               <div className="h-full overflow-y-auto bg-background/50">
-                <PipelineWorkbench
+                <TransformerWorkbench
                   steps={steps}
                   onUpdateStep={handleUpdateStep}
                   onRemoveStep={handleRemoveStep}
@@ -342,7 +346,7 @@ export function FormatterDialog({
 
             <ResizablePanel defaultSize={30} minSize={20}>
               <div className="h-full overflow-y-auto">
-                <LivePreview pipeline={currentPipeline} initialText={initialPreviewText} />
+                <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
