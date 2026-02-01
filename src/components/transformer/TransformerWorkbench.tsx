@@ -1,5 +1,7 @@
-import { useRef, type ReactElement } from 'react'
+import { type ReactElement } from 'react'
 import { Plus, Sparkles } from 'lucide-react'
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { TransformerStep } from './TransformerStep'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { PipelineStep, TransformerOperation } from './types'
@@ -9,7 +11,6 @@ interface TransformerWorkbenchProps {
   onUpdateStep: (id: string, config: Record<string, unknown>) => void
   onRemoveStep: (id: string) => void
   onToggleStep: (id: string) => void
-  onMoveStep: (dragIndex: number, hoverIndex: number) => void
   onAddOperation: (operation: TransformerOperation) => void
   onAddRequest?: () => void
 }
@@ -24,63 +25,14 @@ export function TransformerWorkbench({
   onUpdateStep,
   onRemoveStep,
   onToggleStep,
-  onMoveStep,
-  onAddOperation,
   onAddRequest,
 }: TransformerWorkbenchProps): ReactElement {
-  const dragItem = useRef<number | null>(null)
-  const dragOverItem = useRef<number | null>(null)
-
-  const handleDragStart = (index: number) => {
-    dragItem.current = index
-  }
-
-  const handleDragEnter = (index: number) => {
-    dragOverItem.current = index
-  }
-
-  const handleDragEnd = () => {
-    const dragIndex = dragItem.current
-    const hoverIndex = dragOverItem.current
-
-    if (dragIndex !== null && hoverIndex !== null && dragIndex !== hoverIndex) {
-      onMoveStep(dragIndex, hoverIndex)
-    }
-
-    dragItem.current = null
-    dragOverItem.current = null
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-
-    // Validations: only accept drops from the toolbox
-    if (!e.dataTransfer.types.includes('application/x-poe-operation')) {
-      return
-    }
-
-    try {
-      const data = e.dataTransfer.getData('application/json')
-      if (data) {
-        const operation = JSON.parse(data) as TransformerOperation
-        if (operation.id) {
-          onAddOperation(operation)
-        }
-      }
-    } catch {
-      // Silently ignore invalid drop data - user will try again or use toolbar
-    }
-  }
+  const { setNodeRef, isOver } = useDroppable({
+    id: 'workbench-container',
+  })
 
   return (
-    <div
-      className="flex flex-col h-full bg-muted/5 relative"
-      onDragOver={(e) => {
-        e.preventDefault()
-        e.dataTransfer.dropEffect = 'copy'
-      }}
-      onDrop={handleDrop}
-    >
+    <div className="flex flex-col h-full bg-muted/5 relative">
       <div className="p-4 border-b bg-background flex justify-between items-center">
         <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
@@ -92,7 +44,12 @@ export function TransformerWorkbench({
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-4 flex flex-col gap-3 min-h-[500px]">
+        <div
+          ref={setNodeRef}
+          className={`p-4 flex flex-col gap-3 min-h-[500px] transition-colors ${
+            isOver ? 'bg-primary/5' : ''
+          }`}
+        >
           {steps.length === 0 ? (
             <div
               className={
@@ -113,7 +70,7 @@ export function TransformerWorkbench({
               </p>
             </div>
           ) : (
-            <>
+            <SortableContext items={steps} strategy={verticalListSortingStrategy}>
               {steps.map((step, index) => (
                 <div key={step.id} className="relative">
                   {/* Connector Line */}
@@ -127,24 +84,21 @@ export function TransformerWorkbench({
                     onUpdate={onUpdateStep}
                     onRemove={onRemoveStep}
                     onToggle={onToggleStep}
-                    onDragStart={handleDragStart}
-                    onDragEnter={handleDragEnter}
-                    onDragEnd={handleDragEnd}
                   />
                 </div>
               ))}
-              {onAddRequest && (
-                <div className="pt-2 flex justify-center">
-                  <button
-                    onClick={onAddRequest}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Step
-                  </button>
-                </div>
-              )}
-            </>
+            </SortableContext>
+          )}
+          {steps.length > 0 && onAddRequest && (
+            <div className="pt-2 flex justify-center">
+              <button
+                onClick={onAddRequest}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
+              >
+                <Plus className="w-4 h-4" />
+                Add Step
+              </button>
+            </div>
           )}
         </div>
       </ScrollArea>

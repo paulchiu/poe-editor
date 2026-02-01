@@ -1,4 +1,17 @@
 import { useState, useCallback, useEffect, useRef, type ReactElement } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  TouchSensor,
+  MouseSensor,
+  type DragStartEvent,
+  type DragEndEvent,
+  closestCenter,
+} from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
 import { useToast } from '@/hooks/useToast'
 import {
   Dialog,
@@ -19,9 +32,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { IconPicker } from './IconPicker'
-import { TransformerToolbox } from './TransformerToolbox'
+import { TransformerToolbox, DraggableToolboxItem } from './TransformerToolbox'
 import { TransformerWorkbench } from './TransformerWorkbench'
 import { TransformerPreview } from './TransformerPreview'
+import { TransformerStep } from './TransformerStep'
 import type { TransformationPipeline, PipelineStep, TransformerOperation } from './types'
 
 interface TransformerDialogProps {
@@ -54,9 +68,29 @@ export function TransformerDialog({
   const [pipelineIcon, setPipelineIcon] = useState('🪄')
   const [steps, setSteps] = useState<PipelineStep[]>([])
   const [isToolboxOpen, setIsToolboxOpen] = useState(false)
+  const [activeDragItem, setActiveDragItem] = useState<PipelineStep | TransformerOperation | null>(
+    null
+  )
 
   // Track previous open state to detect dialog open transition
   const wasOpenRef = useRef(open)
+
+  // Configure sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(MouseSensor),
+    useSensor(TouchSensor, {
+      // Small delay helps distinguish between scroll and drag
+      activationConstraint: {
+        delay: 150,
+        tolerance: 5,
+      },
+    })
+  )
 
   // Load edit state only when dialog transitions from closed to open
   useEffect(() => {
@@ -110,14 +144,49 @@ export function TransformerDialog({
     setSteps((prev) => prev.map((s) => (s.id === id ? { ...s, enabled: !s.enabled } : s)))
   }, [])
 
-  const handleMoveStep = useCallback((dragIndex: number, hoverIndex: number) => {
-    setSteps((prev) => {
-      const newSteps = [...prev]
-      const [removed] = newSteps.splice(dragIndex, 1)
-      newSteps.splice(hoverIndex, 0, removed)
-      return newSteps
-    })
-  }, [])
+  // DnD Handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const activeData = active.data.current as any
+
+    if (activeData?.sortable?.index !== undefined) {
+      // It's a step being reordered
+      // Find the step object
+      const step = steps.find((s) => s.id === active.id)
+      if (step) setActiveDragItem(step)
+    } else if (activeData?.operation) {
+      // It's a new operation from toolbox
+      setActiveDragItem(activeData.operation)
+    }
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveDragItem(null)
+
+    if (!over) return
+
+    // Case 1: Reordering steps
+    if (
+      active.data.current?.sortable?.index !== undefined &&
+      over.data.current?.sortable?.index !== undefined &&
+      active.id !== over.id
+    ) {
+      setSteps((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over.id)
+        return arrayMove(items, oldIndex, newIndex)
+      })
+      return
+    }
+
+    // Case 2: Dropping new operation from toolbox
+    if (active.data.current?.operation && over.id === 'workbench-container') {
+      const operation = active.data.current.operation as TransformerOperation
+      handleAddOperation(operation)
+    }
+  }
 
   const handleSave = () => {
     if (!pipelineName.trim()) {
@@ -268,94 +337,124 @@ export function TransformerDialog({
           </div>
         </DialogHeader>
 
-        {/* Mobile View */}
-        <div className="flex-1 lg:hidden overflow-hidden flex flex-col relative">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <TabsList className="w-full justify-start rounded-none border-b bg-background p-0 h-10">
-              <TabsTrigger
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          {/* Mobile View */}
+          <div className="flex-1 lg:hidden overflow-hidden flex flex-col relative">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+              <TabsList className="w-full justify-start rounded-none border-b bg-background p-0 h-10">
+                <TabsTrigger
+                  value="pipeline"
+                  className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
+                >
+                  Edit ({steps.length})
+                </TabsTrigger>
+                <TabsTrigger
+                  value="preview"
+                  className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
+                >
+                  Preview
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent
                 value="pipeline"
-                className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
+                className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
               >
-                Edit ({steps.length})
-              </TabsTrigger>
-              <TabsTrigger
-                value="preview"
-                className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
-              >
-                Preview
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent
-              value="pipeline"
-              className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
-            >
-              <TransformerWorkbench
-                steps={steps}
-                onUpdateStep={handleUpdateStep}
-                onRemoveStep={handleRemoveStep}
-                onToggleStep={handleToggleStep}
-                onMoveStep={handleMoveStep}
-                onAddOperation={handleAddOperation}
-                onAddRequest={() => setIsToolboxOpen(true)}
-              />
-            </TabsContent>
-            <TabsContent
-              value="preview"
-              className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
-            >
-              <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
-            </TabsContent>
-          </Tabs>
-
-          {/* Toolbox Overlay */}
-          {isToolboxOpen && (
-            <div className="absolute inset-0 z-50 bg-background flex flex-col animate-in slide-in-from-bottom duration-200">
-              <div className="flex items-center justify-between p-3 border-b bg-background">
-                <h3 className="font-semibold text-lg">Add Operation</h3>
-                <Button variant="ghost" size="icon" onClick={() => setIsToolboxOpen(false)}>
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <TransformerToolbox onAddStep={handleAddOperation} />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Desktop View */}
-        <div className="flex-1 hidden lg:block overflow-hidden h-full">
-          <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
-            <ResizablePanel defaultSize={30} minSize={20}>
-              <div className="h-full overflow-y-auto bg-muted/5">
-                <TransformerToolbox onAddStep={handleAddOperation} />
-              </div>
-            </ResizablePanel>
-
-            <ResizableHandle withHandle />
-
-            <ResizablePanel defaultSize={40} minSize={30}>
-              <div className="h-full overflow-y-auto bg-background/50">
                 <TransformerWorkbench
                   steps={steps}
                   onUpdateStep={handleUpdateStep}
                   onRemoveStep={handleRemoveStep}
                   onToggleStep={handleToggleStep}
-                  onMoveStep={handleMoveStep}
                   onAddOperation={handleAddOperation}
+                  onAddRequest={() => setIsToolboxOpen(true)}
                 />
-              </div>
-            </ResizablePanel>
-
-            <ResizableHandle withHandle />
-
-            <ResizablePanel defaultSize={30} minSize={20}>
-              <div className="h-full overflow-y-auto">
+              </TabsContent>
+              <TabsContent
+                value="preview"
+                className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
+              >
                 <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
+              </TabsContent>
+            </Tabs>
+
+            {/* Toolbox Overlay */}
+            {isToolboxOpen && (
+              <div className="absolute inset-0 z-50 bg-background flex flex-col animate-in slide-in-from-bottom duration-200">
+                <div className="flex items-center justify-between p-3 border-b bg-background">
+                  <h3 className="font-semibold text-lg">Add Operation</h3>
+                  <Button variant="ghost" size="icon" onClick={() => setIsToolboxOpen(false)}>
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <TransformerToolbox onAddStep={handleAddOperation} />
+                </div>
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </div>
+            )}
+          </div>
+
+          {/* Desktop View */}
+          <div className="flex-1 hidden lg:block overflow-hidden h-full">
+            <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
+              <ResizablePanel defaultSize={30} minSize={20}>
+                <div className="h-full overflow-y-auto bg-muted/5">
+                  <TransformerToolbox onAddStep={handleAddOperation} />
+                </div>
+              </ResizablePanel>
+
+              <ResizableHandle withHandle />
+
+              <ResizablePanel defaultSize={40} minSize={30}>
+                <div className="h-full overflow-y-auto bg-background/50">
+                  <TransformerWorkbench
+                    steps={steps}
+                    onUpdateStep={handleUpdateStep}
+                    onRemoveStep={handleRemoveStep}
+                    onToggleStep={handleToggleStep}
+                    onAddOperation={handleAddOperation}
+                  />
+                </div>
+              </ResizablePanel>
+
+              <ResizableHandle withHandle />
+
+              <ResizablePanel defaultSize={30} minSize={20}>
+                <div className="h-full overflow-y-auto">
+                  <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </div>
+
+          <DragOverlay>
+            {activeDragItem ? (
+              'operationId' in activeDragItem ? (
+                // It's a Step
+                <div className="opacity-80">
+                  <TransformerStep
+                    step={activeDragItem as PipelineStep}
+                    index={-1}
+                    onUpdate={() => {}}
+                    onRemove={() => {}}
+                    onToggle={() => {}}
+                  />
+                </div>
+              ) : (
+                // It's a new Operation
+                <div className="opacity-80">
+                  <DraggableToolboxItem
+                    operation={activeDragItem as TransformerOperation}
+                    onAddStep={() => {}}
+                  />
+                </div>
+              )
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </DialogContent>
     </Dialog>
   )

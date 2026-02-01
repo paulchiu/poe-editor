@@ -1,5 +1,7 @@
 import { useState, type ReactElement } from 'react'
 import { GripVertical, Settings2, Trash2, WrapText, TextSelect } from 'lucide-react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { OPERATIONS, ICON_MAP } from './constants'
@@ -32,9 +34,6 @@ interface TransformerStepProps {
   onUpdate: (id: string, config: Record<string, unknown>) => void
   onRemove: (id: string) => void
   onToggle: (id: string) => void
-  onDragStart: (index: number) => void
-  onDragEnter: (index: number) => void
-  onDragEnd: () => void
 }
 
 // Operations that support line-by-line mode
@@ -51,11 +50,23 @@ export function TransformerStep({
   onUpdate,
   onRemove,
   onToggle,
-  onDragStart,
-  onDragEnter,
-  onDragEnd,
 }: TransformerStepProps): ReactElement | null {
   const [showConfig, setShowConfig] = useState(true) // Default open configuration
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: step.id,
+    data: {
+      sortable: { index },
+      // Pass step data for DnD DragOverlay
+      step: step,
+    },
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
 
   const operation = OPERATIONS.find((op) => op.id === step.operationId)
   if (!operation) return null
@@ -140,52 +151,23 @@ export function TransformerStep({
     }
   }
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    // Prevent scrolling when starting drag on handle
-    if (e.cancelable) e.preventDefault()
-    onDragStart(index)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    // Prevent scrolling
-    const touch = e.touches[0]
-    const target = document.elementFromPoint(touch.clientX, touch.clientY)
-    const stepElement = target?.closest('[data-index]') as HTMLElement
-
-    if (stepElement && stepElement.dataset.index) {
-      const targetIndex = parseInt(stepElement.dataset.index, 10)
-      if (!isNaN(targetIndex)) {
-        onDragEnter(targetIndex)
-      }
-    }
-  }
-
-  const handleTouchEnd = () => {
-    onDragEnd()
-  }
-
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       data-index={index}
       className={cn(
-        'group relative flex items-start gap-3 p-3 rounded-xl border bg-card transition-all duration-200 w-full max-w-full min-w-0',
+        'group relative flex items-start gap-3 p-3 rounded-xl border bg-card w-full max-w-full min-w-0 transition-shadow',
         step.enabled
           ? 'shadow-sm border-muted-foreground/10 hover:border-primary/30'
           : 'opacity-60 border-transparent bg-muted/5'
       )}
-      draggable
-      onDragStart={() => onDragStart(index)}
-      onDragEnter={() => onDragEnter(index)}
-      onDragEnd={onDragEnd}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => e.stopPropagation()}
     >
       {/* Drag Handle - Aligned with icon */}
       <div
-        className="mt-2 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors self-start pt-0.5 touch-none"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        className="mt-2 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors self-start pt-0.5 touch-none outline-none"
+        {...attributes}
+        {...listeners}
       >
         <GripVertical className="h-4 w-4" />
       </div>
@@ -211,7 +193,12 @@ export function TransformerStep({
             {operation.name}
           </span>
 
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div
+            className={cn(
+              'flex items-center gap-1 transition-opacity',
+              isDragging ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+            )}
+          >
             {supportsLineMode && (
               <Button
                 variant="ghost"
