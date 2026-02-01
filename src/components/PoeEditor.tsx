@@ -42,10 +42,13 @@ A Markdown editor with vim support.
 
 ## Features
 
-- Live preview with split pane
-- Vim mode for power users
-- Dark and light themes
-- Export to MD or HTML
+- Live preview with split-pane layout
+- Vim mode
+- Dark and light theme support
+- Export to Markdown or HTML
+- URL-based document persistence
+- Custom text transformers
+- Transformers import/export
 
 \`\`\`javascript
 const editor = "Poe";
