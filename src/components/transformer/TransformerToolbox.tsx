@@ -11,14 +11,19 @@ import type { TransformerOperation, OperationCategory } from './types'
 interface DraggableToolboxItemProps {
   operation: TransformerOperation
   onAddStep: (operation: TransformerOperation) => void
+  isOverlay?: boolean
+  style?: React.CSSProperties
 }
 
 export function DraggableToolboxItem({
   operation,
   onAddStep,
+  isOverlay,
+  style: styleProp,
 }: DraggableToolboxItemProps): ReactElement {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `toolbox-${operation.id}`,
+    disabled: isOverlay,
     data: {
       operation,
     },
@@ -28,11 +33,12 @@ export function DraggableToolboxItem({
 
   return (
     <Button
+      id={!isOverlay ? `toolbox-${operation.id}` : undefined}
       ref={setNodeRef}
       {...listeners}
       {...attributes}
       variant="outline"
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: 'none', ...styleProp }}
       className={cn(
         'justify-start h-auto py-3 px-4 w-full text-left font-normal bg-background hover:bg-accent border-muted-foreground/20 hover:border-primary/50 group transition-all',
         isDragging ? 'opacity-50' : ''

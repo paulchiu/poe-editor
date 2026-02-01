@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef, type ReactElement } from 'react'
+import { createPortal } from 'react-dom'
 import {
   DndContext,
   DragOverlay,
@@ -9,6 +10,7 @@ import {
   type DragEndEvent,
   closestCenter,
 } from '@dnd-kit/core'
+import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { arrayMove } from '@dnd-kit/sortable'
 import { useToast } from '@/hooks/useToast'
 import {
@@ -69,6 +71,7 @@ export function TransformerDialog({
   const [activeDragItem, setActiveDragItem] = useState<PipelineStep | TransformerOperation | null>(
     null
   )
+  const [activeDragWidth, setActiveDragWidth] = useState<number | undefined>(undefined)
 
   // Track previous open state to detect dialog open transition
   const wasOpenRef = useRef(open)
@@ -151,11 +154,20 @@ export function TransformerDialog({
       // It's a new operation from toolbox
       setActiveDragItem(activeData.operation)
     }
+
+    // Capture width of the dragged element to prevent squashing in overlay
+    if (active.id) {
+      const element = document.getElementById(active.id as string)
+      if (element) {
+        setActiveDragWidth(element.offsetWidth)
+      }
+    }
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     setActiveDragItem(null)
+    setActiveDragWidth(undefined)
 
     if (!over) return
 
@@ -268,73 +280,74 @@ export function TransformerDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        onInteractOutside={(e) => e.preventDefault()}
-        className="sm:max-w-[90vw] w-full h-[100dvh] sm:w-[90vw] sm:h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-background focus:outline-none max-w-none rounded-none sm:rounded-lg"
-      >
-        <DialogHeader className="px-4 py-3 border-b shrink-0 flex flex-row flex-wrap sm:flex-nowrap items-center justify-between gap-y-3 sm:gap-y-0 space-y-0 pr-12">
-          <div className="flex items-center gap-2">
-            <Wand2 className="w-5 h-5 text-primary" />
-            <DialogTitle>{editPipeline ? 'Edit Transformer' : 'Transform Selection'}</DialogTitle>
-          </div>
-          <DialogDescription className="sr-only">
-            Create and edit custom text transformation pipelines
-          </DialogDescription>
 
-          <div className="flex items-center gap-2 ml-auto sm:ml-0 order-2 sm:order-3">
-            {initialPreviewText ? (
-              <div className="flex items-center -space-x-px">
-                <Button
-                  variant="ghost"
-                  onClick={handleApply}
-                  className="h-10 rounded-r-none border-r"
-                >
-                  Apply
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-10 px-2 rounded-l-none">
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleSave}>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Only
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleSaveAndApply}>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save & Apply
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ) : (
-              <Button variant="ghost" onClick={handleSave} className="h-10">
-                <Save className="w-4 h-4 mr-2" />
-                Save
-              </Button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto order-3 sm:order-2 sm:mr-4">
-            <IconPicker value={pipelineIcon} onChange={setPipelineIcon} />
-            <Input
-              value={pipelineName}
-              onChange={(e) => setPipelineName(e.target.value)}
-              className="flex-1 sm:w-40 md:w-64 h-10"
-              placeholder="Pipeline Name (e.g. Clean & Sort)"
-            />
-          </div>
-        </DialogHeader>
-
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent
+          onInteractOutside={(e) => e.preventDefault()}
+          className="sm:max-w-[90vw] w-full h-[100dvh] sm:w-[90vw] sm:h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-background focus:outline-none max-w-none rounded-none sm:rounded-lg"
         >
+          <DialogHeader className="px-4 py-3 border-b shrink-0 flex flex-row flex-wrap sm:flex-nowrap items-center justify-between gap-y-3 sm:gap-y-0 space-y-0 pr-12">
+            <div className="flex items-center gap-2">
+              <Wand2 className="w-5 h-5 text-primary" />
+              <DialogTitle>{editPipeline ? 'Edit Transformer' : 'Transform Selection'}</DialogTitle>
+            </div>
+            <DialogDescription className="sr-only">
+              Create and edit custom text transformation pipelines
+            </DialogDescription>
+
+            <div className="flex items-center gap-2 ml-auto sm:ml-0 order-2 sm:order-3">
+              {initialPreviewText ? (
+                <div className="flex items-center -space-x-px">
+                  <Button
+                    variant="ghost"
+                    onClick={handleApply}
+                    className="h-10 rounded-r-none border-r"
+                  >
+                    Apply
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-10 px-2 rounded-l-none">
+                        <ChevronDown className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleSave}>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Only
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleSaveAndApply}>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save & Apply
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ) : (
+                <Button variant="ghost" onClick={handleSave} className="h-10">
+                  <Save className="w-4 h-4 mr-2" />
+                  Save
+                </Button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto order-3 sm:order-2 sm:mr-4">
+              <IconPicker value={pipelineIcon} onChange={setPipelineIcon} />
+              <Input
+                value={pipelineName}
+                onChange={(e) => setPipelineName(e.target.value)}
+                className="flex-1 sm:w-40 md:w-64 h-10"
+                placeholder="Pipeline Name (e.g. Clean & Sort)"
+              />
+            </div>
+          </DialogHeader>
+
           {/* Mobile View */}
           <div className="flex-1 lg:hidden overflow-hidden flex flex-col relative">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
@@ -389,65 +402,77 @@ export function TransformerDialog({
             )}
           </div>
 
-          {/* Desktop View */}
-          <div className="flex-1 hidden lg:block overflow-hidden h-full">
-            <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
-              <ResizablePanel defaultSize={30} minSize={20}>
-                <div className="h-full overflow-y-auto bg-muted/5">
-                  <TransformerToolbox onAddStep={handleAddOperation} />
-                </div>
-              </ResizablePanel>
 
-              <ResizableHandle withHandle />
 
-              <ResizablePanel defaultSize={40} minSize={30}>
-                <div className="h-full overflow-y-auto bg-background/50">
-                  <TransformerWorkbench
-                    steps={steps}
-                    onUpdateStep={handleUpdateStep}
-                    onRemoveStep={handleRemoveStep}
-                    onToggleStep={handleToggleStep}
-                    onAddOperation={handleAddOperation}
-                  />
-                </div>
-              </ResizablePanel>
+            {/* Desktop View */}
+            <div className="flex-1 hidden lg:block overflow-hidden h-full">
+              <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
+                <ResizablePanel defaultSize={30} minSize={20}>
+                  <div className="h-full overflow-y-auto bg-muted/5">
+                    <TransformerToolbox onAddStep={handleAddOperation} />
+                  </div>
+                </ResizablePanel>
 
-              <ResizableHandle withHandle />
+                <ResizableHandle withHandle />
 
-              <ResizablePanel defaultSize={30} minSize={20}>
-                <div className="h-full overflow-y-auto">
-                  <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
-                </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </div>
+                <ResizablePanel defaultSize={40} minSize={30}>
+                  <div className="h-full overflow-y-auto bg-background/50">
+                    <TransformerWorkbench
+                      steps={steps}
+                      onUpdateStep={handleUpdateStep}
+                      onRemoveStep={handleRemoveStep}
+                      onToggleStep={handleToggleStep}
+                      onAddOperation={handleAddOperation}
+                    />
+                  </div>
+                </ResizablePanel>
 
-          <DragOverlay>
-            {activeDragItem ? (
-              'operationId' in activeDragItem ? (
-                // It's a Step
-                <div className="opacity-80">
-                  <TransformerStep
-                    step={activeDragItem as PipelineStep}
-                    index={-1}
-                    onUpdate={() => {}}
-                    onRemove={() => {}}
-                    onToggle={() => {}}
-                  />
-                </div>
-              ) : (
-                // It's a new Operation
-                <div className="opacity-80">
-                  <DraggableToolboxItem
-                    operation={activeDragItem as TransformerOperation}
-                    onAddStep={() => {}}
-                  />
-                </div>
-              )
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      </DialogContent>
-    </Dialog>
+                <ResizableHandle withHandle />
+
+                <ResizablePanel defaultSize={30} minSize={20}>
+                  <div className="h-full overflow-y-auto">
+                    <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </div>
+          </DialogContent>
+        </Dialog>
+      {createPortal(
+        <DragOverlay
+          className="z-[100] pointer-events-none"
+          modifiers={[snapCenterToCursor]}
+          dropAnimation={null}
+        >
+          {activeDragItem ? (
+            'operationId' in activeDragItem ? (
+              // It's a Step
+              <div className="opacity-80">
+                <TransformerStep
+                  step={activeDragItem as PipelineStep}
+                  index={-1}
+                  onUpdate={() => {}}
+                  onRemove={() => {}}
+                  onToggle={() => {}}
+                  isOverlay
+                  style={{ width: activeDragWidth, margin: 0 }}
+                />
+              </div>
+            ) : (
+              // It's a new Operation
+              <div className="opacity-80">
+                <DraggableToolboxItem
+                  operation={activeDragItem as TransformerOperation}
+                  onAddStep={() => {}}
+                  isOverlay
+                  style={{ width: activeDragWidth, margin: 0 }}
+                />
+              </div>
+            )
+          ) : null}
+        </DragOverlay>,
+        document.body
+      )}
+    </DndContext>
   )
 }

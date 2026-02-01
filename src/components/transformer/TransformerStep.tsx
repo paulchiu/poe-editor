@@ -34,6 +34,8 @@ interface TransformerStepProps {
   onUpdate: (id: string, config: Record<string, unknown>) => void
   onRemove: (id: string) => void
   onToggle: (id: string) => void
+  isOverlay?: boolean
+  style?: React.CSSProperties
 }
 
 // Operations that support line-by-line mode
@@ -50,11 +52,14 @@ export function TransformerStep({
   onUpdate,
   onRemove,
   onToggle,
+  isOverlay,
+  style: styleProp,
 }: TransformerStepProps): ReactElement | null {
   const [showConfig, setShowConfig] = useState(true) // Default open configuration
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: step.id,
+    disabled: isOverlay,
     data: {
       sortable: { index },
       // Pass step data for DnD DragOverlay
@@ -66,6 +71,7 @@ export function TransformerStep({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
+    ...styleProp,
   }
 
   const operation = OPERATIONS.find((op) => op.id === step.operationId)
@@ -153,6 +159,7 @@ export function TransformerStep({
 
   return (
     <div
+      id={!isOverlay ? step.id : undefined}
       ref={setNodeRef}
       style={style}
       data-index={index}
