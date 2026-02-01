@@ -211,9 +211,9 @@ export function TransformerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
-        className="sm:max-w-[90vw] w-[90vw] h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-background focus:outline-none"
+        className="sm:max-w-[90vw] w-full h-[100dvh] sm:w-[90vw] sm:h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-background focus:outline-none max-w-none rounded-none sm:rounded-lg"
       >
-        <DialogHeader className="px-4 py-3 border-b shrink-0 flex flex-row items-center justify-between space-y-0 pr-12">
+        <DialogHeader className="px-4 py-3 border-b shrink-0 flex flex-row flex-wrap sm:flex-nowrap items-center justify-between gap-y-3 sm:gap-y-0 space-y-0 pr-12">
           <div className="flex items-center gap-2">
             <Wand2 className="w-5 h-5 text-primary" />
             <DialogTitle>{editPipeline ? 'Edit Transformer' : 'Transform Selection'}</DialogTitle>
@@ -221,16 +221,8 @@ export function TransformerDialog({
           <DialogDescription className="sr-only">
             Create and edit custom text transformation pipelines
           </DialogDescription>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 mr-4">
-              <IconPicker value={pipelineIcon} onChange={setPipelineIcon} />
-              <Input
-                value={pipelineName}
-                onChange={(e) => setPipelineName(e.target.value)}
-                className="w-40 md:w-64 h-10"
-                placeholder="Pipeline Name (e.g. Clean & Sort)"
-              />
-            </div>
+          
+          <div className="flex items-center gap-2 ml-auto sm:ml-0 order-2 sm:order-3">
             {initialPreviewText ? (
               <div className="flex items-center -space-x-px">
                 <Button
@@ -264,6 +256,16 @@ export function TransformerDialog({
                 Save
               </Button>
             )}
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto order-3 sm:order-2 sm:mr-4">
+            <IconPicker value={pipelineIcon} onChange={setPipelineIcon} />
+            <Input
+              value={pipelineName}
+              onChange={(e) => setPipelineName(e.target.value)}
+              className="flex-1 sm:w-40 md:w-64 h-10"
+              placeholder="Pipeline Name (e.g. Clean & Sort)"
+            />
           </div>
         </DialogHeader>
 
