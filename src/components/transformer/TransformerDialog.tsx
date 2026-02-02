@@ -35,7 +35,6 @@ import { IconPicker } from './IconPicker'
 import { TransformerToolbox, DraggableToolboxItem } from './TransformerToolbox'
 import { TransformerWorkbench } from './TransformerWorkbench'
 import { TransformerPreview } from './TransformerPreview'
-import { TransformerStep } from './TransformerStep'
 import type { TransformationPipeline, PipelineStep, TransformerOperation } from './types'
 
 interface TransformerDialogProps {
@@ -280,7 +279,6 @@ export function TransformerDialog({
   }
 
   return (
-
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
@@ -402,42 +400,40 @@ export function TransformerDialog({
             )}
           </div>
 
+          {/* Desktop View */}
+          <div className="flex-1 hidden lg:block overflow-hidden h-full">
+            <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
+              <ResizablePanel defaultSize={30} minSize={20}>
+                <div className="h-full overflow-y-auto bg-muted/5">
+                  <TransformerToolbox onAddStep={handleAddOperation} />
+                </div>
+              </ResizablePanel>
 
+              <ResizableHandle withHandle />
 
-            {/* Desktop View */}
-            <div className="flex-1 hidden lg:block overflow-hidden h-full">
-              <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
-                <ResizablePanel defaultSize={30} minSize={20}>
-                  <div className="h-full overflow-y-auto bg-muted/5">
-                    <TransformerToolbox onAddStep={handleAddOperation} />
-                  </div>
-                </ResizablePanel>
+              <ResizablePanel defaultSize={40} minSize={30}>
+                <div className="h-full overflow-y-auto bg-background/50">
+                  <TransformerWorkbench
+                    steps={steps}
+                    onUpdateStep={handleUpdateStep}
+                    onRemoveStep={handleRemoveStep}
+                    onToggleStep={handleToggleStep}
+                    onAddOperation={handleAddOperation}
+                  />
+                </div>
+              </ResizablePanel>
 
-                <ResizableHandle withHandle />
+              <ResizableHandle withHandle />
 
-                <ResizablePanel defaultSize={40} minSize={30}>
-                  <div className="h-full overflow-y-auto bg-background/50">
-                    <TransformerWorkbench
-                      steps={steps}
-                      onUpdateStep={handleUpdateStep}
-                      onRemoveStep={handleRemoveStep}
-                      onToggleStep={handleToggleStep}
-                      onAddOperation={handleAddOperation}
-                    />
-                  </div>
-                </ResizablePanel>
-
-                <ResizableHandle withHandle />
-
-                <ResizablePanel defaultSize={30} minSize={20}>
-                  <div className="h-full overflow-y-auto">
-                    <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
-                  </div>
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            </div>
-          </DialogContent>
-        </Dialog>
+              <ResizablePanel defaultSize={30} minSize={20}>
+                <div className="h-full overflow-y-auto">
+                  <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          </div>
+        </DialogContent>
+      </Dialog>
       {createPortal(
         <DragOverlay
           className="z-[100] pointer-events-none"
@@ -445,20 +441,7 @@ export function TransformerDialog({
           dropAnimation={null}
         >
           {activeDragItem ? (
-            'operationId' in activeDragItem ? (
-              // It's a Step
-              <div className="opacity-80">
-                <TransformerStep
-                  step={activeDragItem as PipelineStep}
-                  index={-1}
-                  onUpdate={() => {}}
-                  onRemove={() => {}}
-                  onToggle={() => {}}
-                  isOverlay
-                  style={{ width: activeDragWidth, margin: 0 }}
-                />
-              </div>
-            ) : (
+            'operationId' in activeDragItem ? null : (
               // It's a new Operation
               <div className="opacity-80">
                 <DraggableToolboxItem
