@@ -7,6 +7,7 @@ import {
   PointerSensor,
   type DragStartEvent,
   type DragEndEvent,
+  type DraggableAttributes,
   closestCenter,
 } from '@dnd-kit/core'
 import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities'
@@ -88,8 +89,7 @@ interface ToolbarButtonProps {
   active?: boolean
   allowDrag?: boolean
   className?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dragAttributes?: any
+  dragAttributes?: DraggableAttributes
   dragListeners?: SyntheticListenerMap
   tooltipDisabled?: boolean
 }

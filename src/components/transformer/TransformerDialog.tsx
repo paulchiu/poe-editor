@@ -47,6 +47,11 @@ interface TransformerDialogProps {
   initialPreviewText?: string
 }
 
+interface DragData {
+  sortable?: { index: number }
+  operation?: TransformerOperation
+}
+
 const generateId = (): string => Math.random().toString(36).substring(2, 9)
 
 /**
@@ -144,8 +149,7 @@ export function TransformerDialog({
   // DnD Handlers
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const activeData = active.data.current as any
+    const activeData = active.data.current as DragData | undefined
 
     if (activeData?.sortable?.index !== undefined) {
       // It's a step being reordered
