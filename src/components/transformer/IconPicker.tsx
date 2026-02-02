@@ -46,6 +46,9 @@ export function IconPicker({ value, onChange }: IconPickerProps): ReactElement {
               <Input
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
+                // Stop propagation to prevent dnd-kit in parent TransformerDialog from capturing the event
+                // (due to React Portal bubbling) and preventing input focus.
+                onPointerDown={(e) => e.stopPropagation()}
                 placeholder="Type emoji or text..."
                 className="h-8"
               />
