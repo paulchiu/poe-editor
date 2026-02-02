@@ -1,4 +1,5 @@
-import { useState, type ReactElement } from 'react'
+import { useState, type ReactElement, type ChangeEvent } from 'react'
+import { useToast } from '@/hooks/useToast'
 import { Search, Plus, GripVertical } from 'lucide-react'
 import { useDraggable } from '@dnd-kit/core'
 import { OPERATIONS, ICON_MAP } from './constants'
@@ -107,6 +108,7 @@ export function TransformerToolbox({
 }: TransformerToolboxProps): ReactElement {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<OperationCategory | 'All'>('All')
+  const { toast } = useToast()
 
   const categories: (OperationCategory | 'All')[] = [
     'All',
@@ -122,6 +124,19 @@ export function TransformerToolbox({
     const matchesCategory = activeCategory === 'All' || op.category === activeCategory
     return matchesSearch && matchesCategory
   })
+
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (value === '/add-all') {
+      OPERATIONS.forEach((op) => onAddStep(op))
+      toast({
+        description: 'All available operations have been added to the workbench.',
+      })
+      setSearchQuery('')
+      return
+    }
+    setSearchQuery(value)
+  }
 
   const listContent = (
     <div className="p-4 grid gap-2">
@@ -153,7 +168,7 @@ export function TransformerToolbox({
           <Input
             placeholder="Search operations..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="pl-8 bg-background"
           />
         </div>
