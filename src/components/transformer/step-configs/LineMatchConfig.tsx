@@ -8,7 +8,7 @@ interface LineMatchConfigProps {
 
 export function LineMatchConfig({ config, onChange }: LineMatchConfigProps): ReactElement {
   return (
-    <div className="grid gap-2 mt-3 animate-in slide-in-from-top-2 duration-200">
+    <div className="grid gap-2 mt-3 ">
       <div className="space-y-1">
         <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Pattern to Match

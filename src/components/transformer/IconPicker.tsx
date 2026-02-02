@@ -39,46 +39,48 @@ export function IconPicker({ value, onChange }: IconPickerProps): ReactElement {
           )}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase">Text / Emoji</h4>
-            <div className="flex gap-2">
-              <Input
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                // Stop propagation to prevent dnd-kit in parent TransformerDialog from capturing the event
-                // (due to React Portal bubbling) and preventing input focus.
-                onPointerDown={(e) => e.stopPropagation()}
-                placeholder="Type emoji or text..."
-                className="h-8"
-              />
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase">
+                Text / Emoji
+              </h4>
+              <div className="flex gap-2">
+                <Input
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  // Stop propagation to prevent dnd-kit in parent TransformerDialog from capturing the event
+                  // (due to React Portal bubbling) and preventing input focus.
+                  onPointerDown={(e) => e.stopPropagation()}
+                  placeholder="Type emoji or text..."
+                  className="h-8"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase">Icons</h4>
-            <div className="grid grid-cols-5 gap-1">
-              {COMMON_ICONS.map(({ icon: Icon, label }) => (
-                <button
-                  key={label}
-                  onClick={() => {
-                    onChange(label)
-                    setIsOpen(false)
-                  }}
-                  className={cn(
-                    'p-1.5 rounded-md hover:bg-accent hover:text-foreground transition-colors flex items-center justify-center',
-                    value === label ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
-                  )}
-                  title={label}
-                >
-                  <Icon className="w-4 h-4" />
-                </button>
-              ))}
+            <div className="space-y-2">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase">Icons</h4>
+              <div className="grid grid-cols-5 gap-1">
+                {COMMON_ICONS.map(({ icon: Icon, label }) => (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      onChange(label)
+                      setIsOpen(false)
+                    }}
+                    className={cn(
+                      'p-1.5 rounded-md hover:bg-accent hover:text-foreground transition-colors flex items-center justify-center',
+                      value === label ? 'bg-primary/10 text-primary' : 'text-muted-foreground'
+                    )}
+                    title={label}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </PopoverPrimitive.Content>
-    </PopoverPrimitive.Portal>
-  </Popover>
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
+    </Popover>
   )
 }

@@ -150,9 +150,7 @@ export function TransformerToolbox({
       ))}
 
       {filteredOperations.length === 0 && (
-        <div className="text-center py-8 text-sm text-muted-foreground">
-          No operations found.
-        </div>
+        <div className="text-center py-8 text-sm text-muted-foreground">No operations found.</div>
       )}
     </div>
   )

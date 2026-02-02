@@ -8,7 +8,7 @@ interface SortLinesConfigProps {
 
 export function SortLinesConfig({ config, onChange }: SortLinesConfigProps): ReactElement {
   return (
-    <div className="flex flex-col md:flex-row gap-3 mt-3 animate-in slide-in-from-top-2 duration-200 text-left items-stretch md:items-end">
+    <div className="flex flex-col md:flex-row gap-3 mt-3 text-left items-stretch md:items-end">
       <div className="flex-1 space-y-1">
         <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Direction

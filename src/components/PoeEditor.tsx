@@ -313,17 +313,19 @@ ${htmlContent}
 
   // Effects
   useEffect(() => {
-    // This is needed to track if the component has mounted for theme and and layout purposes.
-    // We suppress the warning as this is a common pattern for hydration/mounting checks in SPAs.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true)
+    // Defer setState to avoid cascading renders while still tracking mount state
+    const timeoutId = setTimeout(() => {
+      setMounted(true)
+    }, 0)
 
     // Notify parent that the editor is ready
     // Use requestAnimationFrame to ensure DOM is painted
     requestAnimationFrame(() => {
       onReady?.()
     })
-  }, [onReady])
+
+    return () => clearTimeout(timeoutId)
+  }, [onReady, setMounted])
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent): void => {
@@ -513,10 +515,7 @@ ${htmlContent}
 
               {/* Preview Pane - Always mounted, hidden when not active */}
               <div
-                className={cn(
-                  'flex-1 p-4 mt-0 overflow-auto',
-                  activeTab !== 'preview' && 'hidden'
-                )}
+                className={cn('flex-1 p-4 mt-0 overflow-auto', activeTab !== 'preview' && 'hidden')}
               >
                 <PreviewPane ref={targetRef} htmlContent={htmlContent} />
               </div>

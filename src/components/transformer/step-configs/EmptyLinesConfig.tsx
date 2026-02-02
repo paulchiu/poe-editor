@@ -7,7 +7,7 @@ interface EmptyLinesConfigProps {
 
 export function EmptyLinesConfig({ config, onChange }: EmptyLinesConfigProps): ReactElement {
   return (
-    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+    <div className="mt-3 ">
       <label className="flex items-center gap-2 min-h-8 h-auto py-2 px-3 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors w-fit">
         <input
           type="checkbox"

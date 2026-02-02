@@ -122,17 +122,15 @@ describe('TransformerToolbox', () => {
     )
   })
 
-  it('should apply draggable attributes to buttons', () => {
+  it('should apply draggable attributes to drag handles', () => {
     render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
-    const buttons = screen.getAllByRole('button').filter((btn) => {
-      return OPERATIONS.some((op) => btn.textContent?.includes(op.name))
-    })
+    // The draggable attributes are now on a separate div (drag handle), not the button
+    // We look for elements with the draggable mock attribute
+    const dragHandles = screen.getAllByTestId('draggable-attr')
 
-    // Check if our mock attributes were applied
-    buttons.forEach((button) => {
-      expect(button).toHaveAttribute('data-testid', 'draggable-attr')
-    })
+    // Should have one drag handle for each operation
+    expect(dragHandles.length).toBe(OPERATIONS.length)
   })
 
   it('should clear search when input is cleared', async () => {
