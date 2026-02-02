@@ -1,5 +1,5 @@
 import { useState, type ReactElement } from 'react'
-import { Search, Plus } from 'lucide-react'
+import { Search, Plus, GripVertical } from 'lucide-react'
 import { useDraggable } from '@dnd-kit/core'
 import { OPERATIONS, ICON_MAP } from './constants'
 import { Input } from '@/components/ui/input'
@@ -30,6 +30,22 @@ export function DraggableToolboxItem({
   })
 
   const Icon = ICON_MAP[operation.icon] || Plus
+
+  if (isOverlay) {
+    return (
+      <Button
+        ref={setNodeRef}
+        variant="outline"
+        style={{ ...styleProp }}
+        className="flex items-center gap-3 p-3 rounded-xl border-2 border-primary bg-primary/20 shadow-xl w-full max-w-full min-w-0 h-auto"
+      >
+        <div className="p-2 rounded-lg bg-primary/20 text-primary">
+          <GripVertical className="h-4 w-4" />
+        </div>
+        <span className="font-medium text-sm text-primary">{operation.name}</span>
+      </Button>
+    )
+  }
 
   return (
     <Button

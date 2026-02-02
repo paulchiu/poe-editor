@@ -78,6 +78,22 @@ export function TransformerStep({
   const operation = OPERATIONS.find((op) => op.id === step.operationId)
   if (!operation) return null
 
+  // If this is the drag overlay, render a simplified high-contrast placeholder
+  if (isOverlay) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="flex items-center gap-3 p-3 rounded-xl border-2 border-primary bg-primary/20 shadow-xl w-full max-w-full min-w-0"
+      >
+        <div className="p-2 rounded-lg bg-primary/20 text-primary">
+          <GripVertical className="h-4 w-4" />
+        </div>
+        <span className="font-medium text-sm text-primary">{operation.name}</span>
+      </div>
+    )
+  }
+
   const Icon = ICON_MAP[operation.icon]
 
   /* 
@@ -173,7 +189,7 @@ export function TransformerStep({
     >
       {/* Drag Handle - Aligned with icon */}
       <div
-        className="mt-2 -ml-2 p-2 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors self-start outline-none"
+        className="mt-0 -ml-2 p-2 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors self-start outline-none"
         style={{ touchAction: 'none' }}
         {...attributes}
         {...listeners}

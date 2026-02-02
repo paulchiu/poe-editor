@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/core'
 import { arrayMove } from '@dnd-kit/sortable'
 import { useToast } from '@/hooks/useToast'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import {
   Dialog,
   DialogContent,
@@ -71,6 +72,8 @@ export function TransformerDialog({
     null
   )
   const [activeDragWidth, setActiveDragWidth] = useState<number | undefined>(undefined)
+
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
 
   // Track previous open state to detect dialog open transition
   const wasOpenRef = useRef(open)
@@ -347,91 +350,98 @@ export function TransformerDialog({
           </DialogHeader>
 
           {/* Mobile View */}
-          <div className="flex-1 lg:hidden overflow-hidden flex flex-col relative">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <TabsList className="w-full justify-start rounded-none border-b bg-background p-0 h-10">
-                <TabsTrigger
+          {!isDesktop && (
+            <div className="flex-1 overflow-hidden flex flex-col relative">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+                <TabsList className="w-full justify-start rounded-none border-b bg-background p-0 h-10">
+                  <TabsTrigger
+                    value="pipeline"
+                    className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
+                  >
+                    Edit ({steps.length})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="preview"
+                    className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
+                  >
+                    Preview
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent
                   value="pipeline"
-                  className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
+                  className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
                 >
-                  Edit ({steps.length})
-                </TabsTrigger>
-                <TabsTrigger
-                  value="preview"
-                  className="flex-1 h-10 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:shadow-none"
-                >
-                  Preview
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent
-                value="pipeline"
-                className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
-              >
-                <TransformerWorkbench
-                  steps={steps}
-                  onUpdateStep={handleUpdateStep}
-                  onRemoveStep={handleRemoveStep}
-                  onToggleStep={handleToggleStep}
-                  onAddOperation={handleAddOperation}
-                  onAddRequest={() => setIsToolboxOpen(true)}
-                />
-              </TabsContent>
-              <TabsContent
-                value="preview"
-                className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
-              >
-                <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
-              </TabsContent>
-            </Tabs>
-
-            {/* Toolbox Overlay */}
-            {isToolboxOpen && (
-              <div className="absolute inset-0 z-50 bg-background flex flex-col animate-in slide-in-from-bottom duration-200">
-                <div className="flex items-center justify-between p-3 border-b bg-background">
-                  <h3 className="font-semibold text-lg">Add Operation</h3>
-                  <Button variant="ghost" size="icon" onClick={() => setIsToolboxOpen(false)}>
-                    <X className="w-5 h-5" />
-                  </Button>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  <TransformerToolbox onAddStep={handleAddOperation} />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Desktop View */}
-          <div className="flex-1 hidden lg:block overflow-hidden h-full">
-            <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
-              <ResizablePanel defaultSize={30} minSize={20}>
-                <div className="h-full overflow-y-auto bg-muted/5">
-                  <TransformerToolbox onAddStep={handleAddOperation} />
-                </div>
-              </ResizablePanel>
-
-              <ResizableHandle withHandle />
-
-              <ResizablePanel defaultSize={40} minSize={30}>
-                <div className="h-full overflow-y-auto bg-background/50">
                   <TransformerWorkbench
                     steps={steps}
                     onUpdateStep={handleUpdateStep}
                     onRemoveStep={handleRemoveStep}
                     onToggleStep={handleToggleStep}
                     onAddOperation={handleAddOperation}
+                    onAddRequest={() => setIsToolboxOpen(true)}
                   />
-                </div>
-              </ResizablePanel>
-
-              <ResizableHandle withHandle />
-
-              <ResizablePanel defaultSize={30} minSize={20}>
-                <div className="h-full overflow-y-auto">
+                </TabsContent>
+                <TabsContent
+                  value="preview"
+                  className="flex-1 m-0 overflow-hidden h-full overflow-y-auto"
+                >
                   <TransformerPreview pipeline={currentPipeline} initialText={initialPreviewText} />
+                </TabsContent>
+              </Tabs>
+
+              {/* Toolbox Overlay */}
+              {isToolboxOpen && (
+                <div className="absolute inset-0 z-50 bg-background flex flex-col animate-in slide-in-from-bottom duration-200">
+                  <div className="flex items-center justify-between p-3 border-b bg-background">
+                    <h3 className="font-semibold text-lg">Add Operation</h3>
+                    <Button variant="ghost" size="icon" onClick={() => setIsToolboxOpen(false)}>
+                      <X className="w-5 h-5" />
+                    </Button>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <TransformerToolbox onAddStep={handleAddOperation} />
+                  </div>
                 </div>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </div>
+              )}
+            </div>
+          )}
+
+          {/* Desktop View */}
+          {isDesktop && (
+            <div className="flex-1 overflow-hidden h-full">
+              <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
+                <ResizablePanel defaultSize={30} minSize={20}>
+                  <div className="h-full overflow-y-auto bg-muted/5">
+                    <TransformerToolbox onAddStep={handleAddOperation} />
+                  </div>
+                </ResizablePanel>
+
+                <ResizableHandle withHandle />
+
+                <ResizablePanel defaultSize={40} minSize={30}>
+                  <div className="h-full overflow-y-auto bg-background/50">
+                    <TransformerWorkbench
+                      steps={steps}
+                      onUpdateStep={handleUpdateStep}
+                      onRemoveStep={handleRemoveStep}
+                      onToggleStep={handleToggleStep}
+                      onAddOperation={handleAddOperation}
+                    />
+                  </div>
+                </ResizablePanel>
+
+                <ResizableHandle withHandle />
+
+                <ResizablePanel defaultSize={30} minSize={20}>
+                  <div className="h-full overflow-y-auto">
+                    <TransformerPreview
+                      pipeline={currentPipeline}
+                      initialText={initialPreviewText}
+                    />
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
       {createPortal(
