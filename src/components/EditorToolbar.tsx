@@ -1,4 +1,4 @@
-import { type ElementType, forwardRef } from 'react'
+import { type ElementType, forwardRef, useState, useRef } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -89,8 +89,9 @@ interface ToolbarButtonProps {
   allowDrag?: boolean
   className?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  dragAttributes?: any 
+  dragAttributes?: any
   dragListeners?: SyntheticListenerMap
+  tooltipDisabled?: boolean
 }
 
 /**
@@ -109,31 +110,38 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
       className,
       dragAttributes,
       dragListeners,
+      tooltipDisabled,
     },
     ref
   ) => {
+    const button = (
+      <Button
+        ref={ref}
+        variant="ghost"
+        size="icon-sm"
+        onClick={onClick}
+        onMouseDown={allowDrag ? undefined : (e) => e.preventDefault()}
+        style={{ touchAction: allowDrag ? 'none' : undefined }}
+        className={cn(
+          'text-muted-foreground hover:text-foreground',
+          active && 'bg-accent text-foreground',
+          className
+        )}
+        {...dragAttributes}
+        {...dragListeners}
+      >
+        <Icon className="size-4" />
+        <span className="sr-only">{label}</span>
+      </Button>
+    )
+
+    if (tooltipDisabled) {
+      return button
+    }
+
     return (
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            ref={ref}
-            variant="ghost"
-            size="icon-sm"
-            onClick={onClick}
-            onMouseDown={allowDrag ? undefined : (e) => e.preventDefault()}
-            style={{ touchAction: allowDrag ? 'none' : undefined }}
-            className={cn(
-              'text-muted-foreground hover:text-foreground',
-              active && 'bg-accent text-foreground',
-              className
-            )}
-            {...dragAttributes}
-            {...dragListeners}
-          >
-            <Icon className="size-4" />
-            <span className="sr-only">{label}</span>
-          </Button>
-        </TooltipTrigger>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
         <TooltipContent>{label}</TooltipContent>
       </Tooltip>
     )
@@ -160,6 +168,8 @@ function SortablePipelineButton({
     data: { pipeline },
   })
 
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -178,7 +188,7 @@ function SortablePipelineButton({
         !isActive && 'cursor-grab'
       )}
     >
-      <ContextMenu>
+      <ContextMenu onOpenChange={setIsContextMenuOpen}>
         <ContextMenuTrigger asChild>
           <div>
             <ToolbarButton
@@ -197,6 +207,7 @@ function SortablePipelineButton({
               className={!PipelineIcon ? 'w-auto px-2 min-w-8' : undefined}
               dragAttributes={attributes}
               dragListeners={listeners}
+              tooltipDisabled={isContextMenuOpen}
             />
           </div>
         </ContextMenuTrigger>
@@ -250,8 +261,6 @@ interface EditorToolbarProps {
   onDeletePipeline?: (id: string) => void
   onReorderPipelines?: (pipelines: TransformationPipeline[]) => void
 }
-
-import { useState, useRef } from 'react'
 
 /**
  * Main editor toolbar with document controls, formatting tools, and settings
@@ -497,7 +506,9 @@ export function EditorToolbar({
                       )
                     }}
                     label={activeDragPipeline.name}
-                    className={!ICON_MAP[activeDragPipeline.icon] ? 'w-auto px-2 min-w-8' : undefined}
+                    className={
+                      !ICON_MAP[activeDragPipeline.icon] ? 'w-auto px-2 min-w-8' : undefined
+                    }
                   />
                 </div>
               ) : null}
