@@ -1,14 +1,31 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import { TransformerToolbox } from './TransformerToolbox'
 import { OPERATIONS } from './constants'
+
+// Mock dnd-kit's useDraggable
+const mockUseDraggable = vi.fn()
+vi.mock('@dnd-kit/core', async () => {
+  const actual = await vi.importActual('@dnd-kit/core')
+  return {
+    ...actual,
+    useDraggable: (args: unknown) => mockUseDraggable(args),
+  }
+})
 
 describe('TransformerToolbox', () => {
   const mockOnAddStep = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // Default mock implementation for useDraggable
+    mockUseDraggable.mockReturnValue({
+      attributes: { 'data-testid': 'draggable-attr' },
+      listeners: { 'data-testid': 'draggable-listener' },
+      setNodeRef: vi.fn(),
+      isDragging: false,
+    })
   })
 
   it('should render all operations initially', () => {
@@ -93,30 +110,28 @@ describe('TransformerToolbox', () => {
   it('should set drag data when operation is dragged', () => {
     render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
-    const trimButton = screen.getByText('Trim Whitespace').closest('button')
-    expect(trimButton).not.toBeNull()
-
-    const dataTransfer = {
-      setData: vi.fn(),
-    }
-
-    fireEvent.dragStart(trimButton!, { dataTransfer })
-
-    expect(dataTransfer.setData).toHaveBeenCalledWith(
-      'application/json',
-      expect.stringContaining('"id":"trim"')
+    // Verify useDraggable was called with correct data for each operation
+    const trimOp = OPERATIONS.find((op) => op.id === 'trim')
+    expect(mockUseDraggable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'toolbox-trim',
+        data: {
+          operation: trimOp,
+        },
+      })
     )
   })
 
-  it('should make all operation buttons draggable', () => {
+  it('should apply draggable attributes to buttons', () => {
     render(<TransformerToolbox onAddStep={mockOnAddStep} />)
 
     const buttons = screen.getAllByRole('button').filter((btn) => {
       return OPERATIONS.some((op) => btn.textContent?.includes(op.name))
     })
 
+    // Check if our mock attributes were applied
     buttons.forEach((button) => {
-      expect(button).toHaveAttribute('draggable', 'true')
+      expect(button).toHaveAttribute('data-testid', 'draggable-attr')
     })
   })
 

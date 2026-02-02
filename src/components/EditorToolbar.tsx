@@ -1,4 +1,23 @@
-import { type ElementType } from 'react'
+import { type ElementType, forwardRef, useState, useRef } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  type DragStartEvent,
+  type DragEndEvent,
+  type DraggableAttributes,
+  closestCenter,
+} from '@dnd-kit/core'
+import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities'
+import {
+  SortableContext,
+  useSortable,
+  horizontalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import {
@@ -70,6 +89,9 @@ interface ToolbarButtonProps {
   active?: boolean
   allowDrag?: boolean
   className?: string
+  dragAttributes?: DraggableAttributes
+  dragListeners?: SyntheticListenerMap
+  tooltipDisabled?: boolean
 }
 
 /**
@@ -77,34 +99,130 @@ interface ToolbarButtonProps {
  * @param props - Component props
  * @returns Toolbar button component
  */
-function ToolbarButton({
-  icon: Icon,
-  label,
-  onClick,
-  active = false,
-  allowDrag = false,
-  className,
-}: ToolbarButtonProps): ReactElement {
+const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
+  (
+    {
+      icon: Icon,
+      label,
+      onClick,
+      active = false,
+      allowDrag = false,
+      className,
+      dragAttributes,
+      dragListeners,
+      tooltipDisabled,
+    },
+    ref
+  ) => {
+    const button = (
+      <Button
+        ref={ref}
+        variant="ghost"
+        size="icon-sm"
+        onClick={onClick}
+        onMouseDown={allowDrag ? undefined : (e) => e.preventDefault()}
+        style={{ touchAction: allowDrag ? 'none' : undefined }}
+        className={cn(
+          'text-muted-foreground hover:text-foreground',
+          active && 'bg-accent text-foreground',
+          className
+        )}
+        {...dragAttributes}
+        {...dragListeners}
+      >
+        <Icon className="size-4" />
+        <span className="sr-only">{label}</span>
+      </Button>
+    )
+
+    if (tooltipDisabled) {
+      return button
+    }
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent>{label}</TooltipContent>
+      </Tooltip>
+    )
+  }
+)
+ToolbarButton.displayName = 'ToolbarButton'
+
+// Sortable Button Wrapper for Pipelines
+function SortablePipelineButton({
+  pipeline,
+  isActive,
+  onApply,
+  onEdit,
+  onDeleteRequest,
+}: {
+  pipeline: TransformationPipeline
+  isActive: boolean
+  onApply?: (pipeline: TransformationPipeline) => void
+  onEdit?: (pipeline: TransformationPipeline) => void
+  onDeleteRequest?: (pipeline: TransformationPipeline) => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: pipeline.id,
+    data: { pipeline },
+  })
+
+  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false)
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+
+  const PipelineIcon = ICON_MAP[pipeline.icon]
+
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={onClick}
-          onMouseDown={allowDrag ? undefined : (e) => e.preventDefault()}
-          className={cn(
-            'text-muted-foreground hover:text-foreground',
-            active && 'bg-accent text-foreground',
-            className
-          )}
-        >
-          <Icon className="size-4" />
-          <span className="sr-only">{label}</span>
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'transition-opacity flex items-center',
+        isActive && 'cursor-grabbing',
+        !isActive && 'cursor-grab'
+      )}
+    >
+      <ContextMenu onOpenChange={setIsContextMenuOpen}>
+        <ContextMenuTrigger asChild>
+          <div>
+            <ToolbarButton
+              icon={() =>
+                PipelineIcon ? (
+                  <PipelineIcon className="size-4" />
+                ) : (
+                  <span className="text-sm px-0.5" role="img" aria-label={pipeline.name}>
+                    {pipeline.icon}
+                  </span>
+                )
+              }
+              label={pipeline.name}
+              onClick={() => onApply?.(pipeline)}
+              allowDrag
+              className={!PipelineIcon ? 'w-auto px-2 min-w-8' : undefined}
+              dragAttributes={attributes}
+              dragListeners={listeners}
+              tooltipDisabled={isContextMenuOpen}
+            />
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem onClick={() => onEdit?.(pipeline)}>
+            <Pencil className="size-4" />
+            Edit Transformer
+          </ContextMenuItem>
+          <ContextMenuItem variant="destructive" onClick={() => onDeleteRequest?.(pipeline)}>
+            <Trash2 className="size-4" />
+            Delete Transformer
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+    </div>
   )
 }
 
@@ -144,11 +262,8 @@ interface EditorToolbarProps {
   onReorderPipelines?: (pipelines: TransformationPipeline[]) => void
 }
 
-import { useState, useRef } from 'react'
-
 /**
  * Main editor toolbar with document controls, formatting tools, and settings
-
  * @param props - Component props
  * @returns Editor toolbar component
  */
@@ -188,7 +303,7 @@ export function EditorToolbar({
 }: EditorToolbarProps): ReactElement {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
   const [pipelineToDelete, setPipelineToDelete] = useState<TransformationPipeline | null>(null)
-  const [draggedPipelineId, setDraggedPipelineId] = useState<string | null>(null)
+  const [activeDragPipeline, setActiveDragPipeline] = useState<TransformationPipeline | null>(null)
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleClearClick = (e: React.MouseEvent) => {
@@ -206,45 +321,36 @@ export function EditorToolbar({
     }
   }
 
-  const handleDragStart = (e: React.DragEvent, id: string) => {
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'move'
-      // Chrome requires setData to be called for drag to work
-      e.dataTransfer.setData?.('text/plain', id)
+  // DnD Sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  )
+
+  const handleDragStart = (event: DragStartEvent) => {
+    if (event.active.data.current?.pipeline) {
+      setActiveDragPipeline(event.active.data.current.pipeline)
     }
-    // Chrome bug: DOM manipulation during dragStart cancels the drag
-    // Delay state update to avoid this
-    setTimeout(() => {
-      setDraggedPipelineId(id)
-    }, 10)
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-  }
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragPipeline(null)
+    const { active, over } = event
 
-  const handleDrop = (e: React.DragEvent, targetId: string) => {
-    e.preventDefault()
-    if (!draggedPipelineId || !pipelines || draggedPipelineId === targetId) {
-      setDraggedPipelineId(null)
-      return
+    if (!over || !pipelines) return
+
+    if (active.id !== over.id) {
+      const oldIndex = pipelines.findIndex((p) => p.id === active.id)
+      const newIndex = pipelines.findIndex((p) => p.id === over.id)
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newPipelines = arrayMove(pipelines, oldIndex, newIndex)
+        onReorderPipelines?.(newPipelines)
+      }
     }
-
-    const draggedIndex = pipelines.findIndex((p) => p.id === draggedPipelineId)
-    const targetIndex = pipelines.findIndex((p) => p.id === targetId)
-
-    if (draggedIndex === -1 || targetIndex === -1) {
-      setDraggedPipelineId(null)
-      return
-    }
-
-    const newPipelines = [...pipelines]
-    const [dragged] = newPipelines.splice(draggedIndex, 1)
-    newPipelines.splice(targetIndex, 0, dragged)
-
-    onReorderPipelines?.(newPipelines)
-    setDraggedPipelineId(null)
   }
 
   return (
@@ -360,98 +466,84 @@ export function EditorToolbar({
         <ToolbarButton icon={Wand2} label="Transform Selection" onClick={onOpenTransformer} />
 
         {pipelines && pipelines.length > 0 && (
-          <>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
             <div className="w-px h-5 bg-border mx-1" />
             <div className="flex items-center gap-1">
-              {pipelines.map((pipeline) => {
-                const PipelineIcon = ICON_MAP[pipeline.icon]
-                return (
-                  <div
+              <SortableContext items={pipelines} strategy={horizontalListSortingStrategy}>
+                {pipelines.map((pipeline) => (
+                  <SortablePipelineButton
                     key={pipeline.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, pipeline.id)}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, pipeline.id)}
-                    onDragEnd={() => setDraggedPipelineId(null)}
-                    className={cn(
-                      'transition-opacity flex items-center cursor-grab',
-                      draggedPipelineId === pipeline.id && 'opacity-50 pointer-events-none',
-                      draggedPipelineId && draggedPipelineId !== pipeline.id && 'cursor-pointer'
-                    )}
-                  >
-                    <ContextMenu>
-                      <ContextMenuTrigger asChild>
-                        <div>
-                          <ToolbarButton
-                            icon={() =>
-                              PipelineIcon ? (
-                                <PipelineIcon className="size-4" />
-                              ) : (
-                                <span
-                                  className="text-sm px-0.5"
-                                  role="img"
-                                  aria-label={pipeline.name}
-                                >
-                                  {pipeline.icon}
-                                </span>
-                              )
-                            }
-                            label={pipeline.name}
-                            onClick={() => onApplyPipeline?.(pipeline)}
-                            allowDrag
-                            className={!PipelineIcon ? 'w-auto px-2 min-w-8' : undefined}
-                          />
-                        </div>
-                      </ContextMenuTrigger>
-                      <ContextMenuContent>
-                        <ContextMenuItem onClick={() => onEditPipeline?.(pipeline)}>
-                          <Pencil className="size-4" />
-                          Edit Transformer
-                        </ContextMenuItem>
-                        <ContextMenuItem
-                          variant="destructive"
-                          onClick={() => setPipelineToDelete(pipeline)}
-                        >
-                          <Trash2 className="size-4" />
-                          Delete Transformer
-                        </ContextMenuItem>
-                      </ContextMenuContent>
-                    </ContextMenu>
-                  </div>
-                )
-              })}
+                    pipeline={pipeline}
+                    isActive={activeDragPipeline?.id === pipeline.id}
+                    onApply={onApplyPipeline}
+                    onEdit={onEditPipeline}
+                    onDeleteRequest={setPipelineToDelete}
+                  />
+                ))}
+              </SortableContext>
             </div>
-
-            <AlertDialog
-              open={!!pipelineToDelete}
-              onOpenChange={(open) => !open && setPipelineToDelete(null)}
-            >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Transformer?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete &ldquo;{pipelineToDelete?.name}&rdquo;? This
-                    action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    onClick={() => {
-                      if (pipelineToDelete) {
-                        onDeletePipeline?.(pipelineToDelete.id)
-                        setPipelineToDelete(null)
-                      }
+            <DragOverlay>
+              {activeDragPipeline ? (
+                <div className="opacity-80">
+                  <ToolbarButton
+                    icon={() => {
+                      const Icon = ICON_MAP[activeDragPipeline.icon]
+                      return Icon ? (
+                        <Icon className="size-4" />
+                      ) : (
+                        <span
+                          className="text-sm px-0.5"
+                          role="img"
+                          aria-label={activeDragPipeline.name}
+                        >
+                          {activeDragPipeline.icon}
+                        </span>
+                      )
                     }}
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </>
+                    label={activeDragPipeline.name}
+                    className={
+                      !ICON_MAP[activeDragPipeline.icon] ? 'w-auto px-2 min-w-8' : undefined
+                    }
+                  />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         )}
+
+        <AlertDialog
+          open={!!pipelineToDelete}
+          onOpenChange={(open) => !open && setPipelineToDelete(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Transformer?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete &ldquo;{pipelineToDelete?.name}&rdquo;? This action
+                cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => {
+                  if (pipelineToDelete) {
+                    onDeletePipeline?.(pipelineToDelete.id)
+                    setPipelineToDelete(null)
+                  }
+                }}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       <div className="flex items-center gap-1 order-2 md:order-none ml-auto md:ml-0">
