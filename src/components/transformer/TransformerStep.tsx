@@ -70,7 +70,7 @@ export function TransformerStep({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : 1,
+    opacity: isDragging ? 0 : 1,
     ...styleProp,
   }
 

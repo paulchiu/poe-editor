@@ -71,7 +71,7 @@ describe('EditorToolbar', () => {
       </TooltipProvider>
     )
 
-    const pipeline1 = screen.getByLabelText('Pipeline 1').closest('div[draggable="true"]')
+    const pipeline1 = screen.getByLabelText('Pipeline 1').closest('button')
     expect(pipeline1).toBeDefined()
 
     const dragStartEvent = fireEvent.dragStart(pipeline1!, {

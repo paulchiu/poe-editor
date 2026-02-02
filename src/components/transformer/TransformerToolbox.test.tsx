@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import userEvent from '@testing-library/user-event'
 import { TransformerToolbox } from './TransformerToolbox'
@@ -10,7 +10,7 @@ vi.mock('@dnd-kit/core', async () => {
   const actual = await vi.importActual('@dnd-kit/core')
   return {
     ...actual,
-    useDraggable: (args: any) => mockUseDraggable(args),
+    useDraggable: (args: unknown) => mockUseDraggable(args),
   }
 })
 
