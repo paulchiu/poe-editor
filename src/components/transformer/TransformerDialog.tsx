@@ -10,7 +10,6 @@ import {
   type DragEndEvent,
   closestCenter,
 } from '@dnd-kit/core'
-import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { arrayMove } from '@dnd-kit/sortable'
 import { useToast } from '@/hooks/useToast'
 import {
@@ -35,6 +34,7 @@ import { IconPicker } from './IconPicker'
 import { TransformerToolbox, DraggableToolboxItem } from './TransformerToolbox'
 import { TransformerWorkbench } from './TransformerWorkbench'
 import { TransformerPreview } from './TransformerPreview'
+import { TransformerStep } from './TransformerStep'
 import type { TransformationPipeline, PipelineStep, TransformerOperation } from './types'
 
 interface TransformerDialogProps {
@@ -435,13 +435,22 @@ export function TransformerDialog({
         </DialogContent>
       </Dialog>
       {createPortal(
-        <DragOverlay
-          className="z-[100] pointer-events-none"
-          modifiers={[snapCenterToCursor]}
-          dropAnimation={null}
-        >
+        <DragOverlay className="z-[100] pointer-events-none" modifiers={[]} dropAnimation={null}>
           {activeDragItem ? (
-            'operationId' in activeDragItem ? null : (
+            'operationId' in activeDragItem ? (
+              // It's a Step
+              <div className="opacity-80">
+                <TransformerStep
+                  step={activeDragItem as PipelineStep}
+                  index={-1}
+                  onUpdate={() => {}}
+                  onRemove={() => {}}
+                  onToggle={() => {}}
+                  isOverlay
+                  style={{ width: activeDragWidth, margin: 0 }}
+                />
+              </div>
+            ) : (
               // It's a new Operation
               <div className="opacity-80">
                 <DraggableToolboxItem
