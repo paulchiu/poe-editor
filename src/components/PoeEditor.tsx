@@ -14,7 +14,7 @@ import { PreviewPane } from '@/components/PreviewPane'
 import { SplashScreen } from '@/components/SplashScreen'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { cn } from '@/utils/classnames'
 import { AboutDialog } from '@/components/AboutDialog'
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { EditorToolbar } from '@/components/EditorToolbar'
@@ -84,6 +84,9 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     lineNumber: 1,
     column: 1,
   })
+
+  /* Mobile tab state */
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor')
 
   const isMobile = useIsMobile()
   const editorRef = useRef<EditorPaneHandle>(null)
@@ -468,32 +471,55 @@ ${htmlContent}
             </div>
           ) : (
             <div className="h-full flex flex-col">
-              <Tabs defaultValue="editor" className="flex-1 flex flex-col">
-                <TabsList className="w-full rounded-none border-b border-border/60 bg-background h-10">
-                  <TabsTrigger value="editor" className="flex-1">
-                    Editor
-                  </TabsTrigger>
-                  <TabsTrigger value="preview" className="flex-1">
-                    Preview
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="editor" className="flex-1 p-4 mt-0">
-                  <EditorPane
-                    ref={editorRef}
-                    value={content}
-                    onChange={setContent}
-                    onCursorChange={setCursorPosition}
-                    theme={mounted && theme === 'dark' ? 'dark' : 'light'}
-                    onFormat={handleFormat}
-                    onCodeBlock={handleFormatCodeBlock}
-                    vimMode={vimModeEnabled}
-                    scrollRef={sourceRef}
-                  />
-                </TabsContent>
-                <TabsContent value="preview" className="flex-1 p-4 mt-0">
-                  <PreviewPane ref={targetRef} htmlContent={htmlContent} />
-                </TabsContent>
-              </Tabs>
+              <div className="w-full border-b border-border/60 bg-background h-10 flex">
+                <button
+                  onClick={() => setActiveTab('editor')}
+                  className={cn(
+                    'flex-1 inline-flex items-center justify-center text-sm font-medium transition-colors border-b-2',
+                    activeTab === 'editor'
+                      ? 'border-primary text-foreground'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Editor
+                </button>
+                <button
+                  onClick={() => setActiveTab('preview')}
+                  className={cn(
+                    'flex-1 inline-flex items-center justify-center text-sm font-medium transition-colors border-b-2',
+                    activeTab === 'preview'
+                      ? 'border-primary text-foreground'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  Preview
+                </button>
+              </div>
+
+              {/* Editor Pane - Always mounted, hidden when not active */}
+              <div className={cn('flex-1 p-4 mt-0', activeTab !== 'editor' && 'hidden')}>
+                <EditorPane
+                  ref={editorRef}
+                  value={content}
+                  onChange={setContent}
+                  onCursorChange={setCursorPosition}
+                  theme={mounted && theme === 'dark' ? 'dark' : 'light'}
+                  onFormat={handleFormat}
+                  onCodeBlock={handleFormatCodeBlock}
+                  vimMode={vimModeEnabled}
+                  scrollRef={sourceRef}
+                />
+              </div>
+
+              {/* Preview Pane - Always mounted, hidden when not active */}
+              <div
+                className={cn(
+                  'flex-1 p-4 mt-0 overflow-auto',
+                  activeTab !== 'preview' && 'hidden'
+                )}
+              >
+                <PreviewPane ref={targetRef} htmlContent={htmlContent} />
+              </div>
             </div>
           )}
         </main>
