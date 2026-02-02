@@ -221,7 +221,7 @@ export function TransformerStep({
           <div
             className={cn(
               'flex items-center gap-1 transition-opacity',
-              isDragging ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+              isDragging ? 'opacity-0' : 'opacity-100 md:opacity-0 md:group-hover:opacity-100'
             )}
           >
             {supportsLineMode && (

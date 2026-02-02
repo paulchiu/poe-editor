@@ -398,7 +398,7 @@ export function TransformerDialog({
                     </Button>
                   </div>
                   <div className="flex-1 overflow-hidden">
-                    <TransformerToolbox onAddStep={handleAddOperation} />
+                    <TransformerToolbox onAddStep={handleAddOperation} enableDrag={false} />
                   </div>
                 </div>
               )}

@@ -13,6 +13,7 @@ interface DraggableToolboxItemProps {
   onAddStep: (operation: TransformerOperation) => void
   isOverlay?: boolean
   style?: React.CSSProperties
+  enableDrag?: boolean
 }
 
 export function DraggableToolboxItem({
@@ -20,10 +21,11 @@ export function DraggableToolboxItem({
   onAddStep,
   isOverlay,
   style: styleProp,
+  enableDrag = true,
 }: DraggableToolboxItemProps): ReactElement {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `toolbox-${operation.id}`,
-    disabled: isOverlay,
+    disabled: isOverlay || !enableDrag,
     data: {
       operation,
     },
@@ -54,7 +56,7 @@ export function DraggableToolboxItem({
       {...listeners}
       {...attributes}
       variant="outline"
-      style={{ touchAction: 'none', ...styleProp }}
+      style={{ touchAction: enableDrag ? 'none' : 'auto', ...styleProp }}
       className={cn(
         'justify-start h-auto py-3 px-4 w-full text-left font-normal bg-background hover:bg-accent border-muted-foreground/20 hover:border-primary/50 group transition-all',
         isDragging ? 'opacity-50' : ''
@@ -75,6 +77,7 @@ export function DraggableToolboxItem({
 
 interface TransformerToolboxProps {
   onAddStep: (operation: TransformerOperation) => void
+  enableDrag?: boolean
 }
 
 /**
@@ -82,7 +85,10 @@ interface TransformerToolboxProps {
  * @param props - Component props
  * @returns Transformer toolbox component
  */
-export function TransformerToolbox({ onAddStep }: TransformerToolboxProps): ReactElement {
+export function TransformerToolbox({
+  onAddStep,
+  enableDrag = true,
+}: TransformerToolboxProps): ReactElement {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<OperationCategory | 'All'>('All')
 
@@ -137,7 +143,12 @@ export function TransformerToolbox({ onAddStep }: TransformerToolboxProps): Reac
       <ScrollArea className="flex-1">
         <div className="p-4 grid gap-2">
           {filteredOperations.map((op) => (
-            <DraggableToolboxItem key={op.id} operation={op} onAddStep={onAddStep} />
+            <DraggableToolboxItem
+              key={op.id}
+              operation={op}
+              onAddStep={onAddStep}
+              enableDrag={enableDrag}
+            />
           ))}
 
           {filteredOperations.length === 0 && (
