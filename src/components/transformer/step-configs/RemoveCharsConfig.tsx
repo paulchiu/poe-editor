@@ -16,7 +16,7 @@ export function RemoveCharsConfig({ config, onChange }: RemoveCharsConfigProps):
         <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Characters to Strip
         </label>
-        <div className="grid grid-cols-4 gap-1 bg-muted/20 p-1 rounded-md border text-[10px]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-1 bg-muted/20 p-1 rounded-md border text-[10px]">
           {[
             { id: 'digits', label: 'Digits' },
             { id: 'punctuation', label: 'Punct' },

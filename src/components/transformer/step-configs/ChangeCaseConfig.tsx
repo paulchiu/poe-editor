@@ -13,7 +13,7 @@ export function ChangeCaseConfig({ config, onChange }: ChangeCaseConfigProps): R
         <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Case Mode
         </label>
-        <div className="grid grid-cols-4 gap-1 bg-muted/20 p-1 rounded-md border text-xs">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-1 bg-muted/20 p-1 rounded-md border text-xs">
           {[
             { id: 'upper', label: 'UPPER' },
             { id: 'lower', label: 'lower' },

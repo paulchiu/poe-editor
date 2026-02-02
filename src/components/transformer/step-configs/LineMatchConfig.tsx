@@ -21,7 +21,7 @@ export function LineMatchConfig({ config, onChange }: LineMatchConfigProps): Rea
         />
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <label className="flex items-center gap-2 px-2 h-7 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors">
           <input
             type="checkbox"

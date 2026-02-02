@@ -9,7 +9,7 @@ interface ReplaceConfigProps {
 export function ReplaceConfig({ config, onChange }: ReplaceConfigProps): ReactElement {
   return (
     <div className="grid gap-2 mt-3 animate-in slide-in-from-top-2 duration-200">
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <div className="space-y-1">
           <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
             Find
@@ -34,7 +34,7 @@ export function ReplaceConfig({ config, onChange }: ReplaceConfigProps): ReactEl
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <label className="flex items-center gap-2 px-2 h-7 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors">
           <input
             type="checkbox"
