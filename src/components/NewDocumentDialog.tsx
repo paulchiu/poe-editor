@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import { type ReactElement, useRef } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +26,8 @@ export function NewDocumentDialog({
   onOpenChange,
   onConfirm,
 }: NewDocumentDialogProps): ReactElement {
+  const continueRef = useRef<HTMLButtonElement>(null)
+
   const handleConfirm = (e: React.MouseEvent) => {
     e.preventDefault()
     onConfirm()
@@ -34,7 +36,14 @@ export function NewDocumentDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent
+        onOpenAutoFocus={(e) => {
+          e.preventDefault()
+          setTimeout(() => {
+            continueRef.current?.focus()
+          }, 0)
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>Create new document?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -44,7 +53,9 @@ export function NewDocumentDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleConfirm}>Continue</AlertDialogAction>
+          <AlertDialogAction ref={continueRef} onClick={handleConfirm}>
+            Continue
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
