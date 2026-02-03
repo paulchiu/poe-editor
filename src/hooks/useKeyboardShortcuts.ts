@@ -8,6 +8,10 @@ interface ShortcutHandlers {
   onCodeBlock: () => void
   onSave: () => void
   onHelp: () => void
+  onNew: () => void
+  onRename: () => void
+  onClear: () => void
+  onCopyLink: () => void
 }
 
 /**
@@ -20,6 +24,7 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
     const handleKeyDown = (event: KeyboardEvent): void => {
       // Detect Cmd (Mac) or Ctrl (Windows/Linux)
       const isMod = event.metaKey || event.ctrlKey
+      const isAlt = event.altKey
 
       // Check if focus is in a regular input/textarea (not Monaco)
       const target = event.target as HTMLElement
@@ -33,19 +38,50 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
         typeof target.closest === 'function' ? target.closest('.monaco-editor') : false
 
       // Skip if in regular input (but allow in Monaco for modifier shortcuts)
-      if (isInput && !isMonaco) {
-        return
+      // Also allow App shortcuts (Cmd+Alt) to bypass input check
+      const isAppShortcut = isMod && isAlt
+
+      if (isInput && !isMonaco && !isAppShortcut) {
+        // Allow F2 in inputs (e.g. rename)
+        if (event.key !== 'F2') {
+          return
+        }
       }
 
       // Handle modifier-based shortcuts
       if (isMod) {
-        // Shift + K for code block (check first to prevent conflict with Cmd+K)
+        // Shift + K for code block
         if (event.shiftKey && event.key.toLowerCase() === 'k') {
           event.preventDefault()
           handlers.onCodeBlock()
           return
         }
 
+        // App-level shortcuts (Cmd+Alt+...)
+        if (isAlt) {
+          // Use event.code for reliable detection across layouts (ignoring Option key side-effects on character output)
+          switch (event.code) {
+            case 'KeyN':
+              event.preventDefault()
+              handlers.onNew()
+              break
+            case 'KeyR':
+              event.preventDefault()
+              handlers.onRename()
+              break
+            case 'KeyL':
+              event.preventDefault()
+              handlers.onCopyLink()
+              break
+            case 'KeyK':
+              event.preventDefault()
+              handlers.onClear()
+              break
+          }
+          return
+        }
+
+        // Standard formatting shortcuts
         switch (event.key.toLowerCase()) {
           case 'b':
             event.preventDefault()
@@ -70,12 +106,18 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
         }
       }
 
-      // Handle non-modifier shortcuts (only outside editor/inputs)
-      if (!isMod && !event.altKey && !isMonaco) {
+      // Handle non-modifier shortcuts
+      if (!isMod && !isAlt && !isMonaco) {
         if (event.key === '?') {
           event.preventDefault()
           handlers.onHelp()
         }
+      }
+
+      // Function keys
+      if (event.key === 'F2') {
+        event.preventDefault()
+        handlers.onRename()
       }
     }
 

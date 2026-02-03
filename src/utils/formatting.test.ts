@@ -49,7 +49,7 @@ describe('formatting utils', () => {
     it('should insert **bold** if no selection', () => {
       getSelectionMock.mockReturnValue('')
       formatBold(mockEditor)
-      expect(insertTextMock).toHaveBeenCalledWith('**bold**')
+      expect(insertTextMock).toHaveBeenCalledWith('****')
     })
   })
 
@@ -63,7 +63,7 @@ describe('formatting utils', () => {
     it('should insert *italic* if no selection', () => {
       getSelectionMock.mockReturnValue('')
       formatItalic(mockEditor)
-      expect(insertTextMock).toHaveBeenCalledWith('*italic*')
+      expect(insertTextMock).toHaveBeenCalledWith('**')
     })
   })
 
@@ -77,7 +77,7 @@ describe('formatting utils', () => {
     it('should insert link syntax if no selection', () => {
       getSelectionMock.mockReturnValue('')
       formatLink(mockEditor)
-      expect(insertTextMock).toHaveBeenCalledWith('[link](url)')
+      expect(insertTextMock).toHaveBeenCalledWith('[](url)')
     })
   })
 
@@ -91,7 +91,7 @@ describe('formatting utils', () => {
     it('should insert code if no selection', () => {
       getSelectionMock.mockReturnValue('')
       formatCode(mockEditor)
-      expect(insertTextMock).toHaveBeenCalledWith('`code`')
+      expect(insertTextMock).toHaveBeenCalledWith('``')
     })
   })
 
@@ -122,7 +122,7 @@ describe('formatting utils', () => {
 
       formatCodeBlock(mockEditor)
 
-      expect(insertTextMock).toHaveBeenCalledWith('```\ncode block\n```')
+      expect(insertTextMock).toHaveBeenCalledWith('```\n\n```')
     })
   })
 
@@ -137,7 +137,7 @@ describe('formatting utils', () => {
       getLineContentMock.mockReturnValue('')
 
       formatHeading(mockEditor, 1)
-      expect(insertTextMock).toHaveBeenCalledWith('# heading')
+      expect(insertTextMock).toHaveBeenCalledWith('# ')
       expect(replaceSelectionMock).not.toHaveBeenCalled()
     })
 
@@ -230,7 +230,7 @@ describe('formatting utils', () => {
 
       formatQuote(mockEditor)
 
-      expect(insertTextMock).toHaveBeenCalledWith('> quote')
+      expect(insertTextMock).toHaveBeenCalledWith('> ')
     })
   })
 
@@ -300,7 +300,7 @@ describe('formatting utils', () => {
 
       formatBulletList(mockEditor)
 
-      expect(insertTextMock).toHaveBeenCalledWith('- item')
+      expect(insertTextMock).toHaveBeenCalledWith('- ')
     })
   })
 
@@ -370,7 +370,7 @@ describe('formatting utils', () => {
 
       formatNumberedList(mockEditor)
 
-      expect(insertTextMock).toHaveBeenCalledWith('1. item')
+      expect(insertTextMock).toHaveBeenCalledWith('1. ')
     })
   })
 

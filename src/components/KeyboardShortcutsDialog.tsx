@@ -62,6 +62,39 @@ export function KeyboardShortcutsDialog({
             </div>
 
             <div>
+              <h3 className="font-semibold text-sm mb-3">Document</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">New Document</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Alt + N
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Rename</span>
+                  <div className="flex gap-2">
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                      Cmd/Ctrl + Alt + R
+                    </code>
+                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">F2</code>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Copy Link</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Alt + L
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Clear Document</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Alt + K
+                  </code>
+                </div>
+              </div>
+            </div>
+
+            <div>
               <h3 className="font-semibold text-sm mb-3">Application</h3>
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-sm">

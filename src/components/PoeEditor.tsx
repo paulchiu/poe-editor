@@ -313,6 +313,10 @@ ${htmlContent}
     onCodeBlock: handleFormatCodeBlock,
     onSave: handleSave,
     onHelp: () => setShowShortcuts(true),
+    onNew: handleNew,
+    onRename: handleRename,
+    onClear: handleClear,
+    onCopyLink: handleCopyLink,
   })
 
   // Effects
