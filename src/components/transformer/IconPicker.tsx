@@ -25,7 +25,10 @@ export function IconPicker({ value, onChange }: IconPickerProps): ReactElement {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-10 h-10 p-0 text-xl flex-shrink-0">
+        <Button
+          variant="outline"
+          className={cn('h-10 text-xl flex-shrink-0', CurrentIcon ? 'w-10 p-0' : 'min-w-10 px-2.5')}
+        >
           {CurrentIcon ? <CurrentIcon className="w-5 h-5" /> : value || '🪄'}
         </Button>
       </PopoverTrigger>
