@@ -6,6 +6,11 @@ interface EscapeConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Escape/Unescape operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function EscapeConfig({ config, onChange }: EscapeConfigProps): ReactElement {
   const mode = (config.mode as string) || 'json-escape'
 

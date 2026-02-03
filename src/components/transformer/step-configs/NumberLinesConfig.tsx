@@ -6,6 +6,11 @@ interface NumberLinesConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Number Lines operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function NumberLinesConfig({ config, onChange }: NumberLinesConfigProps): ReactElement {
   return (
     <div className="grid gap-2 mt-3 ">

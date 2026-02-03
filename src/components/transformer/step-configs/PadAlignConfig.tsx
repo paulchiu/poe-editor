@@ -7,6 +7,11 @@ interface PadAlignConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Pad/Align operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function PadAlignConfig({ config, onChange }: PadAlignConfigProps): ReactElement {
   const align = (config.align as string) || 'left'
 

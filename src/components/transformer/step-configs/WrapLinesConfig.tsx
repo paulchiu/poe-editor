@@ -6,6 +6,11 @@ interface WrapLinesConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Wrap Lines operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function WrapLinesConfig({ config, onChange }: WrapLinesConfigProps): ReactElement {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3 ">

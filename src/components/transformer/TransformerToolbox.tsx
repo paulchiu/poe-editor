@@ -17,6 +17,11 @@ interface DraggableToolboxItemProps {
   enableDrag?: boolean
 }
 
+/**
+ * Draggable item component for the transformer toolbox.
+ * @param props - Component props
+ * @returns The draggable item component
+ */
 export function DraggableToolboxItem({
   operation,
   onAddStep,

@@ -7,6 +7,11 @@ interface RemoveCharsConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Remove Characters operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function RemoveCharsConfig({ config, onChange }: RemoveCharsConfigProps): ReactElement {
   const mode = (config.mode as string) || 'digits'
 

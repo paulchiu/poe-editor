@@ -7,6 +7,11 @@ interface JoinSplitConfigProps {
   operationId: string
 }
 
+/**
+ * Configuration component for Join/Split operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function JoinSplitConfig({
   config,
   onChange,

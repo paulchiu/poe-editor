@@ -6,6 +6,11 @@ interface LineMatchConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Keep/Remove Matching Lines operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function LineMatchConfig({ config, onChange }: LineMatchConfigProps): ReactElement {
   return (
     <div className="grid gap-2 mt-3 ">

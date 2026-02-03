@@ -6,6 +6,11 @@ interface FormatNumbersConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Format Numbers operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function FormatNumbersConfig({ config, onChange }: FormatNumbersConfigProps): ReactElement {
   return (
     <div className="grid gap-2 mt-3 ">

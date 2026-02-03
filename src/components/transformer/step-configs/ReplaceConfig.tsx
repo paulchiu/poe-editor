@@ -6,6 +6,11 @@ interface ReplaceConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Replace Text operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function ReplaceConfig({ config, onChange }: ReplaceConfigProps): ReactElement {
   return (
     <div className="grid gap-2 mt-3 ">

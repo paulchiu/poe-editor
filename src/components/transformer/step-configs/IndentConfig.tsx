@@ -7,6 +7,11 @@ interface IndentConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Indent/Dedent operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function IndentConfig({ config, onChange }: IndentConfigProps): ReactElement {
   const mode = config.mode === 'dedent' ? 'dedent' : 'indent'
 

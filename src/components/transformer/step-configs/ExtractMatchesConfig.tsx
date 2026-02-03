@@ -6,6 +6,11 @@ interface ExtractMatchesConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Extract Matches operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function ExtractMatchesConfig({
   config,
   onChange,

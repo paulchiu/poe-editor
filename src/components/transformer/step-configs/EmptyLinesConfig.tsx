@@ -5,6 +5,11 @@ interface EmptyLinesConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Remove Empty Lines operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function EmptyLinesConfig({ config, onChange }: EmptyLinesConfigProps): ReactElement {
   return (
     <div className="mt-3 ">

@@ -6,6 +6,11 @@ interface WordWrapConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Word Wrap operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function WordWrapConfig({ config, onChange }: WordWrapConfigProps): ReactElement {
   return (
     <div className="mt-3 ">

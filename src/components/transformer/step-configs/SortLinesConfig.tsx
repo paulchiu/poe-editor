@@ -6,6 +6,11 @@ interface SortLinesConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Sort Lines operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function SortLinesConfig({ config, onChange }: SortLinesConfigProps): ReactElement {
   return (
     <div className="flex flex-col md:flex-row gap-3 mt-3 text-left items-stretch md:items-end">

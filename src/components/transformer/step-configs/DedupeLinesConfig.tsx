@@ -6,6 +6,11 @@ interface DedupeLinesConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Dedupe Lines operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function DedupeLinesConfig({ config, onChange }: DedupeLinesConfigProps): ReactElement {
   const keep = (config.keep as string) || 'first'
 

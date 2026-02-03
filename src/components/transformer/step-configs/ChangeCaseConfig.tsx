@@ -6,6 +6,11 @@ interface ChangeCaseConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Change Case operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function ChangeCaseConfig({ config, onChange }: ChangeCaseConfigProps): ReactElement {
   return (
     <div className="mt-3">

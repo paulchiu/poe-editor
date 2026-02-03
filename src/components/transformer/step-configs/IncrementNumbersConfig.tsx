@@ -6,6 +6,11 @@ interface IncrementNumbersConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Increment Numbers operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function IncrementNumbersConfig({
   config,
   onChange,

@@ -6,6 +6,11 @@ interface EncodeDecodeConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Encode/Decode operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function EncodeDecodeConfig({ config, onChange }: EncodeDecodeConfigProps): ReactElement {
   const mode = (config.mode as string) || 'url-encode'
 

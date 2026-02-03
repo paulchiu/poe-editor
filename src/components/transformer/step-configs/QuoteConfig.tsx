@@ -7,6 +7,11 @@ interface QuoteConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Quote/Unquote operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function QuoteConfig({ config, onChange }: QuoteConfigProps): ReactElement {
   const mode = (config.mode as string) || 'add'
 
