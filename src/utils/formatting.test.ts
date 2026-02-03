@@ -97,14 +97,31 @@ describe('formatting utils', () => {
 
   describe('formatCodeBlock', () => {
     it('should wrap selection with triple backticks', () => {
-      getSelectionMock.mockReturnValue('text')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 1,
+        startColumn: 1,
+        endColumn: 5,
+      })
+      getLineContentMock.mockReturnValue('text')
+
       formatCodeBlock(mockEditor)
+
       expect(replaceSelectionMock).toHaveBeenCalledWith('```\ntext\n```')
+      expect(setSelectionMock).toHaveBeenCalled()
     })
 
     it('should insert code block if no selection', () => {
-      getSelectionMock.mockReturnValue('')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 1,
+        startColumn: 1,
+        endColumn: 1,
+      })
+      getLineContentMock.mockReturnValue('')
+
       formatCodeBlock(mockEditor)
+
       expect(insertTextMock).toHaveBeenCalledWith('```\ncode block\n```')
     })
   })
@@ -185,66 +202,174 @@ describe('formatting utils', () => {
 
   describe('formatQuote', () => {
     it('should prefix lines with >', () => {
-      getSelectionMock.mockReturnValue('line 1\nline 2')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 7,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return 'line 1'
+        if (line === 2) return 'line 2'
+        return ''
+      })
+
       formatQuote(mockEditor)
+
       expect(replaceSelectionMock).toHaveBeenCalledWith('> line 1\n> line 2')
     })
 
     it('should insert quote placeholder if no selection', () => {
-      getSelectionMock.mockReturnValue('')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 1,
+        startColumn: 1,
+        endColumn: 1,
+      })
+      getLineContentMock.mockReturnValue('')
+
       formatQuote(mockEditor)
+
       expect(insertTextMock).toHaveBeenCalledWith('> quote')
     })
   })
 
   describe('formatBulletList', () => {
     it('should prefix lines with - ', () => {
-      getSelectionMock.mockReturnValue('item 1\nitem 2')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 7,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return 'item 1'
+        if (line === 2) return 'item 2'
+        return ''
+      })
+
       formatBulletList(mockEditor)
+
       expect(replaceSelectionMock).toHaveBeenCalledWith('- item 1\n- item 2')
     })
 
     it('should toggle off bullet list', () => {
-      getSelectionMock.mockReturnValue('- item 1\n- item 2')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 9,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '- item 1'
+        if (line === 2) return '- item 2'
+        return ''
+      })
+
       formatBulletList(mockEditor)
+
       expect(replaceSelectionMock).toHaveBeenCalledWith('item 1\nitem 2')
     })
 
     it('should convert numbered list to bullet list', () => {
-      getSelectionMock.mockReturnValue('1. item 1\n2. item 2')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 10,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '1. item 1'
+        if (line === 2) return '2. item 2'
+        return ''
+      })
+
       formatBulletList(mockEditor)
+
       expect(replaceSelectionMock).toHaveBeenCalledWith('- item 1\n- item 2')
     })
 
     it('should insert bullet list item if no selection', () => {
-      getSelectionMock.mockReturnValue('')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 1,
+        startColumn: 1,
+        endColumn: 1,
+      })
+      getLineContentMock.mockReturnValue('')
+
       formatBulletList(mockEditor)
+
       expect(insertTextMock).toHaveBeenCalledWith('- item')
     })
   })
 
   describe('formatNumberedList', () => {
     it('should prefix lines with numbers', () => {
-      getSelectionMock.mockReturnValue('item 1\nitem 2')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 7,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return 'item 1'
+        if (line === 2) return 'item 2'
+        return ''
+      })
+
       formatNumberedList(mockEditor)
+
       expect(replaceSelectionMock).toHaveBeenCalledWith('1. item 1\n2. item 2')
     })
 
     it('should toggle off numbered list', () => {
-      getSelectionMock.mockReturnValue('1. item 1\n2. item 2')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 10,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '1. item 1'
+        if (line === 2) return '2. item 2'
+        return ''
+      })
+
       formatNumberedList(mockEditor)
+
       expect(replaceSelectionMock).toHaveBeenCalledWith('item 1\nitem 2')
     })
 
     it('should convert bullet list to numbered list', () => {
-      getSelectionMock.mockReturnValue('- item 1\n- item 2')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 9,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '- item 1'
+        if (line === 2) return '- item 2'
+        return ''
+      })
+
       formatNumberedList(mockEditor)
+
       expect(replaceSelectionMock).toHaveBeenCalledWith('1. item 1\n2. item 2')
     })
 
     it('should insert numbered list item if no selection', () => {
-      getSelectionMock.mockReturnValue('')
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 1,
+        startColumn: 1,
+        endColumn: 1,
+      })
+      getLineContentMock.mockReturnValue('')
+
       formatNumberedList(mockEditor)
+
       expect(insertTextMock).toHaveBeenCalledWith('1. item')
     })
   })
