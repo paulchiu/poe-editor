@@ -6,9 +6,14 @@ interface LineMatchConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Keep/Remove Matching Lines operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function LineMatchConfig({ config, onChange }: LineMatchConfigProps): ReactElement {
   return (
-    <div className="grid gap-2 mt-3 animate-in slide-in-from-top-2 duration-200">
+    <div className="grid gap-2 mt-3 ">
       <div className="space-y-1">
         <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Pattern to Match
@@ -21,7 +26,7 @@ export function LineMatchConfig({ config, onChange }: LineMatchConfigProps): Rea
         />
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <label className="flex items-center gap-2 px-2 h-7 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors">
           <input
             type="checkbox"

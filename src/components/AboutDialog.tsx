@@ -28,7 +28,7 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps): ReactElem
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <h3 className="font-semibold text-sm">Features:</h3>
+            <h3 className="font-semibold text-sm">Features</h3>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
               <li>Live preview with split-pane layout</li>
               <li>Vim mode</li>

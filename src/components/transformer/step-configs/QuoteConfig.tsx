@@ -7,12 +7,17 @@ interface QuoteConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Quote/Unquote operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function QuoteConfig({ config, onChange }: QuoteConfigProps): ReactElement {
   const mode = (config.mode as string) || 'add'
 
   return (
-    <div className="grid gap-2 mt-3 animate-in slide-in-from-top-2 duration-200">
-      <div className="grid grid-cols-2 gap-2">
+    <div className="grid gap-2 mt-3 ">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         <div className="space-y-1">
           <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
             Mode

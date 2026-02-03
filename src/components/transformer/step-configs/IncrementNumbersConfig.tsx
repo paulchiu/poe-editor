@@ -6,12 +6,17 @@ interface IncrementNumbersConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Increment Numbers operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function IncrementNumbersConfig({
   config,
   onChange,
 }: IncrementNumbersConfigProps): ReactElement {
   return (
-    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+    <div className="mt-3 ">
       <div className="space-y-1">
         <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Increment By

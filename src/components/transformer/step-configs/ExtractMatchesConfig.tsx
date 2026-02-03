@@ -6,12 +6,17 @@ interface ExtractMatchesConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Extract Matches operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function ExtractMatchesConfig({
   config,
   onChange,
 }: ExtractMatchesConfigProps): ReactElement {
   return (
-    <div className="grid gap-2 mt-3 animate-in slide-in-from-top-2 duration-200">
+    <div className="grid gap-2 mt-3 ">
       <div className="space-y-1">
         <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Regex Pattern

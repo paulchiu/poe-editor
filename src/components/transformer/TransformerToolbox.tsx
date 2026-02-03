@@ -1,4 +1,5 @@
-import { useState, type ReactElement } from 'react'
+import { useState, type ReactElement, type ChangeEvent } from 'react'
+import { useToast } from '@/hooks/useToast'
 import { Search, Plus, GripVertical } from 'lucide-react'
 import { useDraggable } from '@dnd-kit/core'
 import { OPERATIONS, ICON_MAP } from './constants'
@@ -16,6 +17,11 @@ interface DraggableToolboxItemProps {
   enableDrag?: boolean
 }
 
+/**
+ * Draggable item component for the transformer toolbox.
+ * @param props - Component props
+ * @returns The draggable item component
+ */
 export function DraggableToolboxItem({
   operation,
   onAddStep,
@@ -50,28 +56,44 @@ export function DraggableToolboxItem({
   }
 
   return (
-    <Button
+    <div
       id={!isOverlay ? `toolbox-${operation.id}` : undefined}
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      variant="outline"
-      style={{ touchAction: enableDrag ? 'none' : 'auto', ...styleProp }}
+      style={styleProp}
       className={cn(
-        'justify-start h-auto py-3 px-4 w-full text-left font-normal bg-background hover:bg-accent border-muted-foreground/20 hover:border-primary/50 group transition-all',
+        'flex items-center w-full rounded-md border bg-background hover:bg-accent border-muted-foreground/20 hover:border-primary/50 group transition-all overflow-hidden',
         isDragging ? 'opacity-50' : ''
       )}
-      onClick={() => onAddStep(operation)}
     >
-      <div className="p-2 rounded-md bg-muted group-hover:bg-primary/10 text-muted-foreground group-hover:text-primary mr-3 transition-colors">
-        <Icon className="w-4 h-4" />
-      </div>
-      <div>
-        <div className="text-sm font-medium text-foreground">{operation.name}</div>
-        <div className="text-xs text-muted-foreground line-clamp-1">{operation.description}</div>
-      </div>
-      <Plus className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 text-primary transition-opacity" />
-    </Button>
+      {enableDrag && (
+        <div
+          {...listeners}
+          {...attributes}
+          className="p-3 pr-1 text-muted-foreground/30 group-hover:text-muted-foreground cursor-grab active:cursor-grabbing transition-colors self-stretch flex items-center"
+          style={{ touchAction: 'none' }}
+        >
+          <GripVertical className="h-4 w-4" />
+        </div>
+      )}
+
+      <button
+        type="button"
+        className={cn(
+          'flex-1 flex items-center py-3 px-4 pl-2 text-left bg-transparent border-none cursor-pointer outline-none w-full min-w-0',
+          !enableDrag && 'pl-4'
+        )}
+        onClick={() => onAddStep(operation)}
+      >
+        <div className="p-2 rounded-md bg-muted group-hover:bg-primary/10 text-muted-foreground group-hover:text-primary mr-3 transition-colors shrink-0">
+          <Icon className="w-4 h-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-medium text-foreground truncate">{operation.name}</div>
+          <div className="text-xs text-muted-foreground line-clamp-1">{operation.description}</div>
+        </div>
+        <Plus className="w-4 h-4 ml-3 opacity-0 group-hover:opacity-100 text-primary transition-opacity shrink-0" />
+      </button>
+    </div>
   )
 }
 
@@ -91,6 +113,7 @@ export function TransformerToolbox({
 }: TransformerToolboxProps): ReactElement {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState<OperationCategory | 'All'>('All')
+  const { toast } = useToast()
 
   const categories: (OperationCategory | 'All')[] = [
     'All',
@@ -107,6 +130,36 @@ export function TransformerToolbox({
     return matchesSearch && matchesCategory
   })
 
+  const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (value === '/add-all') {
+      OPERATIONS.forEach((op) => onAddStep(op))
+      toast({
+        description: 'All available operations have been added to the workbench.',
+      })
+      setSearchQuery('')
+      return
+    }
+    setSearchQuery(value)
+  }
+
+  const listContent = (
+    <div className="p-4 grid gap-2">
+      {filteredOperations.map((op) => (
+        <DraggableToolboxItem
+          key={op.id}
+          operation={op}
+          onAddStep={onAddStep}
+          enableDrag={enableDrag}
+        />
+      ))}
+
+      {filteredOperations.length === 0 && (
+        <div className="text-center py-8 text-sm text-muted-foreground">No operations found.</div>
+      )}
+    </div>
+  )
+
   return (
     <div className="flex flex-col h-full bg-muted/10">
       <div className="p-4 border-b space-y-3">
@@ -118,7 +171,7 @@ export function TransformerToolbox({
           <Input
             placeholder="Search operations..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="pl-8 bg-background"
           />
         </div>
@@ -140,24 +193,11 @@ export function TransformerToolbox({
         </div>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-4 grid gap-2">
-          {filteredOperations.map((op) => (
-            <DraggableToolboxItem
-              key={op.id}
-              operation={op}
-              onAddStep={onAddStep}
-              enableDrag={enableDrag}
-            />
-          ))}
-
-          {filteredOperations.length === 0 && (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              No operations found.
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+      {enableDrag ? (
+        <ScrollArea className="flex-1">{listContent}</ScrollArea>
+      ) : (
+        <div className="flex-1 overflow-y-auto">{listContent}</div>
+      )}
     </div>
   )
 }

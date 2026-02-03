@@ -6,14 +6,19 @@ interface ChangeCaseConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Change Case operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function ChangeCaseConfig({ config, onChange }: ChangeCaseConfigProps): ReactElement {
   return (
-    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
+    <div className="mt-3">
       <div className="space-y-1">
         <label className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
           Case Mode
         </label>
-        <div className="grid grid-cols-4 gap-1 bg-muted/20 p-1 rounded-md border text-xs">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-1 bg-muted/20 p-1 rounded-md border text-xs">
           {[
             { id: 'upper', label: 'UPPER' },
             { id: 'lower', label: 'lower' },

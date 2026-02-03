@@ -135,10 +135,24 @@ export function SplashScreen({
               &copy; 2026 Paul Chiu - All rights reserved
             </p>
             {debug && (
-              <p className="mt-2 text-xs font-medium text-yellow-500">
-                Debug Mode: Press Esc to exit, &apos;L&apos; toggles loading, &apos;R&apos;
-                refreshes tagline
-              </p>
+              <div className="mt-2 flex flex-col items-start gap-2">
+                <p className="text-xs font-medium text-yellow-500">
+                  Debug Mode: Press Esc to exit, &apos;L&apos; toggles loading, &apos;R&apos;
+                  refreshes tagline
+                </p>
+                <button
+                  onClick={() => {
+                    setIsFading(true)
+                    setTimeout(() => {
+                      setIsVisible(false)
+                      onComplete()
+                    }, 500)
+                  }}
+                  className="rounded bg-yellow-500/10 px-3 py-1 text-xs font-medium text-yellow-500 hover:bg-yellow-500/20 active:bg-yellow-500/30 lg:hidden"
+                >
+                  Exit Debug
+                </button>
+              </div>
             )}
           </div>
         </div>

@@ -5,10 +5,15 @@ interface EmptyLinesConfigProps {
   onChange: (config: Record<string, unknown>) => void
 }
 
+/**
+ * Configuration component for Remove Empty Lines operation.
+ * @param props - Component props
+ * @returns The configuration component
+ */
 export function EmptyLinesConfig({ config, onChange }: EmptyLinesConfigProps): ReactElement {
   return (
-    <div className="mt-3 animate-in slide-in-from-top-2 duration-200">
-      <label className="flex items-center gap-2 h-8 px-3 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors w-fit">
+    <div className="mt-3 ">
+      <label className="flex items-center gap-2 min-h-8 h-auto py-2 px-3 border rounded-md bg-muted/20 text-xs cursor-pointer hover:border-primary/50 transition-colors w-fit">
         <input
           type="checkbox"
           checked={!!config.trim}

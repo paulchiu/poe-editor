@@ -60,6 +60,17 @@ npm run test:e2e   # Run end-to-end tests
 npm run deploy     # Deploy to Cloudflare Workers
 ```
 
+## Manual Testing Features
+
+The editor includes several built-in utilities to assist with manual testing and debugging:
+
+- **Debug Commands**:
+  - `/add-all`: Type this in the Transformer Toolbox search bar to add all available operations to the workbench.
+- **URL Parameters**:
+  - `?limit=[number]`: Override the default URL length limit (default: 32,000 chars). Useful for testing storage limits.
+- **UI Testing**:
+  - **Show Splash**: Accessed via the Menu (three dots) > Show Splash. Displays the splash screen for debugging.
+
 ## Keyboard Shortcuts
 
 | Shortcut               | Action                  |
