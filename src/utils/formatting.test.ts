@@ -17,16 +17,25 @@ describe('formatting utils', () => {
   let getSelectionMock: ReturnType<typeof vi.fn>
   let replaceSelectionMock: ReturnType<typeof vi.fn>
   let insertTextMock: ReturnType<typeof vi.fn>
+  let getSelectionRangeMock: ReturnType<typeof vi.fn>
+  let getLineContentMock: ReturnType<typeof vi.fn>
+  let setSelectionMock: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     getSelectionMock = vi.fn()
     replaceSelectionMock = vi.fn()
     insertTextMock = vi.fn()
+    getSelectionRangeMock = vi.fn()
+    getLineContentMock = vi.fn()
+    setSelectionMock = vi.fn()
 
     mockEditor = {
       getSelection: getSelectionMock,
       replaceSelection: replaceSelectionMock,
       insertText: insertTextMock,
+      getSelectionRange: getSelectionRangeMock,
+      getLineContent: getLineContentMock,
+      setSelection: setSelectionMock,
     } as unknown as EditorPaneHandle
   })
 
@@ -101,16 +110,76 @@ describe('formatting utils', () => {
   })
 
   describe('formatHeading', () => {
-    it('should prefix selection with # based on level', () => {
-      getSelectionMock.mockReturnValue('Heading')
-      formatHeading(mockEditor, 2)
-      expect(replaceSelectionMock).toHaveBeenCalledWith('## Heading')
-    })
+    it('should insert heading placeholder if on empty line', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 1,
+        startColumn: 1,
+        endColumn: 1,
+      })
+      getLineContentMock.mockReturnValue('')
 
-    it('should insert heading if no selection', () => {
-      getSelectionMock.mockReturnValue('')
       formatHeading(mockEditor, 1)
       expect(insertTextMock).toHaveBeenCalledWith('# heading')
+      expect(replaceSelectionMock).not.toHaveBeenCalled()
+    })
+
+    it('should apply heading to current line if has text (no selection)', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 1,
+        startColumn: 5,
+        endColumn: 5,
+      })
+      getLineContentMock.mockReturnValue('My Title')
+
+      formatHeading(mockEditor, 1)
+
+      expect(setSelectionMock).toHaveBeenCalledWith({
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: 1,
+        endColumn: 9, // length + 1
+      })
+      expect(replaceSelectionMock).toHaveBeenCalledWith('# My Title')
+    })
+
+    it('should apply heading to all spanned lines if multiple lines selected', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 5,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return 'Title 1'
+        if (line === 2) return 'Title 2'
+        return ''
+      })
+
+      formatHeading(mockEditor, 1)
+
+      expect(setSelectionMock).toHaveBeenCalledWith({
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: 2,
+        endColumn: 8, // length of last line (7) + 1
+      })
+      expect(replaceSelectionMock).toHaveBeenCalledWith('# Title 1\n# Title 2')
+    })
+
+    it('should replace existing heading level', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 1,
+        startColumn: 1,
+        endColumn: 1,
+      })
+      getLineContentMock.mockReturnValue('## Title')
+
+      formatHeading(mockEditor, 1)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('# Title')
     })
   })
 

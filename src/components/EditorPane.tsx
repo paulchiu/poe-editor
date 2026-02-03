@@ -23,6 +23,19 @@ export interface EditorPaneHandle {
   insertText: (text: string) => void
   getSelection: () => string | undefined
   replaceSelection: (text: string) => void
+  getSelectionRange: () => {
+    startLineNumber: number
+    startColumn: number
+    endLineNumber: number
+    endColumn: number
+  } | null
+  getLineContent: (lineNumber: number) => string | undefined
+  setSelection: (range: {
+    startLineNumber: number
+    startColumn: number
+    endLineNumber: number
+    endColumn: number
+  }) => void
 }
 
 export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
@@ -221,6 +234,32 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           },
         ])
 
+        editor.focus()
+      },
+
+      getSelectionRange: () => {
+        const editor = editorRef.current
+        if (!editor) return null
+        const selection = editor.getSelection()
+        if (!selection) return null
+        return {
+          startLineNumber: selection.startLineNumber,
+          startColumn: selection.startColumn,
+          endLineNumber: selection.endLineNumber,
+          endColumn: selection.endColumn,
+        }
+      },
+
+      getLineContent: (lineNumber: number) => {
+        const editor = editorRef.current
+        if (!editor) return undefined
+        return editor.getModel()?.getLineContent(lineNumber)
+      },
+
+      setSelection: (range) => {
+        const editor = editorRef.current
+        if (!editor) return
+        editor.setSelection(range)
         editor.focus()
       },
     }))

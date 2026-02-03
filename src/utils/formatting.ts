@@ -83,13 +83,43 @@ export function formatCodeBlock(editor: EditorPaneHandle | null): void {
 export function formatHeading(editor: EditorPaneHandle | null, level: number): void {
   if (!editor) return
 
+  const range = editor.getSelectionRange()
+  if (!range) return
+
+  const { startLineNumber, endLineNumber } = range
   const prefix = '#'.repeat(level) + ' '
-  const selection = editor.getSelection()
-  if (selection) {
-    editor.replaceSelection(`${prefix}${selection}`)
-  } else {
-    editor.insertText(`${prefix}heading`)
+
+  // Check if we are on a single empty line
+  if (startLineNumber === endLineNumber) {
+    const lineContent = editor.getLineContent(startLineNumber)
+    if (lineContent === '' || lineContent === undefined) {
+      editor.insertText(`${prefix}heading`)
+      return
+    }
   }
+
+  const lines: string[] = []
+  for (let i = startLineNumber; i <= endLineNumber; i++) {
+    const content = editor.getLineContent(i) || ''
+    // Strip existing heading
+    const cleanContent = content.replace(/^#{1,6}\s+/, '')
+    lines.push(`${prefix}${cleanContent}`)
+  }
+
+  const newText = lines.join('\n')
+
+  // We need to know the length of the last line to select it fully.
+  const lastLineContent = editor.getLineContent(endLineNumber) || ''
+  const lastLineLength = lastLineContent.length
+
+  editor.setSelection({
+    startLineNumber: startLineNumber,
+    startColumn: 1,
+    endLineNumber: endLineNumber,
+    endColumn: lastLineLength + 1,
+  })
+
+  editor.replaceSelection(newText)
 }
 
 /**
