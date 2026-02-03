@@ -11,11 +11,16 @@ describe('useKeyboardShortcuts', () => {
     onCodeBlock: vi.fn(),
     onSave: vi.fn(),
     onHelp: vi.fn(),
+    onNew: vi.fn(),
+    onRename: vi.fn(),
+    onClear: vi.fn(),
+    onCopyLink: vi.fn(),
   }
 
   const triggerKeyDown = (key: string, options: KeyboardEventInit = {}) => {
     const event = new KeyboardEvent('keydown', {
       key,
+      code: options.code || `Key${key.toUpperCase()}`,
       bubbles: true,
       cancelable: true,
       ...options,
@@ -59,6 +64,36 @@ describe('useKeyboardShortcuts', () => {
     renderHook(() => useKeyboardShortcuts(handlers))
     triggerKeyDown('?')
     expect(handlers.onHelp).toHaveBeenCalled()
+  })
+
+  it('should trigger onNew with Cmd+Alt+N', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('n', { metaKey: true, altKey: true })
+    expect(handlers.onNew).toHaveBeenCalled()
+  })
+
+  it('should trigger onCopyLink with Cmd+Alt+L', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('l', { metaKey: true, altKey: true })
+    expect(handlers.onCopyLink).toHaveBeenCalled()
+  })
+
+  it('should trigger onClear with Cmd+Alt+K', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('k', { metaKey: true, altKey: true })
+    expect(handlers.onClear).toHaveBeenCalled()
+  })
+
+  it('should trigger onRename with Cmd+Alt+R', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('r', { metaKey: true, altKey: true })
+    expect(handlers.onRename).toHaveBeenCalled()
+  })
+
+  it('should trigger onRename with F2', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('F2')
+    expect(handlers.onRename).toHaveBeenCalled()
   })
 
   it('should NOT trigger shortcuts when typing in an input', () => {

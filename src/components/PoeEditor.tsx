@@ -19,6 +19,7 @@ import { AboutDialog } from '@/components/AboutDialog'
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { EditorToolbar } from '@/components/EditorToolbar'
 import { RenameDialog } from '@/components/RenameDialog'
+import { NewDocumentDialog } from '@/components/NewDocumentDialog'
 import { TransformerDialog } from '@/components/transformer/TransformerDialog'
 import { TransformerImportExportDialog } from '@/components/transformer/TransformerImportExportDialog'
 import type { TransformationPipeline } from '@/components/transformer/types'
@@ -75,6 +76,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showAbout, setShowAbout] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [showRename, setShowRename] = useState(false)
+  const [showNewDialog, setShowNewDialog] = useState(false)
   const [showSplash, setShowSplash] = useState(false)
   const [showTransformer, setShowTransformer] = useState(false)
   const [showImportExport, setShowImportExport] = useState(false)
@@ -228,11 +230,13 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Document management functions
   const handleNew = useCallback((): void => {
-    if (confirm('Create a new document? Current content will be lost if not saved.')) {
-      setContent('')
-      setDocumentName('untitled.md')
-      toast({ description: 'New document created' })
-    }
+    setShowNewDialog(true)
+  }, [])
+
+  const handleNewConfirm = useCallback((): void => {
+    setContent('')
+    setDocumentName('untitled.md')
+    toast({ description: 'New document created' })
   }, [setContent, setDocumentName, toast])
 
   const handleRename = useCallback((): void => {
@@ -309,6 +313,10 @@ ${htmlContent}
     onCodeBlock: handleFormatCodeBlock,
     onSave: handleSave,
     onHelp: () => setShowShortcuts(true),
+    onNew: handleNew,
+    onRename: handleRename,
+    onClear: handleClear,
+    onCopyLink: handleCopyLink,
   })
 
   // Effects
@@ -398,6 +406,12 @@ ${htmlContent}
         onOpenChange={setShowRename}
         currentName={documentName}
         onRename={handleRenameConfirm}
+      />
+
+      <NewDocumentDialog
+        open={showNewDialog}
+        onOpenChange={setShowNewDialog}
+        onConfirm={handleNewConfirm}
       />
 
       {showSplash && (

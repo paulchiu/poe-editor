@@ -325,11 +325,11 @@ export function TransformerDialog({
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={handleSave}>
                         <Save className="w-4 h-4 mr-2" />
-                        Save Only
+                        Save
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleSaveAndApply}>
                         <Save className="w-4 h-4 mr-2" />
-                        Save & Apply
+                        Save &amp; Apply
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

@@ -1,5 +1,78 @@
 import type { EditorPaneHandle } from '@/components/EditorPane'
 
+interface LineFormattingOptions {
+  editor: EditorPaneHandle
+  placeholder: string
+  transform: (lines: string[]) => string[]
+  cursorAdjust?: {
+    lineDelta?: number
+    column?: number
+  }
+}
+
+function insertTemplate(editor: EditorPaneHandle, prefix: string, suffix: string) {
+  editor.insertText(prefix + suffix)
+  const range = editor.getSelectionRange()
+  if (range) {
+    editor.setSelection({
+      startLineNumber: range.endLineNumber,
+      startColumn: range.endColumn - suffix.length,
+      endLineNumber: range.endLineNumber,
+      endColumn: range.endColumn - suffix.length,
+    })
+  }
+}
+
+function applyLineFormatting(options: LineFormattingOptions): void {
+  const { editor, placeholder, transform } = options
+  const range = editor.getSelectionRange()
+  if (!range) return
+
+  const { startLineNumber, endLineNumber } = range
+
+  // Check if we are on a single empty line
+  if (startLineNumber === endLineNumber) {
+    const lineContent = editor.getLineContent(startLineNumber)
+    if (lineContent === '' || lineContent === undefined) {
+      editor.insertText(placeholder)
+      if (options.cursorAdjust) {
+        const range = editor.getSelectionRange()
+        if (range) {
+          const newLine = range.startLineNumber + (options.cursorAdjust.lineDelta || 0)
+          const newCol = options.cursorAdjust.column ?? range.startColumn
+          editor.setSelection({
+            startLineNumber: newLine,
+            startColumn: newCol,
+            endLineNumber: newLine,
+            endColumn: newCol,
+          })
+        }
+      }
+      return
+    }
+  }
+
+  const lines: string[] = []
+  for (let i = startLineNumber; i <= endLineNumber; i++) {
+    lines.push(editor.getLineContent(i) || '')
+  }
+
+  const newLines = transform(lines)
+  const newText = newLines.join('\n')
+
+  const lastLineContent = editor.getLineContent(endLineNumber) || ''
+  const lastLineLength = lastLineContent.length
+
+  editor.setSelection({
+    startLineNumber: startLineNumber,
+    startColumn: 1,
+    endLineNumber: endLineNumber,
+    endColumn: lastLineLength + 1,
+  })
+
+  editor.replaceSelection(newText)
+}
+
 /**
  * Wraps selected text or inserts bold markdown
  * @param editor - Editor instance handle
@@ -11,7 +84,7 @@ export function formatBold(editor: EditorPaneHandle | null): void {
   if (selection) {
     editor.replaceSelection(`**${selection}**`)
   } else {
-    editor.insertText('**bold**')
+    insertTemplate(editor, '**', '**')
   }
 }
 
@@ -26,7 +99,7 @@ export function formatItalic(editor: EditorPaneHandle | null): void {
   if (selection) {
     editor.replaceSelection(`*${selection}*`)
   } else {
-    editor.insertText('*italic*')
+    insertTemplate(editor, '*', '*')
   }
 }
 
@@ -41,7 +114,7 @@ export function formatLink(editor: EditorPaneHandle | null): void {
   if (selection) {
     editor.replaceSelection(`[${selection}](url)`)
   } else {
-    editor.insertText('[link](url)')
+    insertTemplate(editor, '[', '](url)')
   }
 }
 
@@ -56,7 +129,7 @@ export function formatCode(editor: EditorPaneHandle | null): void {
   if (selection) {
     editor.replaceSelection(`\`${selection}\``)
   } else {
-    editor.insertText('`code`')
+    insertTemplate(editor, '`', '`')
   }
 }
 
@@ -67,12 +140,17 @@ export function formatCode(editor: EditorPaneHandle | null): void {
 export function formatCodeBlock(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
-  const selection = editor.getSelection()
-  if (selection) {
-    editor.replaceSelection(`\`\`\`\n${selection}\n\`\`\``)
-  } else {
-    editor.insertText('```\ncode block\n```')
-  }
+  applyLineFormatting({
+    editor,
+    placeholder: '```\n\n```',
+    cursorAdjust: {
+      lineDelta: -1,
+      column: 1,
+    },
+    transform: (lines) => {
+      return ['```', ...lines, '```']
+    },
+  })
 }
 
 /**
@@ -84,12 +162,17 @@ export function formatHeading(editor: EditorPaneHandle | null, level: number): v
   if (!editor) return
 
   const prefix = '#'.repeat(level) + ' '
-  const selection = editor.getSelection()
-  if (selection) {
-    editor.replaceSelection(`${prefix}${selection}`)
-  } else {
-    editor.insertText(`${prefix}heading`)
-  }
+
+  applyLineFormatting({
+    editor,
+    placeholder: `${prefix}`,
+    transform: (lines) =>
+      lines.map((line) => {
+        // Strip existing heading
+        const cleanContent = line.replace(/^#{1,6}\s+/, '')
+        return `${prefix}${cleanContent}`
+      }),
+  })
 }
 
 /**
@@ -99,16 +182,21 @@ export function formatHeading(editor: EditorPaneHandle | null, level: number): v
 export function formatQuote(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
-  const selection = editor.getSelection()
-  if (selection) {
-    const lines = selection.split('\n')
-    const formatted = lines
-      .map((line, i) => (i === lines.length - 1 && line === '' ? line : `> ${line}`))
-      .join('\n')
-    editor.replaceSelection(formatted)
-  } else {
-    editor.insertText('> quote')
-  }
+  applyLineFormatting({
+    editor,
+    placeholder: '> ',
+    transform: (lines) =>
+      lines.map((line) => {
+        // Skip empty lines to avoid trailing > on selection end
+        if (line.trim().length === 0) return line
+        // We could strip existing quotes here if we wanted toggle behavior,
+        // but preserving existing behavior of just adding > for now,
+        // unless it's just a raw add.
+        // Old implementation: lines.map((line, i) => (i === lines.length - 1 && line === '' ? line : `> ${line}`))
+        // The helper reads actual lines. If line is empty, it's empty string.
+        return `> ${line}`
+      }),
+  })
 }
 
 /**
@@ -118,25 +206,19 @@ export function formatQuote(editor: EditorPaneHandle | null): void {
 export function formatBulletList(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
-  const selection = editor.getSelection()
-  if (selection) {
-    const lines = selection.split('\n')
-    const processableLines = lines.filter(
-      (line: string, i: number) =>
-        !(i === lines.length - 1 && line === '') && line.trim().length > 0
-    )
+  applyLineFormatting({
+    editor,
+    placeholder: '- ',
+    transform: (lines) => {
+      const processableLines = lines.filter((line) => line.trim().length > 0)
+      const isBulletList =
+        processableLines.length > 0 && processableLines.every((line) => /^\s*[-*]\s/.test(line))
+      const isNumberedList =
+        !isBulletList &&
+        processableLines.length > 0 &&
+        processableLines.every((line) => /^\s*\d+\.\s/.test(line))
 
-    const isBulletList =
-      processableLines.length > 0 &&
-      processableLines.every((line: string) => /^\s*[-*]\s/.test(line))
-    const isNumberedList =
-      !isBulletList &&
-      processableLines.length > 0 &&
-      processableLines.every((line: string) => /^\s*\d+\.\s/.test(line))
-
-    const formatted = lines
-      .map((line: string, i: number) => {
-        if (i === lines.length - 1 && line === '') return line
+      return lines.map((line) => {
         if (line.trim().length === 0) return line
 
         if (isBulletList) {
@@ -147,11 +229,8 @@ export function formatBulletList(editor: EditorPaneHandle | null): void {
         }
         return `- ${line}`
       })
-      .join('\n')
-    editor.replaceSelection(formatted)
-  } else {
-    editor.insertText('- item')
-  }
+    },
+  })
 }
 
 /**
@@ -161,26 +240,20 @@ export function formatBulletList(editor: EditorPaneHandle | null): void {
 export function formatNumberedList(editor: EditorPaneHandle | null): void {
   if (!editor) return
 
-  const selection = editor.getSelection()
-  if (selection) {
-    const lines = selection.split('\n')
-    const processableLines = lines.filter(
-      (line: string, i: number) =>
-        !(i === lines.length - 1 && line === '') && line.trim().length > 0
-    )
+  applyLineFormatting({
+    editor,
+    placeholder: '1. ',
+    transform: (lines) => {
+      const processableLines = lines.filter((line) => line.trim().length > 0)
+      const isNumberedList =
+        processableLines.length > 0 && processableLines.every((line) => /^\s*\d+\.\s/.test(line))
+      const isBulletList =
+        !isNumberedList &&
+        processableLines.length > 0 &&
+        processableLines.every((line) => /^\s*[-*]\s/.test(line))
 
-    const isNumberedList =
-      processableLines.length > 0 &&
-      processableLines.every((line: string) => /^\s*\d+\.\s/.test(line))
-    const isBulletList =
-      !isNumberedList &&
-      processableLines.length > 0 &&
-      processableLines.every((line: string) => /^\s*[-*]\s/.test(line))
-
-    let counter = 1
-    const formatted = lines
-      .map((line: string, i: number) => {
-        if (i === lines.length - 1 && line === '') return line
+      let counter = 1
+      return lines.map((line) => {
         if (line.trim().length === 0) return line
 
         if (isNumberedList) {
@@ -193,9 +266,6 @@ export function formatNumberedList(editor: EditorPaneHandle | null): void {
         }
         return `${prefix}${line}`
       })
-      .join('\n')
-    editor.replaceSelection(formatted)
-  } else {
-    editor.insertText('1. item')
-  }
+    },
+  })
 }

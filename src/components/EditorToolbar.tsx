@@ -305,6 +305,7 @@ export function EditorToolbar({
   const [pipelineToDelete, setPipelineToDelete] = useState<TransformationPipeline | null>(null)
   const [activeDragPipeline, setActiveDragPipeline] = useState<TransformationPipeline | null>(null)
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const headingActionRef = useRef(false)
 
   const handleClearClick = (e: React.MouseEvent) => {
     if (!isConfirmingClear) {
@@ -441,16 +442,38 @@ export function EditorToolbar({
               <span className="sr-only">Heading</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => onFormatHeading(1)}>
+          <DropdownMenuContent
+            onCloseAutoFocus={(e) => {
+              if (headingActionRef.current) {
+                e.preventDefault()
+                headingActionRef.current = false
+              }
+            }}
+          >
+            <DropdownMenuItem
+              onClick={() => {
+                headingActionRef.current = true
+                setTimeout(() => onFormatHeading(1), 50)
+              }}
+            >
               <Heading1 className="size-4" />
               Heading 1
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onFormatHeading(2)}>
+            <DropdownMenuItem
+              onClick={() => {
+                headingActionRef.current = true
+                setTimeout(() => onFormatHeading(2), 50)
+              }}
+            >
               <Heading2 className="size-4" />
               Heading 2
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onFormatHeading(3)}>
+            <DropdownMenuItem
+              onClick={() => {
+                headingActionRef.current = true
+                setTimeout(() => onFormatHeading(3), 50)
+              }}
+            >
               <Heading3 className="size-4" />
               Heading 3
             </DropdownMenuItem>
