@@ -4,9 +4,27 @@ interface LineFormattingOptions {
   editor: EditorPaneHandle
   placeholder: string
   transform: (lines: string[]) => string[]
+  cursorAdjust?: {
+    lineDelta?: number
+    column?: number
+  }
 }
 
-function applyLineFormatting({ editor, placeholder, transform }: LineFormattingOptions): void {
+function insertTemplate(editor: EditorPaneHandle, prefix: string, suffix: string) {
+  editor.insertText(prefix + suffix)
+  const range = editor.getSelectionRange()
+  if (range) {
+    editor.setSelection({
+      startLineNumber: range.endLineNumber,
+      startColumn: range.endColumn - suffix.length,
+      endLineNumber: range.endLineNumber,
+      endColumn: range.endColumn - suffix.length,
+    })
+  }
+}
+
+function applyLineFormatting(options: LineFormattingOptions): void {
+  const { editor, placeholder, transform } = options
   const range = editor.getSelectionRange()
   if (!range) return
 
@@ -17,6 +35,19 @@ function applyLineFormatting({ editor, placeholder, transform }: LineFormattingO
     const lineContent = editor.getLineContent(startLineNumber)
     if (lineContent === '' || lineContent === undefined) {
       editor.insertText(placeholder)
+      if (options.cursorAdjust) {
+        const range = editor.getSelectionRange()
+        if (range) {
+          const newLine = range.startLineNumber + (options.cursorAdjust.lineDelta || 0)
+          const newCol = options.cursorAdjust.column ?? range.startColumn
+          editor.setSelection({
+            startLineNumber: newLine,
+            startColumn: newCol,
+            endLineNumber: newLine,
+            endColumn: newCol,
+          })
+        }
+      }
       return
     }
   }
@@ -53,7 +84,7 @@ export function formatBold(editor: EditorPaneHandle | null): void {
   if (selection) {
     editor.replaceSelection(`**${selection}**`)
   } else {
-    editor.insertText('**bold**')
+    insertTemplate(editor, '**', '**')
   }
 }
 
@@ -68,7 +99,7 @@ export function formatItalic(editor: EditorPaneHandle | null): void {
   if (selection) {
     editor.replaceSelection(`*${selection}*`)
   } else {
-    editor.insertText('*italic*')
+    insertTemplate(editor, '*', '*')
   }
 }
 
@@ -83,7 +114,7 @@ export function formatLink(editor: EditorPaneHandle | null): void {
   if (selection) {
     editor.replaceSelection(`[${selection}](url)`)
   } else {
-    editor.insertText('[link](url)')
+    insertTemplate(editor, '[', '](url)')
   }
 }
 
@@ -98,7 +129,7 @@ export function formatCode(editor: EditorPaneHandle | null): void {
   if (selection) {
     editor.replaceSelection(`\`${selection}\``)
   } else {
-    editor.insertText('`code`')
+    insertTemplate(editor, '`', '`')
   }
 }
 
@@ -111,7 +142,11 @@ export function formatCodeBlock(editor: EditorPaneHandle | null): void {
 
   applyLineFormatting({
     editor,
-    placeholder: '```\ncode block\n```',
+    placeholder: '```\n\n```',
+    cursorAdjust: {
+      lineDelta: -1,
+      column: 1,
+    },
     transform: (lines) => {
       return ['```', ...lines, '```']
     },
@@ -130,7 +165,7 @@ export function formatHeading(editor: EditorPaneHandle | null, level: number): v
 
   applyLineFormatting({
     editor,
-    placeholder: `${prefix}heading`,
+    placeholder: `${prefix}`,
     transform: (lines) =>
       lines.map((line) => {
         // Strip existing heading
@@ -149,7 +184,7 @@ export function formatQuote(editor: EditorPaneHandle | null): void {
 
   applyLineFormatting({
     editor,
-    placeholder: '> quote',
+    placeholder: '> ',
     transform: (lines) =>
       lines.map((line) => {
         // Skip empty lines to avoid trailing > on selection end
@@ -173,7 +208,7 @@ export function formatBulletList(editor: EditorPaneHandle | null): void {
 
   applyLineFormatting({
     editor,
-    placeholder: '- item',
+    placeholder: '- ',
     transform: (lines) => {
       const processableLines = lines.filter((line) => line.trim().length > 0)
       const isBulletList =
@@ -207,7 +242,7 @@ export function formatNumberedList(editor: EditorPaneHandle | null): void {
 
   applyLineFormatting({
     editor,
-    placeholder: '1. item',
+    placeholder: '1. ',
     transform: (lines) => {
       const processableLines = lines.filter((line) => line.trim().length > 0)
       const isNumberedList =
