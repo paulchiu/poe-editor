@@ -16,6 +16,16 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 import { cn } from '@/utils/classnames'
 import { AboutDialog } from '@/components/AboutDialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { KeyboardShortcutsDialog } from '@/components/KeyboardShortcutsDialog'
 import { EditorToolbar } from '@/components/EditorToolbar'
 import { RenameDialog } from '@/components/RenameDialog'
@@ -78,6 +88,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showRename, setShowRename] = useState(false)
   const [showNewDialog, setShowNewDialog] = useState(false)
   const [showSplash, setShowSplash] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [showTransformer, setShowTransformer] = useState(false)
   const [showImportExport, setShowImportExport] = useState(false)
   const [editingPipeline, setEditingPipeline] = useState<TransformationPipeline | null>(null)
@@ -228,6 +239,11 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     [replacePipelines]
   )
 
+  const handleReset = useCallback((): void => {
+    window.history.replaceState(null, '', window.location.pathname)
+    window.location.reload()
+  }, [])
+
   // Document management functions
   const handleNew = useCallback((): void => {
     setShowNewDialog(true)
@@ -317,6 +333,7 @@ ${htmlContent}
     onRename: handleRename,
     onClear: handleClear,
     onCopyLink: handleCopyLink,
+    onReset: () => setShowResetConfirm(true),
   })
 
   // Effects
@@ -456,7 +473,37 @@ ${htmlContent}
           onEditPipeline={handleEditPipeline}
           onDeletePipeline={handleDeletePipeline}
           onReorderPipelines={handleReorderPipelines}
+          onReset={() => setShowResetConfirm(true)}
         />
+
+        <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset App State?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will clear your current work and return to the default state. This action
+                cannot be undone.
+                <br />
+                <br />
+                <span className="font-medium text-foreground">
+                  Note: Your saved transformers will remain intact.
+                </span>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={() => {
+                  setShowResetConfirm(false)
+                  handleReset()
+                }}
+              >
+                Reset
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <main className="flex-1 overflow-hidden">
           {!isMobile ? (
