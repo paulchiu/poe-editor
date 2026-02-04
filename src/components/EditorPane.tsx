@@ -1,12 +1,100 @@
 import { useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
-import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
+import { initVimMode, VimMode, type VimMode as VimAdapter } from 'monaco-vim'
 import { Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/utils/clipboard'
+
+// Setup clipboard integration for monaco-vim
+// This needs to run only once to register the operators and actions globally
+let vimClipboardSetup = false
+
+function setupVimClipboard() {
+  if (vimClipboardSetup || !VimMode) {
+    return
+  }
+  vimClipboardSetup = true
+
+  // VimMode is the CMAdapter class, and 'Vim' API is attached to it at runtime
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { Vim } = VimMode as any
+
+  if (!Vim) {
+    return
+  }
+
+  // Define yank to system clipboard operator
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Vim.defineOperator('yankSystem', (cm: any, args: any, ranges: any, oldAnchor: any) => {
+    const text = cm.getSelection()
+    if (text) {
+      navigator.clipboard.writeText(text).catch((e) => {
+        console.error('Failed to write to clipboard', e)
+        toast.error('Failed to write to system clipboard')
+      })
+
+      // Update internal register for consistency so 'p' works internally
+      Vim.getRegisterController().pushText(
+        args.registerName,
+        'yank',
+        text,
+        args.linewise,
+        cm.state.vim.visualBlock
+      )
+    }
+    return oldAnchor
+  })
+
+  // Define paste from system clipboard action
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Vim.defineAction('pasteSystem', async (cm: any, args: any) => {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (text) {
+        const linewise = text.indexOf('\n') !== -1 && (text.endsWith('\n') || text.endsWith('\r\n'))
+
+        // Push to " register
+        Vim.getRegisterController().pushText('"', 'yank', text, linewise, false)
+
+        // Trigger the internal paste action using a mapped key
+        if (args.after) {
+          Vim.handleKey(cm, '<PasteTrigger>')
+        } else {
+          Vim.handleKey(cm, '<PasteTriggerBefore>')
+        }
+      }
+    } catch (e) {
+      console.error('Clipboard read failed:', e)
+      toast.error('Failed to read from system clipboard')
+    }
+  })
+
+  // Register the internal paste command to a custom key
+  Vim.mapCommand('<PasteTrigger>', 'action', 'paste', { after: true, isEdit: true })
+  Vim.mapCommand('<PasteTriggerBefore>', 'action', 'paste', { after: false, isEdit: true })
+
+  // Remap y to yankSystem operator
+  Vim.mapCommand('y', 'operator', 'yankSystem')
+  // Remap Y to yankSystem (linewise)
+  Vim.mapCommand(
+    'Y',
+    'operator',
+    'yankSystem',
+    { linewise: true },
+    { type: 'operatorMotion', motion: 'expandToLine', motionArgs: { linewise: true } }
+  )
+
+  // Explicitly map p/P back to default 'paste' to ensure no stale 'pasteSystem' mapping remains
+  // This fixes the popup issue by avoiding navigator.clipboard.readText() on 'p'
+  Vim.mapCommand('p', 'action', 'paste', { after: true, isEdit: true })
+  Vim.mapCommand('P', 'action', 'paste', { after: false, isEdit: true })
+}
+
+// Run setup immediately
+setupVimClipboard()
 
 interface EditorPaneProps {
   value: string
