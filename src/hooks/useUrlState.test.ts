@@ -89,4 +89,23 @@ describe('useUrlState', () => {
     expect(result.current.content).toBe('Fallback')
     expect(onError).toHaveBeenCalled()
   })
+
+  it('should update document title from first heading', () => {
+    vi.useFakeTimers()
+    const { result } = renderHook(() => useUrlState())
+
+    // Mock compression to return something so updateUrl doesn't fail if it relies on it
+    vi.mocked(compression.compressDocumentToHash).mockReturnValue('hash')
+
+    act(() => {
+      result.current.setContent('# New Title\nContent')
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+
+    expect(document.title).toBe('New Title')
+    vi.useRealTimers()
+  })
 })

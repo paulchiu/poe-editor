@@ -47,9 +47,9 @@ import {
   formatNumberedList,
 } from '@/utils/formatting'
 
-const DEFAULT_CONTENT = `# Welcome to Poe
+const DEFAULT_CONTENT = `# Poe Markdown Editor
 
-A Markdown editor with vim support.
+An online, no-signup, writing tool with Vim support.
 
 ## Features
 
@@ -66,7 +66,7 @@ const editor = "Poe";
 console.log(\`Welcome to \${editor}\`);
 \`\`\`
 
-> Start writing.
+> Start writing
 `
 
 interface PoeEditorProps {
