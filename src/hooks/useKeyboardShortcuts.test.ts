@@ -15,6 +15,7 @@ describe('useKeyboardShortcuts', () => {
     onRename: vi.fn(),
     onClear: vi.fn(),
     onCopyLink: vi.fn(),
+    onReset: vi.fn(),
   }
 
   const triggerKeyDown = (key: string, options: KeyboardEventInit = {}) => {
@@ -76,6 +77,13 @@ describe('useKeyboardShortcuts', () => {
     renderHook(() => useKeyboardShortcuts(handlers))
     triggerKeyDown('l', { metaKey: true, altKey: true })
     expect(handlers.onCopyLink).toHaveBeenCalled()
+  })
+
+  it('should trigger onReset with Cmd+Alt+0', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    const event = triggerKeyDown('0', { metaKey: true, altKey: true, code: 'Digit0' })
+    expect(handlers.onReset).toHaveBeenCalled()
+    expect(event.defaultPrevented).toBe(true)
   })
 
   it('should trigger onClear with Cmd+Alt+K', () => {

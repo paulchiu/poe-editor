@@ -73,16 +73,7 @@ The editor includes several built-in utilities to assist with manual testing and
 
 ## Keyboard Shortcuts
 
-| Shortcut               | Action                  |
-| ---------------------- | ----------------------- |
-| `Cmd/Ctrl + B`         | Bold                    |
-| `Cmd/Ctrl + I`         | Italic                  |
-| `Cmd/Ctrl + K`         | Link                    |
-| `Cmd/Ctrl + E`         | Inline code             |
-| `Cmd/Ctrl + Shift + K` | Code block              |
-| `Cmd/Ctrl + S`         | Save (persists to URL)  |
-| `?`                    | Show keyboard shortcuts |
-| `Esc`                  | Close dialogs           |
+Press `?` within the application to view the full list of keyboard shortcuts.
 
 When Vim mode is enabled: Esc for normal mode, i for insert, v for visual.
 

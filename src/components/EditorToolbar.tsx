@@ -76,6 +76,7 @@ import {
   AlertTriangle,
   Wand2,
   ArrowRightLeft,
+  RotateCcw,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/transformer/constants'
 import { cn } from '@/utils/classnames'
@@ -260,6 +261,7 @@ interface EditorToolbarProps {
   onEditPipeline?: (pipeline: TransformationPipeline) => void
   onDeletePipeline?: (id: string) => void
   onReorderPipelines?: (pipelines: TransformationPipeline[]) => void
+  onReset?: () => void
 }
 
 /**
@@ -300,6 +302,7 @@ export function EditorToolbar({
   onEditPipeline,
   onDeletePipeline,
   onReorderPipelines,
+  onReset,
 }: EditorToolbarProps): ReactElement {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
   const [pipelineToDelete, setPipelineToDelete] = useState<TransformationPipeline | null>(null)
@@ -624,6 +627,10 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={onOpenImportExport}>
               <ArrowRightLeft className="size-4" />
               Import/Export Transformers
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onReset?.()}>
+              <RotateCcw className="size-4" />
+              Reset App State
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setShowShortcuts(true)}>
               <Keyboard className="size-4" />

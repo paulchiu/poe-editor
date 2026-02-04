@@ -109,6 +109,12 @@ export function KeyboardShortcutsDialog({
                   <span className="text-muted-foreground">Close Modal</span>
                   <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Esc</code>
                 </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Reset App State</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Alt + 0
+                  </code>
+                </div>
               </div>
             </div>
 

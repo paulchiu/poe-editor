@@ -12,6 +12,7 @@ interface ShortcutHandlers {
   onRename: () => void
   onClear: () => void
   onCopyLink: () => void
+  onReset: () => void
 }
 
 /**
@@ -76,6 +77,10 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
             case 'KeyK':
               event.preventDefault()
               handlers.onClear()
+              break
+            case 'Digit0':
+              event.preventDefault()
+              handlers.onReset()
               break
           }
           return
