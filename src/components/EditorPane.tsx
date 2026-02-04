@@ -86,7 +86,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
       // Initialize vim mode immediately after editor mounts if vimMode is enabled
       if (vimMode) {
-        vimInstanceRef.current = initVimMode(editor, null)
+        vimInstanceRef.current = initVimMode(editor, statusBarRef.current)
       }
 
       // Listen for cursor position changes
