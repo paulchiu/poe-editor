@@ -12,6 +12,62 @@ import { copyToClipboard } from '@/utils/clipboard'
 // This needs to run only once to register the operators and actions globally
 let vimClipboardSetup = false
 
+interface VimRegisterController {
+  pushText: (
+    register: string,
+    type: string,
+    text: string,
+    linewise: boolean,
+    blockwise: boolean
+  ) => void
+}
+
+interface VimState {
+  vim: {
+    visualBlock: boolean
+  }
+}
+
+interface CodeMirrorAdapter {
+  getSelection: () => string
+  state: VimState
+}
+
+interface VimOperatorArgs {
+  registerName: string
+  linewise: boolean
+  after?: boolean
+}
+
+interface VimAPI {
+  defineOperator: (
+    name: string,
+    fn: (
+      cm: CodeMirrorAdapter,
+      args: VimOperatorArgs,
+      ranges: unknown,
+      oldAnchor: unknown
+    ) => unknown
+  ) => void
+  defineAction: (
+    name: string,
+    fn: (cm: CodeMirrorAdapter, args: VimOperatorArgs) => Promise<void> | void
+  ) => void
+  getRegisterController: () => VimRegisterController
+  handleKey: (cm: CodeMirrorAdapter, key: string) => void
+  mapCommand: (
+    command: string,
+    type: 'action' | 'operator',
+    name: string,
+    args?: Record<string, unknown>,
+    extra?: Record<string, unknown>
+  ) => void
+}
+
+interface VimModeModule {
+  Vim: VimAPI
+}
+
 function setupVimClipboard() {
   if (vimClipboardSetup || !VimMode) {
     return
@@ -19,38 +75,38 @@ function setupVimClipboard() {
   vimClipboardSetup = true
 
   // VimMode is the CMAdapter class, and 'Vim' API is attached to it at runtime
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { Vim } = VimMode as any
+  const { Vim } = VimMode as unknown as VimModeModule
 
   if (!Vim) {
     return
   }
 
   // Define yank to system clipboard operator
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Vim.defineOperator('yankSystem', (cm: any, args: any, ranges: any, oldAnchor: any) => {
-    const text = cm.getSelection()
-    if (text) {
-      navigator.clipboard.writeText(text).catch((e) => {
-        console.error('Failed to write to clipboard', e)
-        toast.error('Failed to write to system clipboard')
-      })
+  Vim.defineOperator(
+    'yankSystem',
+    (cm: CodeMirrorAdapter, args: VimOperatorArgs, _ranges: unknown, oldAnchor: unknown) => {
+      const text = cm.getSelection()
+      if (text) {
+        navigator.clipboard.writeText(text).catch((e) => {
+          console.error('Failed to write to clipboard', e)
+          toast.error('Failed to write to system clipboard')
+        })
 
-      // Update internal register for consistency so 'p' works internally
-      Vim.getRegisterController().pushText(
-        args.registerName,
-        'yank',
-        text,
-        args.linewise,
-        cm.state.vim.visualBlock
-      )
+        // Update internal register for consistency so 'p' works internally
+        Vim.getRegisterController().pushText(
+          args.registerName,
+          'yank',
+          text,
+          args.linewise,
+          cm.state.vim.visualBlock
+        )
+      }
+      return oldAnchor
     }
-    return oldAnchor
-  })
+  )
 
   // Define paste from system clipboard action
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Vim.defineAction('pasteSystem', async (cm: any, args: any) => {
+  Vim.defineAction('pasteSystem', async (cm: CodeMirrorAdapter, args: VimOperatorArgs) => {
     try {
       const text = await navigator.clipboard.readText()
       if (text) {
@@ -107,17 +163,26 @@ interface EditorPaneProps {
   scrollRef?: React.RefObject<HTMLElement | null>
 }
 
+/**
+ * Handle interface for controlling the editor imperatively
+ */
 export interface EditorPaneHandle {
+  /** Insert text at current cursor position */
   insertText: (text: string) => void
+  /** Get currently selected text */
   getSelection: () => string | undefined
+  /** Replace currently selected text */
   replaceSelection: (text: string) => void
+  /** Get the current selection range */
   getSelectionRange: () => {
     startLineNumber: number
     startColumn: number
     endLineNumber: number
     endColumn: number
   } | null
+  /** Get content of a specific line */
   getLineContent: (lineNumber: number) => string | undefined
+  /** Set the cursor selection */
   setSelection: (range: {
     startLineNumber: number
     startColumn: number
@@ -126,6 +191,13 @@ export interface EditorPaneHandle {
   }) => void
 }
 
+/**
+ * Main editor component using Monaco Editor
+ * Supports Vim mode, markdown formatting, and sync scrolling
+ *
+ * @param props Component properties
+ * @returns React component
+ */
 export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   (
     { value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode, scrollRef },
