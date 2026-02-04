@@ -77,6 +77,16 @@ Press `?` within the application to view the full list of keyboard shortcuts.
 
 When Vim mode is enabled: Esc for normal mode, i for insert, v for visual.
 
+## Known Limitations
+
+### Vim Mode Clipboard Support
+
+Due to browser security restrictions on the Clipboard API, Vim mode clipboard integration has the following behavior:
+
+- Yank (`y`/`Y`): Copies text to both the internal Vim register and the system clipboard.
+- Paste (`p`/`P`): Pastes from the internal Vim register only. This ensures a seamless experience without browser permission popups.
+- System Paste: To paste content copied from outside the editor (system clipboard), use the standard native shortcut (Cmd+V on macOS, Ctrl+V on Windows/Linux).
+
 ## Acknowledgements
 
 Inspired by [Dillinger](https://dillinger.io) and the [TypeScript Playground](https://www.typescriptlang.org/play).
