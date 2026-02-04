@@ -23,9 +23,9 @@ test.describe('New Document Dialog', () => {
     // Verify dialog disappears
     await expect(page.getByRole('alertdialog')).not.toBeVisible()
 
-    // Verify content is preserved (default content starts with "# Welcome to Poe")
+    // Verify content is preserved (default content starts with "# Poe Markdown Editor")
     const preview = page.locator('.markdown-body')
-    await expect(preview).toContainText('Welcome to Poe')
+    await expect(preview).toContainText('Poe Markdown Editor')
 
     // Try again and confirm
     await page.getByRole('button', { name: /untitled.md/i }).click()
@@ -39,7 +39,7 @@ test.describe('New Document Dialog', () => {
 
     // Verify content is cleared
     // We check that the preview does NOT contain the welcome text anymore
-    await expect(preview).not.toContainText('Welcome to Poe')
+    await expect(preview).not.toContainText('Poe Markdown Editor')
 
     // Check if editor is empty or cleared.
     // Since we can't easily read monaco value, we rely on preview or URL state if we tracked it,

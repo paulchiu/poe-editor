@@ -13,9 +13,9 @@ test.describe('Editor Integration', () => {
   })
 
   test('should render editor and preview panes', async ({ page }) => {
-    // Check for "Welcome to Poe" default text in preview (rendered from markdown)
+    // Check for "Poe Markdown Editor" default text in preview (rendered from markdown)
     const preview = page.locator('.markdown-body')
-    await expect(preview).toContainText('Welcome to Poe')
+    await expect(preview).toContainText('Poe Markdown Editor')
   })
 
   test('should apply bold formatting via toolbar', async ({ page }) => {
@@ -35,7 +35,7 @@ test.describe('Editor Integration', () => {
 
     // Verify editor is cleared by checking preview (should be empty or minimal)
     const clearPreview = page.locator('.markdown-body')
-    await expect(clearPreview).not.toContainText('Welcome to Poe')
+    await expect(clearPreview).not.toContainText('Poe Markdown Editor')
 
     // Create new content
     // Editor should still be focused, but click again to be safe

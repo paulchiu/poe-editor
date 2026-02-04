@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { getFirstHeading } from '@/utils/markdown'
 import {
   compressDocumentToHash,
   decompressDocumentFromHash,
@@ -82,6 +83,16 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
   const contentRef = useRef(content)
   const documentNameRef = useRef(documentName)
 
+  // Initialize title on mount
+  const initializedRef = useRef(false)
+  useEffect(() => {
+    if (!initializedRef.current) {
+      const heading = getFirstHeading(content)
+      document.title = heading || documentName
+      initializedRef.current = true
+    }
+  }, [content, documentName])
+
   // Keep refs in sync with state
   useEffect(() => {
     contentRef.current = content
@@ -102,6 +113,11 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
         content: contentRef.current,
         name: documentNameRef.current,
       }
+
+      // Update document title from first heading
+      const firstHeading = getFirstHeading(contentRef.current)
+      document.title = firstHeading || documentNameRef.current
+
       const compressed = compressDocumentToHash(docData)
       const overLimit = compressed.length > maxLength
 
@@ -121,9 +137,16 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
   useEffect(() => {
     const handleHashChange = (): void => {
       const hash = window.location.hash.slice(1)
+
+      const updateStateAndTitle = (newContent: string, newName: string) => {
+        setContentState(newContent)
+        setDocumentNameState(newName)
+        const heading = getFirstHeading(newContent)
+        document.title = heading || newName
+      }
+
       if (!hash) {
-        setContentState(defaultContent)
-        setDocumentNameState(defaultName)
+        updateStateAndTitle(defaultContent, defaultName)
         return
       }
 
@@ -131,16 +154,13 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
         const docData = decompressDocumentFromHash(hash)
         if (docData === null) {
           onError?.(new Error('Failed to decompress URL hash'))
-          setContentState(defaultContent)
-          setDocumentNameState(defaultName)
+          updateStateAndTitle(defaultContent, defaultName)
         } else {
-          setContentState(docData.content)
-          setDocumentNameState(docData.name ?? defaultName)
+          updateStateAndTitle(docData.content, docData.name ?? defaultName)
         }
       } catch (error) {
         onError?.(error instanceof Error ? error : new Error('Unknown error'))
-        setContentState(defaultContent)
-        setDocumentNameState(defaultName)
+        updateStateAndTitle(defaultContent, defaultName)
       }
     }
 
