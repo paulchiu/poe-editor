@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/utils/clipboard'
 import { getAutoContinueEdit } from '@/utils/formatting'
+import { cn } from '@/utils/classnames'
 
 // Setup clipboard integration for monaco-vim
 // This needs to run only once to register the operators and actions globally
@@ -168,6 +169,7 @@ interface EditorPaneProps {
   onCodeBlock?: () => void
   vimMode?: boolean
   scrollRef?: RefObject<HTMLElement | null>
+  showWordCount?: boolean
 }
 
 /**
@@ -207,7 +209,17 @@ export interface EditorPaneHandle {
  */
 export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
   (
-    { value, onChange, onCursorChange, theme = 'light', onFormat, onCodeBlock, vimMode, scrollRef },
+    {
+      value,
+      onChange,
+      onCursorChange,
+      theme = 'light',
+      onFormat,
+      onCodeBlock,
+      vimMode,
+      scrollRef,
+      showWordCount,
+    },
     ref
   ) => {
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
@@ -531,6 +543,24 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
             />
           </div>
         </div>
+        {showWordCount && (
+          <div
+            className={cn(
+              'absolute right-4 z-10 pointer-events-none transition-all duration-300',
+              vimMode ? 'bottom-10' : 'bottom-4'
+            )}
+          >
+            <span className="bg-black/50 text-white px-2 py-1 rounded text-xs backdrop-blur-sm">
+              {
+                value
+                  .trim()
+                  .split(/\s+/)
+                  .filter((w) => w.length > 0).length
+              }{' '}
+              words
+            </span>
+          </div>
+        )}
         {vimMode && (
           <div
             ref={statusBarRef}

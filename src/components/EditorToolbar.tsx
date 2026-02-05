@@ -77,6 +77,7 @@ import {
   Wand2,
   ArrowRightLeft,
   RotateCcw,
+  WholeWord,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/transformer/constants'
 import { cn } from '@/utils/classnames'
@@ -262,6 +263,8 @@ interface EditorToolbarProps {
   onDeletePipeline?: (id: string) => void
   onReorderPipelines?: (pipelines: TransformationPipeline[]) => void
   onReset?: () => void
+  showWordCount?: boolean
+  toggleWordCount?: () => void
 }
 
 /**
@@ -303,6 +306,8 @@ export function EditorToolbar({
   onDeletePipeline,
   onReorderPipelines,
   onReset,
+  showWordCount,
+  toggleWordCount,
 }: EditorToolbarProps): ReactElement {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
   const [pipelineToDelete, setPipelineToDelete] = useState<TransformationPipeline | null>(null)
@@ -624,6 +629,10 @@ export function EditorToolbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={toggleWordCount}>
+              <WholeWord className="size-4" />
+              {showWordCount ? 'Hide Word Count' : 'Show Word Count'}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenImportExport}>
               <ArrowRightLeft className="size-4" />
               Import/Export Transformers
