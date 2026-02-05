@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useVimMode } from '@/hooks/useVimMode'
+import { useWordCount } from '@/hooks/useWordCount'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSyncScroll } from '@/hooks/useSyncScroll'
 import { useTransformers } from '@/hooks/useTransformers'
@@ -137,6 +138,9 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Vim mode management
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
+
+  // Word count management
+  const { showWordCount, toggleWordCount } = useWordCount()
 
   // Transformers management
   const { pipelines, addPipeline, updatePipeline, removePipeline, replacePipelines } =
@@ -474,6 +478,8 @@ ${htmlContent}
           onDeletePipeline={handleDeletePipeline}
           onReorderPipelines={handleReorderPipelines}
           onReset={() => setShowResetConfirm(true)}
+          showWordCount={showWordCount}
+          toggleWordCount={toggleWordCount}
         />
 
         <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
@@ -521,6 +527,7 @@ ${htmlContent}
                       onCodeBlock={handleFormatCodeBlock}
                       vimMode={vimModeEnabled}
                       scrollRef={sourceRef}
+                      showWordCount={showWordCount}
                     />
                   </div>
                 </ResizablePanel>
@@ -571,6 +578,7 @@ ${htmlContent}
                   onCodeBlock={handleFormatCodeBlock}
                   vimMode={vimModeEnabled}
                   scrollRef={sourceRef}
+                  showWordCount={showWordCount}
                 />
               </div>
 
