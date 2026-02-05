@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useMemo, useEffect, type ReactElement } 
 import { useTheme } from 'next-themes'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useUrlState } from '@/hooks/useUrlState'
+import { useViewMode } from '@/hooks/useViewMode'
 import { useVimMode } from '@/hooks/useVimMode'
 import { useWordCount } from '@/hooks/useWordCount'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
@@ -99,8 +100,11 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     column: 1,
   })
 
-  /* Mobile tab state */
-  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor')
+  /* View mode management */
+  const { viewMode, setViewMode } = useViewMode()
+
+  // For mobile, we map 'split' (default) to 'editor' if it happens to be set
+  const activeTab = viewMode === 'split' ? 'editor' : viewMode
 
   const isMobile = useIsMobile()
   const editorRef = useRef<EditorPaneHandle>(null)
@@ -324,6 +328,15 @@ ${htmlContent}
     toast({ description: 'Document auto-saved to URL!' })
   }, [toast])
 
+  // Layout toggles for desktop
+  const handleToggleEditor = useCallback(() => {
+    setViewMode(viewMode === 'split' ? 'editor' : 'split')
+  }, [viewMode, setViewMode])
+
+  const handleTogglePreview = useCallback(() => {
+    setViewMode(viewMode === 'split' ? 'preview' : 'split')
+  }, [viewMode, setViewMode])
+
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onBold: handleFormatBold,
@@ -515,35 +528,49 @@ ${htmlContent}
           {!isMobile ? (
             <div className="h-full p-4">
               <ResizablePanelGroup orientation="horizontal" className="h-full">
-                <ResizablePanel defaultSize={50} minSize={30}>
-                  <div className="h-full pr-2">
-                    <EditorPane
-                      ref={editorRef}
-                      value={content}
-                      onChange={setContent}
-                      onCursorChange={setCursorPosition}
-                      theme={mounted && theme === 'dark' ? 'dark' : 'light'}
-                      onFormat={handleFormat}
-                      onCodeBlock={handleFormatCodeBlock}
-                      vimMode={vimModeEnabled}
-                      scrollRef={sourceRef}
-                      showWordCount={showWordCount}
-                    />
-                  </div>
-                </ResizablePanel>
-                <ResizableHandle withHandle className="mx-2" />
-                <ResizablePanel defaultSize={50} minSize={30}>
-                  <div className="h-full pl-2">
-                    <PreviewPane ref={targetRef} htmlContent={htmlContent} />
-                  </div>
-                </ResizablePanel>
+                {(viewMode === 'split' || viewMode === 'editor') && (
+                  <>
+                    <ResizablePanel defaultSize={viewMode === 'split' ? 50 : 100} minSize={30}>
+                      <div className={cn('h-full', viewMode === 'split' && 'pr-2')}>
+                        <EditorPane
+                          ref={editorRef}
+                          value={content}
+                          onChange={setContent}
+                          onCursorChange={setCursorPosition}
+                          theme={mounted && theme === 'dark' ? 'dark' : 'light'}
+                          onFormat={handleFormat}
+                          onCodeBlock={handleFormatCodeBlock}
+                          vimMode={vimModeEnabled}
+                          scrollRef={sourceRef}
+                          showWordCount={showWordCount}
+                          viewMode={viewMode}
+                          onToggleLayout={handleToggleEditor}
+                        />
+                      </div>
+                    </ResizablePanel>
+                    {viewMode === 'split' && <ResizableHandle withHandle className="mx-2" />}
+                  </>
+                )}
+
+                {(viewMode === 'split' || viewMode === 'preview') && (
+                  <ResizablePanel defaultSize={viewMode === 'split' ? 50 : 100} minSize={30}>
+                    <div className={cn('h-full', viewMode === 'split' && 'pl-2')}>
+                      <PreviewPane
+                        ref={targetRef}
+                        htmlContent={htmlContent}
+                        viewMode={viewMode}
+                        onToggleLayout={handleTogglePreview}
+                      />
+                    </div>
+                  </ResizablePanel>
+                )}
               </ResizablePanelGroup>
             </div>
           ) : (
             <div className="h-full flex flex-col">
               <div className="w-full border-b border-border/60 bg-background h-10 flex">
                 <button
-                  onClick={() => setActiveTab('editor')}
+                  onClick={() => setViewMode('editor')}
                   className={cn(
                     'flex-1 inline-flex items-center justify-center text-sm font-medium transition-colors border-b-2',
                     activeTab === 'editor'
@@ -554,7 +581,7 @@ ${htmlContent}
                   Editor
                 </button>
                 <button
-                  onClick={() => setActiveTab('preview')}
+                  onClick={() => setViewMode('preview')}
                   className={cn(
                     'flex-1 inline-flex items-center justify-center text-sm font-medium transition-colors border-b-2',
                     activeTab === 'preview'
@@ -579,6 +606,7 @@ ${htmlContent}
                   vimMode={vimModeEnabled}
                   scrollRef={sourceRef}
                   showWordCount={showWordCount}
+                  viewMode={activeTab === 'editor' ? 'editor' : 'preview'}
                 />
               </div>
 

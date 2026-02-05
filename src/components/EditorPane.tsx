@@ -10,7 +10,7 @@ import {
 import Editor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { initVimMode, VimMode, type VimMode as VimAdapter } from 'monaco-vim'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check, Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
@@ -170,6 +170,8 @@ interface EditorPaneProps {
   vimMode?: boolean
   scrollRef?: RefObject<HTMLElement | null>
   showWordCount?: boolean
+  viewMode?: 'editor' | 'preview' | 'split'
+  onToggleLayout?: () => void
 }
 
 /**
@@ -219,6 +221,8 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       vimMode,
       scrollRef,
       showWordCount,
+      viewMode,
+      onToggleLayout,
     },
     ref
   ) => {
@@ -494,25 +498,50 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       <div className="relative h-full group bg-background flex flex-col overflow-hidden rounded-lg border border-border">
         <div className="flex-1 min-h-0">
           <div className="relative h-full">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={handleCopy}
-                  className="absolute top-4 right-4 z-10 h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border opacity-0 group-hover:opacity-100 transition-opacity text-foreground"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="left">
-                <p className="text-xs">Copy markdown</p>
-              </TooltipContent>
-            </Tooltip>
+            <div className="absolute top-4 right-4 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onToggleLayout && viewMode && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={onToggleLayout}
+                      className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border text-foreground"
+                    >
+                      {viewMode === 'split' ? (
+                        <Maximize2 className="h-4 w-4" />
+                      ) : (
+                        <Minimize2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs">
+                      {viewMode === 'split' ? 'Expand Editor' : 'Restore Split View'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={handleCopy}
+                    className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border text-foreground"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p className="text-xs">Copy Markdown</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
             <Editor
               height="100%"
               language="markdown"

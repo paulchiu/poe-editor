@@ -155,4 +155,32 @@ describe('useUrlState', () => {
     vi.useRealTimers()
     querySelectorSpy.mockRestore()
   })
+  it('should preserve query parameters when updating hash', () => {
+    vi.useFakeTimers()
+    const { result } = renderHook(() => useUrlState())
+
+    // Simulate existing query params
+    const baseUrl = 'http://localhost/?foo=bar'
+    Object.defineProperty(window, 'location', {
+      value: new URL(baseUrl),
+      writable: true,
+    })
+
+    // Mock history.replaceState to verify the URL being passed
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
+
+    act(() => {
+      result.current.setContent('New Content')
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+
+    // Check if the URL passed to replaceState contains the query param
+    const lastCall = replaceStateSpy.mock.calls[replaceStateSpy.mock.calls.length - 1]
+    expect(lastCall[2]).toContain('?foo=bar')
+
+    vi.useRealTimers()
+  })
 })
