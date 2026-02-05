@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getFirstHeading } from '@/utils/markdown'
+import { extractFirstEmoji } from '@/utils/emoji'
 import {
   compressDocumentToHash,
   decompressDocumentFromHash,
@@ -21,6 +22,37 @@ interface UseUrlStateReturn {
   documentName: string
   setDocumentName: (name: string) => void
   isOverLimit: boolean
+}
+
+/**
+ * Updates the favicon based on the provided emoji.
+ * If an emoji is provided, it creates an SVG data URI.
+ * If null, it reverts to the default favicon.
+ *
+ * @param emoji - The emoji to use as favicon, or null to reset
+ * @returns void
+ */
+function updateFavicon(emoji: string | null): void {
+  const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement
+  if (!link) return
+
+  if (emoji) {
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <text y=".9em" font-size="90">${emoji}</text>
+      </svg>
+    `.trim()
+    link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`
+  } else {
+    // Revert to default
+    // We assume the default is /favicon.svg as per index.html
+    // If the current href is NOT a data URI, we might assume it's already default or another static asset.
+    // However, to be safe, we explicitly set it back to /favicon.svg if we are clearing the emoji.
+    // Optimization: Check if currently showing a data URI to avoid unnecessary network requests or DOM updates if already default.
+    if (link.href.startsWith('data:')) {
+      link.href = '/favicon.svg'
+    }
+  }
 }
 
 /**
@@ -83,12 +115,23 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
   const contentRef = useRef(content)
   const documentNameRef = useRef(documentName)
 
-  // Initialize title on mount
+  // Initialize title and favicon on mount
   const initializedRef = useRef(false)
   useEffect(() => {
     if (!initializedRef.current) {
       const heading = getFirstHeading(content)
-      document.title = heading || documentName
+
+      if (heading) {
+        const emoji = extractFirstEmoji(heading)
+        updateFavicon(emoji)
+
+        const title = emoji ? heading.replace(emoji, '').trim() : heading
+        document.title = title || documentName
+      } else {
+        document.title = documentName
+        updateFavicon(null)
+      }
+
       initializedRef.current = true
     }
   }, [content, documentName])
@@ -114,9 +157,21 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
         name: documentNameRef.current,
       }
 
-      // Update document title from first heading
+      // Update document title and favicon from first heading
       const firstHeading = getFirstHeading(contentRef.current)
-      document.title = firstHeading || documentNameRef.current
+
+      const emoji = firstHeading ? extractFirstEmoji(firstHeading) : null
+      updateFavicon(emoji)
+
+      // If we found an emoji, remove it from the title to avoid duplication/clutter
+      // We only remove the *exact* extracted emoji string once.
+      const title = firstHeading
+        ? emoji
+          ? firstHeading.replace(emoji, '').trim()
+          : firstHeading
+        : documentNameRef.current
+
+      document.title = title || documentNameRef.current
 
       const compressed = compressDocumentToHash(docData)
       const overLimit = compressed.length > maxLength
@@ -142,7 +197,12 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
         setContentState(newContent)
         setDocumentNameState(newName)
         const heading = getFirstHeading(newContent)
-        document.title = heading || newName
+
+        const emoji = heading ? extractFirstEmoji(heading) : null
+        updateFavicon(emoji)
+
+        const title = heading ? (emoji ? heading.replace(emoji, '').trim() : heading) : newName
+        document.title = title || newName
       }
 
       if (!hash) {
