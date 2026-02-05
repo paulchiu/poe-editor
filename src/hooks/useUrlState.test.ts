@@ -108,4 +108,51 @@ describe('useUrlState', () => {
     expect(document.title).toBe('New Title')
     vi.useRealTimers()
   })
+
+  it('should update favicon when an emoji is in the heading', () => {
+    vi.useFakeTimers()
+
+    // Mock the link element
+    const mockLink = {
+      href: '/favicon.svg',
+      rel: 'icon',
+    } as unknown as HTMLLinkElement
+
+    // Mock querySelector to return our mock link
+    const querySelectorSpy = vi.spyOn(document, 'querySelector').mockReturnValue(mockLink)
+
+    const { result } = renderHook(() => useUrlState())
+    vi.mocked(compression.compressDocumentToHash).mockReturnValue('hash')
+
+    act(() => {
+      // Input with emoji
+      result.current.setContent('# 🚀 Blast Off\nContent')
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+
+    // Check if href was updated to a data URI
+    expect(mockLink.href).toMatch(/^data:image\/svg\+xml/)
+    expect(decodeURIComponent(mockLink.href)).toContain('🚀')
+
+    // Check if title has emoji stripped
+    expect(document.title).toBe('Blast Off')
+
+    // Now update to no emoji
+    act(() => {
+      result.current.setContent('# Just Text\nContent')
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+
+    // Should revert to default
+    expect(mockLink.href).toBe('/favicon.svg')
+
+    vi.useRealTimers()
+    querySelectorSpy.mockRestore()
+  })
 })
