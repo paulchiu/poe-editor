@@ -184,7 +184,17 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
 
       // Update URL regardless of length (allow users to continue editing)
       const newHash = compressed ? `#${compressed}` : ''
-      window.history.replaceState(null, '', newHash)
+
+      // Preserve existing query parameters
+      const currentUrl = new URL(window.location.href)
+      currentUrl.hash = newHash
+
+      // We use replaceState to update the URL without adding a new history entry for every keystroke
+      // but we need to make sure we don't lose the query params
+      // Use relative path (search + hash) to avoid SecurityError in some environments
+      // and to ensure we stay on the same page.
+      const relativePath = currentUrl.search + currentUrl.hash
+      window.history.replaceState(null, '', relativePath)
     }, debounceMs)
   }, [debounceMs, maxLength, onLengthWarning])
 
