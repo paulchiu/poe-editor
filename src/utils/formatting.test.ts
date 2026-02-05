@@ -379,3 +379,96 @@ describe('formatting utils', () => {
     // Expect no errors
   })
 })
+
+import { getAutoContinueEdit, type AutoContinueResult } from './formatting'
+
+describe('getAutoContinueEdit', () => {
+  it('should return null if no pattern matches', () => {
+    expect(getAutoContinueEdit('Just some text', 15)).toBeNull()
+  })
+
+  it('should return exit action for empty unordered list', () => {
+    const result = getAutoContinueEdit('- ', 3)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'exit',
+      range: {
+        startColumn: 1,
+        endColumn: 3,
+      },
+    })
+  })
+
+  it('should return exit action for empty ordered list', () => {
+    const result = getAutoContinueEdit('1. ', 4)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'exit',
+      range: {
+        startColumn: 1,
+        endColumn: 4,
+      },
+    })
+  })
+
+  it('should return exit action for empty quote', () => {
+    const result = getAutoContinueEdit('> ', 3)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'exit',
+      range: {
+        startColumn: 1,
+        endColumn: 3,
+      },
+    })
+  })
+
+  it('should continue unordered list', () => {
+    const result = getAutoContinueEdit('- Item 1', 9)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'continue',
+      text: '\n- ',
+      range: {
+        startColumn: 9,
+        endColumn: 9,
+      },
+    })
+  })
+
+  it('should continue unordered list with asterisk', () => {
+    const result = getAutoContinueEdit('* Item 1', 9)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'continue',
+      text: '\n* ',
+      range: {
+        startColumn: 9,
+        endColumn: 9,
+      },
+    })
+  })
+
+  it('should continue ordered list and increment number', () => {
+    const result = getAutoContinueEdit('1. Item 1', 10)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'continue',
+      text: '\n2. ',
+      range: {
+        startColumn: 10,
+        endColumn: 10,
+      },
+    })
+  })
+
+  it('should continue quote', () => {
+    const result = getAutoContinueEdit('> Quote me', 11)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'continue',
+      text: '\n> ',
+      range: {
+        startColumn: 11,
+        endColumn: 11,
+      },
+    })
+  })
+
+  it('should ignore if cursor is before the prefix', () => {
+    expect(getAutoContinueEdit('- Item 1', 2)).toBeNull()
+  })
+})

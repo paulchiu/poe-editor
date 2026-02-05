@@ -30,6 +30,7 @@ vi.mock('@monaco-editor/react', () => ({
         onDidScrollChange: vi.fn(),
         onDidChangeCursorPosition: vi.fn(),
         addCommand: vi.fn(),
+        onKeyDown: vi.fn(),
         getPosition: vi.fn(),
         executeEdits: vi.fn(),
         setPosition: vi.fn(),
@@ -37,7 +38,7 @@ vi.mock('@monaco-editor/react', () => ({
       },
       {
         KeyMod: { CtrlCmd: 2048, Shift: 1024 },
-        KeyCode: { KeyB: 32, KeyI: 39, KeyK: 41, KeyE: 35 },
+        KeyCode: { KeyB: 32, KeyI: 39, KeyK: 41, KeyE: 35, Enter: 13 },
       }
     )
     return <div data-testid="monaco-editor" />

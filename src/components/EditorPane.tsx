@@ -1,4 +1,12 @@
-import { useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react'
+import {
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+  useState,
+  useEffect,
+  type RefObject,
+  type MutableRefObject,
+} from 'react'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { initVimMode, VimMode, type VimMode as VimAdapter } from 'monaco-vim'
@@ -7,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/utils/clipboard'
+import { getAutoContinueEdit } from '@/utils/formatting'
 
 // Setup clipboard integration for monaco-vim
 // This needs to run only once to register the operators and actions globally
@@ -87,8 +96,7 @@ function setupVimClipboard() {
     (cm: CodeMirrorAdapter, args: VimOperatorArgs, _ranges: unknown, oldAnchor: unknown) => {
       const text = cm.getSelection()
       if (text) {
-        navigator.clipboard.writeText(text).catch((e) => {
-          console.error('Failed to write to clipboard', e)
+        navigator.clipboard.writeText(text).catch(() => {
           toast.error('Failed to write to system clipboard')
         })
 
@@ -122,8 +130,7 @@ function setupVimClipboard() {
           Vim.handleKey(cm, '<PasteTriggerBefore>')
         }
       }
-    } catch (e) {
-      console.error('Clipboard read failed:', e)
+    } catch {
       toast.error('Failed to read from system clipboard')
     }
   })
@@ -160,7 +167,7 @@ interface EditorPaneProps {
   onFormat?: (type: 'bold' | 'italic' | 'link' | 'code') => void
   onCodeBlock?: () => void
   vimMode?: boolean
-  scrollRef?: React.RefObject<HTMLElement | null>
+  scrollRef?: RefObject<HTMLElement | null>
 }
 
 /**
@@ -219,7 +226,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           if (scrollable) {
             // We need to use a type assertion or just set current directly if it's a mutable ref object
             // eslint-disable-next-line
-            ;(scrollRef as React.MutableRefObject<HTMLElement | null>).current = scrollable
+            ;(scrollRef as MutableRefObject<HTMLElement | null>).current = scrollable
 
             // Override scroll properties to use Monaco's internal state
             // since the DOM element uses virtual scrolling/transform
@@ -288,6 +295,53 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           onCodeBlock()
         })
       }
+
+      // Handle Enter key for auto-continuation of lists and quotes
+      editor.onKeyDown((e) => {
+        if (e.keyCode === monaco.KeyCode.Enter) {
+          const position = editor.getPosition()
+          if (!position) return
+
+          const model = editor.getModel()
+          if (!model) return
+
+          const lineContent = model.getLineContent(position.lineNumber)
+          const result = getAutoContinueEdit(lineContent, position.column)
+
+          if (result) {
+            e.preventDefault()
+            e.stopPropagation()
+
+            if (result.action === 'exit') {
+              editor.executeEdits('auto-continue', [
+                {
+                  range: new monaco.Range(
+                    position.lineNumber,
+                    result.range.startColumn,
+                    position.lineNumber,
+                    result.range.endColumn
+                  ),
+                  text: result.text || '',
+                  forceMoveMarkers: true,
+                },
+              ])
+            } else if (result.action === 'continue') {
+              editor.executeEdits('auto-continue', [
+                {
+                  range: new monaco.Range(
+                    position.lineNumber,
+                    result.range.startColumn,
+                    position.lineNumber,
+                    result.range.endColumn
+                  ),
+                  text: result.text || '',
+                  forceMoveMarkers: true,
+                },
+              ])
+            }
+          }
+        }
+      })
     }
 
     // Handle vim mode initialization when editor and status bar are both ready
