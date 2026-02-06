@@ -1,32 +1,81 @@
 import { useEffect, useRef, useCallback, type RefObject } from 'react'
 
-interface UseSyncScrollOptions {
-  enabled?: boolean
-  debounceMs?: number
+interface ScrollableElement {
+  scrollTop: number
+  scrollHeight: number
+  clientHeight: number
 }
 
-interface UseSyncScrollReturn<T extends HTMLElement = HTMLElement> {
-  sourceRef: RefObject<T | null>
-  targetRef: RefObject<T | null>
+interface ScrollableHandle {
+  getScrollTop: () => number
+  setScrollTop: (v: number) => void
+  getScrollHeight: () => number
+  getClientHeight: () => number
+  onScroll: (cb: () => void) => { dispose: () => void }
 }
+
+interface UseSyncScrollOptions {
+  enabled?: boolean
+}
+
+type Scrollable = HTMLElement | ScrollableHandle
 
 /**
  * Synchronizes scroll position between two elements.
  * Maintains scroll percentage ratio to work with elements of different heights.
- * @param options - Configuration object with optional enabled flag and debounce duration
- * @returns Refs for source and target elements to synchronize
+ * Supports both DOM elements and imperative handles with scroll methods.
+ *
+ * @param options - Configuration object with optional enabled flag
+ * @param options.enabled - Whether scroll synchronization is active (default: true)
+ * @returns Object containing refs for source and target scrollable elements
+ * @returns sourceRef - Ref to assign to the source scrollable element
+ * @returns targetRef - Ref to assign to the target scrollable element
  */
-export function useSyncScroll<T extends HTMLElement = HTMLElement>(
+export function useSyncScroll<S extends Scrollable = Scrollable, T extends Scrollable = Scrollable>(
   options: UseSyncScrollOptions = {}
-): UseSyncScrollReturn<T> {
-  const { enabled = true, debounceMs = 50 } = options
+): { sourceRef: RefObject<S | null>; targetRef: RefObject<T | null> } {
+  const { enabled = true } = options
 
-  const sourceRef = useRef<T | null>(null)
+  const sourceRef = useRef<S | null>(null)
   const targetRef = useRef<T | null>(null)
   const isScrollingSource = useRef(false)
   const isScrollingTarget = useRef(false)
-  const scrollTimeoutSource = useRef<number | undefined>(undefined)
-  const scrollTimeoutTarget = useRef<number | undefined>(undefined)
+
+  // Type guard to check if element is a scrollable handle
+  const isScrollableHandle = useCallback(
+    (el: Scrollable): el is ScrollableHandle =>
+      'getScrollTop' in el && typeof el.getScrollTop === 'function',
+    []
+  )
+
+  // Helper to normalize scroll access
+  const getScroll = useCallback(
+    (el: Scrollable): ScrollableElement =>
+      isScrollableHandle(el)
+        ? {
+            scrollTop: el.getScrollTop(),
+            scrollHeight: el.getScrollHeight(),
+            clientHeight: el.getClientHeight(),
+          }
+        : {
+            scrollTop: el.scrollTop,
+            scrollHeight: el.scrollHeight,
+            clientHeight: el.clientHeight,
+          },
+    [isScrollableHandle]
+  )
+
+  // Helper to normalize scroll setting
+  const setScroll = useCallback(
+    (el: Scrollable, value: number): void => {
+      if (isScrollableHandle(el)) {
+        el.setScrollTop(value)
+      } else {
+        el.scrollTop = value
+      }
+    },
+    [isScrollableHandle]
+  )
 
   const syncScroll = useCallback(
     (from: 'source' | 'target') => {
@@ -37,9 +86,11 @@ export function useSyncScroll<T extends HTMLElement = HTMLElement>(
 
       if (!source || !target) return
 
-      const scrollTop = source.scrollTop
-      const scrollHeight = source.scrollHeight
-      const clientHeight = source.clientHeight
+      // Use mutex to prevent infinite loop
+      if (from === 'source' && isScrollingSource.current) return
+      if (from === 'target' && isScrollingTarget.current) return
+
+      const { scrollTop, scrollHeight, clientHeight } = getScroll(source)
 
       // Calculate scroll percentage
       const maxScroll = scrollHeight - clientHeight
@@ -48,101 +99,66 @@ export function useSyncScroll<T extends HTMLElement = HTMLElement>(
       const scrollPercentage = scrollTop / maxScroll
 
       // Apply to target
-      const targetMaxScroll = target.scrollHeight - target.clientHeight
+      const targetState = getScroll(target)
+      const targetMaxScroll = targetState.scrollHeight - targetState.clientHeight
       if (targetMaxScroll <= 0) return
 
       const targetScrollTop = scrollPercentage * targetMaxScroll
 
-      // Set flag to prevent infinite loop
+      // DELTA CHECK: If the change is insignificant, don't apply it.
+      // This is the most reliable way to break infinite loops.
+      if (Math.abs(targetState.scrollTop - targetScrollTop) < 2) return
+
+      // Lock the SOURCE of this event (to prevent it from reacting to the echo)
+      // Actually, standard pattern is: I am scrolling 'source', so I will update 'target'.
+      // When 'target' updates, it will fire an event. I want 'target' to IGNORE that event.
+      // So I should lock 'target'.
       if (from === 'source') {
-        isScrollingSource.current = true
-      } else {
         isScrollingTarget.current = true
+      } else {
+        isScrollingSource.current = true
       }
 
-      target.scrollTop = targetScrollTop
+      setScroll(target, targetScrollTop)
 
-      // Clear flag after a short delay
+      // Unlock after a short delay to allow the event to propagate and be ignored
       setTimeout(() => {
         if (from === 'source') {
-          isScrollingSource.current = false
-        } else {
           isScrollingTarget.current = false
+        } else {
+          isScrollingSource.current = false
         }
-      }, 100)
+      }, 50)
     },
-    [enabled]
+    [enabled, getScroll, setScroll]
   )
 
   useEffect(() => {
     if (!enabled) return
 
-    let cleanupFn: (() => void) | undefined
-    let pollInterval: number | undefined
+    const source = sourceRef.current
+    const target = targetRef.current
 
-    const attachListeners = (): boolean => {
-      const source = sourceRef.current
-      const target = targetRef.current
+    if (!source || !target) return
 
-      if (!source || !target) return false
-
-      const handleSourceScroll = (): void => {
-        if (isScrollingSource.current) return
-
-        if (scrollTimeoutSource.current) {
-          clearTimeout(scrollTimeoutSource.current)
-        }
-
-        scrollTimeoutSource.current = window.setTimeout(() => {
-          syncScroll('source')
-        }, debounceMs)
+    // Helper to attach listener
+    const attach = (el: Scrollable, callback: () => void): (() => void) => {
+      if (isScrollableHandle(el)) {
+        return el.onScroll(callback).dispose
+      } else {
+        el.addEventListener('scroll', callback)
+        return () => el.removeEventListener('scroll', callback)
       }
-
-      const handleTargetScroll = (): void => {
-        if (isScrollingTarget.current) return
-
-        if (scrollTimeoutTarget.current) {
-          clearTimeout(scrollTimeoutTarget.current)
-        }
-
-        scrollTimeoutTarget.current = window.setTimeout(() => {
-          syncScroll('target')
-        }, debounceMs)
-      }
-
-      source.addEventListener('scroll', handleSourceScroll)
-      target.addEventListener('scroll', handleTargetScroll)
-
-      cleanupFn = () => {
-        source.removeEventListener('scroll', handleSourceScroll)
-        target.removeEventListener('scroll', handleTargetScroll)
-
-        if (scrollTimeoutSource.current) {
-          clearTimeout(scrollTimeoutSource.current)
-        }
-        if (scrollTimeoutTarget.current) {
-          clearTimeout(scrollTimeoutTarget.current)
-        }
-      }
-
-      return true
     }
 
-    // Try to attach immediately
-    if (!attachListeners()) {
-      // If refs are not ready, poll until they are
-      pollInterval = window.setInterval(() => {
-        if (attachListeners()) {
-          window.clearInterval(pollInterval)
-        }
-      }, 100)
-    }
+    const cleanupSource = attach(source, () => syncScroll('source'))
+    const cleanupTarget = attach(target, () => syncScroll('target'))
 
     return () => {
-      if (cleanupFn) cleanupFn()
-      if (pollInterval) window.clearInterval(pollInterval)
+      cleanupSource?.()
+      cleanupTarget?.()
     }
-  }, [enabled, debounceMs, syncScroll])
+  }, [enabled, syncScroll, isScrollableHandle])
 
   return {
     sourceRef,
