@@ -175,6 +175,7 @@ interface EditorPaneProps {
   onCodeBlock?: () => void
   vimMode?: boolean
   showWordCount?: boolean
+  showLineNumbers?: boolean
   viewMode?: 'editor' | 'preview' | 'split'
   onToggleLayout?: () => void
 }
@@ -235,6 +236,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       onCodeBlock,
       vimMode,
       showWordCount,
+      showLineNumbers,
       viewMode,
       onToggleLayout,
     },
@@ -545,7 +547,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
               options={{
                 wordWrap: 'on',
                 minimap: { enabled: false },
-                lineNumbers: 'on',
+                lineNumbers: showLineNumbers ?? true ? 'on' : 'off',
                 fontSize: 14,
                 lineHeight: 22,
                 fontFamily:
