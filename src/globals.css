@@ -135,6 +135,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Prevent iOS Safari auto-zoom */
+  @media screen and (max-width: 768px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
 }
 
 /* Vim Mode Status Bar Overrides */
