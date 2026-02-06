@@ -41,6 +41,7 @@ interface VimState {
 interface CodeMirrorAdapter {
   getSelection: () => string
   state: VimState
+  readonly editor: editor.IStandaloneCodeEditor
 }
 
 interface VimOperatorArgs {
@@ -78,7 +79,7 @@ interface VimModeModule {
   Vim: VimAPI
 }
 
-function setupVimClipboard() {
+function setupVim() {
   if (vimClipboardSetup || !VimMode) {
     return
   }
@@ -136,6 +137,15 @@ function setupVimClipboard() {
     }
   })
 
+  // Define visual line movement actions
+  Vim.defineAction('moveDownDisplay', (cm: CodeMirrorAdapter) => {
+    cm.editor.trigger('vim', 'cursorDown', {})
+  })
+
+  Vim.defineAction('moveUpDisplay', (cm: CodeMirrorAdapter) => {
+    cm.editor.trigger('vim', 'cursorUp', {})
+  })
+
   // Register the internal paste command to a custom key
   Vim.mapCommand('<PasteTrigger>', 'action', 'paste', { after: true, isEdit: true })
   Vim.mapCommand('<PasteTriggerBefore>', 'action', 'paste', { after: false, isEdit: true })
@@ -155,10 +165,14 @@ function setupVimClipboard() {
   // This fixes the popup issue by avoiding navigator.clipboard.readText() on 'p'
   Vim.mapCommand('p', 'action', 'paste', { after: true, isEdit: true })
   Vim.mapCommand('P', 'action', 'paste', { after: false, isEdit: true })
+
+  // Map gj/gk to visual line movement
+  Vim.mapCommand('gj', 'action', 'moveDownDisplay', {})
+  Vim.mapCommand('gk', 'action', 'moveUpDisplay', {})
 }
 
 // Run setup immediately
-setupVimClipboard()
+setupVim()
 
 interface EditorPaneProps {
   value: string
