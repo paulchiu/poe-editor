@@ -547,7 +547,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
               options={{
                 wordWrap: 'on',
                 minimap: { enabled: false },
-                lineNumbers: showLineNumbers ?? true ? 'on' : 'off',
+                lineNumbers: (showLineNumbers ?? true) ? 'on' : 'off',
                 fontSize: 14,
                 lineHeight: 22,
                 fontFamily:

@@ -424,6 +424,7 @@ ${htmlContent}
         onApply={handleApplyPipeline}
         editPipeline={editingPipeline}
         initialPreviewText={selectedText}
+        vimMode={vimModeEnabled}
       />
 
       <TransformerImportExportDialog
