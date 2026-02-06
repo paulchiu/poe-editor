@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo, useEffect, type ReactElement } from 'react'
+import { useState, useCallback, useMemo, useEffect, type ReactElement } from 'react'
 import { useTheme } from 'next-themes'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useUrlState } from '@/hooks/useUrlState'
@@ -107,7 +107,6 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const activeTab = viewMode === 'split' ? 'editor' : viewMode
 
   const isMobile = useIsMobile()
-  const editorRef = useRef<EditorPaneHandle>(null)
 
   // Stable error handler to prevent useUrlState effect from re-running
   const handleError = useCallback(
@@ -151,7 +150,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     useTransformers()
 
   // Scroll synchronization
-  const { sourceRef, targetRef } = useSyncScroll<HTMLDivElement>({
+  const { sourceRef, targetRef } = useSyncScroll<EditorPaneHandle, HTMLDivElement>({
     enabled: !isMobile,
   })
 
@@ -160,44 +159,47 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Formatting functions
   const handleFormatBold = useCallback((): void => {
-    formatBold(editorRef.current)
-  }, [])
+    formatBold(sourceRef.current)
+  }, [sourceRef])
 
   const handleFormatItalic = useCallback((): void => {
-    formatItalic(editorRef.current)
-  }, [])
+    formatItalic(sourceRef.current)
+  }, [sourceRef])
 
   const handleFormatLink = useCallback((): void => {
-    formatLink(editorRef.current)
-  }, [])
+    formatLink(sourceRef.current)
+  }, [sourceRef])
 
   const handleFormatCode = useCallback((): void => {
-    formatCode(editorRef.current)
-  }, [])
+    formatCode(sourceRef.current)
+  }, [sourceRef])
 
   const handleFormatCodeBlock = useCallback((): void => {
-    formatCodeBlock(editorRef.current)
-  }, [])
+    formatCodeBlock(sourceRef.current)
+  }, [sourceRef])
 
-  const handleFormatHeading = useCallback((level: number): void => {
-    formatHeading(editorRef.current, level)
-  }, [])
+  const handleFormatHeading = useCallback(
+    (level: number): void => {
+      formatHeading(sourceRef.current, level)
+    },
+    [sourceRef]
+  )
 
   const handleFormatQuote = useCallback((): void => {
-    formatQuote(editorRef.current)
-  }, [])
+    formatQuote(sourceRef.current)
+  }, [sourceRef])
 
   const handleFormatBulletList = useCallback((): void => {
-    formatBulletList(editorRef.current)
-  }, [])
+    formatBulletList(sourceRef.current)
+  }, [sourceRef])
 
   const handleFormatNumberedList = useCallback((): void => {
-    formatNumberedList(editorRef.current)
-  }, [])
+    formatNumberedList(sourceRef.current)
+  }, [sourceRef])
 
   const handleApplyPipeline = useCallback(
     (pipeline: TransformationPipeline) => {
-      const editor = editorRef.current
+      const editor = sourceRef.current
       if (!editor) return
 
       const selection = editor.getSelection()
@@ -210,7 +212,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
       editor.replaceSelection(transformed)
       toast({ description: `Applied ${pipeline.name}` })
     },
-    [toast]
+    [toast, sourceRef]
   )
 
   const handleSavePipeline = useCallback(
@@ -481,7 +483,7 @@ ${htmlContent}
           setShowSplash={setShowSplash}
           pipelines={pipelines}
           onOpenTransformer={() => {
-            const selection = editorRef.current?.getSelection()
+            const selection = sourceRef.current?.getSelection()
             setSelectedText(selection || undefined)
             setShowTransformer(true)
           }}
@@ -533,7 +535,7 @@ ${htmlContent}
                     <ResizablePanel defaultSize={viewMode === 'split' ? 50 : 100} minSize={30}>
                       <div className={cn('h-full', viewMode === 'split' && 'pr-2')}>
                         <EditorPane
-                          ref={editorRef}
+                          ref={sourceRef}
                           value={content}
                           onChange={setContent}
                           onCursorChange={setCursorPosition}
@@ -541,7 +543,6 @@ ${htmlContent}
                           onFormat={handleFormat}
                           onCodeBlock={handleFormatCodeBlock}
                           vimMode={vimModeEnabled}
-                          scrollRef={sourceRef}
                           showWordCount={showWordCount}
                           viewMode={viewMode}
                           onToggleLayout={handleToggleEditor}
@@ -596,7 +597,7 @@ ${htmlContent}
               {/* Editor Pane - Always mounted, hidden when not active */}
               <div className={cn('flex-1 p-4 mt-0', activeTab !== 'editor' && 'hidden')}>
                 <EditorPane
-                  ref={editorRef}
+                  ref={sourceRef}
                   value={content}
                   onChange={setContent}
                   onCursorChange={setCursorPosition}
@@ -604,7 +605,6 @@ ${htmlContent}
                   onFormat={handleFormat}
                   onCodeBlock={handleFormatCodeBlock}
                   vimMode={vimModeEnabled}
-                  scrollRef={sourceRef}
                   showWordCount={showWordCount}
                   viewMode={activeTab === 'editor' ? 'editor' : 'preview'}
                 />
