@@ -563,6 +563,9 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
                 renderLineHighlight: 'line',
                 cursorBlinking: 'smooth',
                 smoothScrolling: false, // Explicitly disable smooth scrolling for sync
+                unicodeHighlight: {
+                  ambiguousCharacters: false,
+                },
               }}
             />
           </div>
