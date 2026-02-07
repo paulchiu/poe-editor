@@ -5,6 +5,7 @@ import { useUrlState } from '@/hooks/useUrlState'
 import { useViewMode } from '@/hooks/useViewMode'
 import { useVimMode } from '@/hooks/useVimMode'
 import { useWordCount } from '@/hooks/useWordCount'
+import { useLineNumbers } from '@/hooks/useLineNumbers'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSyncScroll } from '@/hooks/useSyncScroll'
 import { useTransformers } from '@/hooks/useTransformers'
@@ -144,6 +145,9 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Word count management
   const { showWordCount, toggleWordCount } = useWordCount()
+
+  // Line numbers management
+  const { showLineNumbers, toggleLineNumbers } = useLineNumbers()
 
   // Transformers management
   const { pipelines, addPipeline, updatePipeline, removePipeline, replacePipelines } =
@@ -420,6 +424,7 @@ ${htmlContent}
         onApply={handleApplyPipeline}
         editPipeline={editingPipeline}
         initialPreviewText={selectedText}
+        vimMode={vimModeEnabled}
       />
 
       <TransformerImportExportDialog
@@ -495,6 +500,8 @@ ${htmlContent}
           onReset={() => setShowResetConfirm(true)}
           showWordCount={showWordCount}
           toggleWordCount={toggleWordCount}
+          showLineNumbers={showLineNumbers}
+          toggleLineNumbers={toggleLineNumbers}
         />
 
         <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
@@ -544,6 +551,7 @@ ${htmlContent}
                           onCodeBlock={handleFormatCodeBlock}
                           vimMode={vimModeEnabled}
                           showWordCount={showWordCount}
+                          showLineNumbers={showLineNumbers}
                           viewMode={viewMode}
                           onToggleLayout={handleToggleEditor}
                         />
@@ -606,6 +614,7 @@ ${htmlContent}
                   onCodeBlock={handleFormatCodeBlock}
                   vimMode={vimModeEnabled}
                   showWordCount={showWordCount}
+                  showLineNumbers={showLineNumbers}
                   viewMode={activeTab === 'editor' ? 'editor' : 'preview'}
                 />
               </div>

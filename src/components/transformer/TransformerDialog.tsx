@@ -45,6 +45,7 @@ interface TransformerDialogProps {
   onApply?: (pipeline: TransformationPipeline) => void
   editPipeline?: TransformationPipeline | null
   initialPreviewText?: string
+  vimMode?: boolean
 }
 
 interface DragData {
@@ -66,6 +67,7 @@ export function TransformerDialog({
   onApply,
   editPipeline,
   initialPreviewText,
+  vimMode,
 }: TransformerDialogProps): ReactElement {
   const { toast } = useToast()
   const [activeTab, setActiveTab] = useState('pipeline')
@@ -79,6 +81,9 @@ export function TransformerDialog({
   const [activeDragWidth, setActiveDragWidth] = useState<number | undefined>(undefined)
 
   const isDesktop = useMediaQuery('(min-width: 1024px)')
+
+  // Track if escape toast has been shown in this session
+  const hasShownEscapeToastRef = useRef(false)
 
   // Track previous open state to detect dialog open transition
   const wasOpenRef = useRef(open)
@@ -101,6 +106,7 @@ export function TransformerDialog({
 
     // Only run when dialog opens (was closed, now open)
     if (open && !wasOpen) {
+      hasShownEscapeToastRef.current = false
       if (editPipeline) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setPipelineName(editPipeline.name)
@@ -296,6 +302,22 @@ export function TransformerDialog({
         <DialogContent
           onInteractOutside={(e) => e.preventDefault()}
           className="sm:max-w-[90vw] w-full h-[100dvh] sm:w-[90vw] sm:h-[90vh] p-0 gap-0 overflow-hidden flex flex-col bg-background focus:outline-none max-w-none rounded-none sm:rounded-lg"
+          onEscapeKeyDown={(e) => {
+            const target = e.target as HTMLElement
+            const isMonaco = target?.closest?.('.monaco-editor')
+
+            // If focus is inside monaco editor (JSON mode), prevent closing
+            if (isMonaco) {
+              e.preventDefault()
+
+              if (!hasShownEscapeToastRef.current) {
+                hasShownEscapeToastRef.current = true
+                toast({
+                  description: 'Escape disabled in editor, exit editor mode to close.',
+                })
+              }
+            }
+          }}
         >
           <DialogHeader className="px-4 py-3 border-b shrink-0 flex flex-row flex-wrap sm:flex-nowrap items-center justify-between gap-y-3 sm:gap-y-0 space-y-0 pr-12">
             <div className="flex items-center gap-2">
@@ -377,11 +399,13 @@ export function TransformerDialog({
                 >
                   <TransformerWorkbench
                     steps={steps}
+                    onSetSteps={setSteps}
                     onUpdateStep={handleUpdateStep}
                     onRemoveStep={handleRemoveStep}
                     onToggleStep={handleToggleStep}
                     onAddOperation={handleAddOperation}
                     onAddRequest={() => setIsToolboxOpen(true)}
+                    vimMode={vimMode}
                   />
                 </TabsContent>
                 <TabsContent
@@ -425,10 +449,12 @@ export function TransformerDialog({
                   <div className="h-full overflow-y-auto bg-background/50">
                     <TransformerWorkbench
                       steps={steps}
+                      onSetSteps={setSteps}
                       onUpdateStep={handleUpdateStep}
                       onRemoveStep={handleRemoveStep}
                       onToggleStep={handleToggleStep}
                       onAddOperation={handleAddOperation}
+                      vimMode={vimMode}
                     />
                   </div>
                 </ResizablePanel>

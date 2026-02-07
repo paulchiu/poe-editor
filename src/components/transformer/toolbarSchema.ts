@@ -4,7 +4,10 @@ import type { TransformationPipeline } from './types'
 /**
  * Zod schema for a single pipeline step.
  */
-const PipelineStepSchema = z.object({
+/**
+ * Zod schema for a single pipeline step.
+ */
+export const PipelineStepSchema = z.object({
   id: z.string(),
   operationId: z.enum([
     'trim',
@@ -37,6 +40,8 @@ const PipelineStepSchema = z.object({
   enabled: z.boolean(),
 })
 
+export const PipelineStepsArraySchema = z.array(PipelineStepSchema)
+
 /**
  * Zod schema for a transformation pipeline.
  */
@@ -44,7 +49,7 @@ const TransformationPipelineSchema = z.object({
   id: z.string(),
   name: z.string(),
   icon: z.string(),
-  steps: z.array(PipelineStepSchema),
+  steps: PipelineStepsArraySchema,
 })
 
 /**
