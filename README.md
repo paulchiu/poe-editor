@@ -54,7 +54,9 @@ The editor includes 25+ text operations that can be chained into reusable pipeli
 
 ```bash
 npm install
-npm run dev        # Start development server
+npm run dev        # Start development server (app + proxy concurrently)
+npm run dev:app    # Start app only (Vite)
+npm run dev:proxy  # Start proxy only
 npm run test       # Run unit tests
 npm run test:e2e   # Run end-to-end tests
 npm run deploy     # Deploy to Cloudflare Workers
@@ -64,12 +66,12 @@ npm run deploy     # Deploy to Cloudflare Workers
 
 The editor includes several built-in utilities to assist with manual testing and debugging:
 
-- **Debug Commands**:
+- Debug Commands:
   - `/add-all`: Type this in the Transformer Toolbox search bar to add all available operations to the workbench.
-- **URL Parameters**:
+- URL Parameters:
   - `?limit=[number]`: Override the default URL length limit (default: 32,000 chars). Useful for testing storage limits.
-- **UI Testing**:
-  - **Show Splash**: Accessed via the Menu (three dots) > Show Splash. Displays the splash screen for debugging.
+- UI Testing:
+  - Show Splash: Accessed via the Menu (three dots) > Show Splash. Displays the splash screen for debugging.
 
 ## Keyboard Shortcuts
 
