@@ -9,7 +9,8 @@
     "deploy": "wrangler deploy",
     "build": "tsc",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:og": "node scripts/og-test.js"
   },
   "dependencies": {
     "satori": "^0.12.2",
