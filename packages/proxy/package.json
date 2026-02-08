@@ -1,0 +1,28 @@
+{
+  "name": "poe-editor-proxy",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for dynamic Open Graph previews and root-level routing",
+  "main": "dist/worker.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --config wrangler.toml",
+    "deploy": "wrangler deploy",
+    "build": "tsc",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "satori": "^0.12.2",
+    "yoga-wasm-web": "^0.3.3",
+    "@resvg/resvg-wasm": "^2.6.2",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.63.0",
+    "typescript": "^5.7.3",
+    "@cloudflare/workers-types": "^4.20250204.0",
+    "@types/react": "^18.3.18",
+    "vitest": "^3.0.5",
+    "miniflare": "^3.20241230.0"
+  }
+}

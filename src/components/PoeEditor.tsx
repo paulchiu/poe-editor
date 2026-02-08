@@ -37,6 +37,7 @@ import { TransformerDialog } from '@/components/transformer/TransformerDialog'
 import { TransformerImportExportDialog } from '@/components/transformer/TransformerImportExportDialog'
 import type { TransformationPipeline } from '@/components/transformer/types'
 import { useToast } from '@/hooks/useToast'
+import { generateShareableUrl } from '@/utils/urlShare'
 
 import {
   formatBold,
@@ -312,7 +313,13 @@ ${htmlContent}
 
   const handleCopyLink = useCallback(async (): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(window.location.href)
+      // Generate shareable URL with metadata in path
+      const shareableUrl = generateShareableUrl(
+        content,
+        documentName,
+        window.location.hash.slice(1)
+      )
+      await navigator.clipboard.writeText(shareableUrl)
       toast({
         description: 'Link copied to clipboard!',
       })
@@ -322,7 +329,7 @@ ${htmlContent}
         description: 'Failed to copy link',
       })
     }
-  }, [toast])
+  }, [toast, content, documentName])
 
   const handleClear = useCallback((): void => {
     setContent('')

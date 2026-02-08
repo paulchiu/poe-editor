@@ -1,0 +1,18 @@
+name = "poe-editor-proxy"
+main = "src/worker.tsx"
+compatibility_date = "2025-01-30"
+compatibility_flags = ["nodejs_compat"]
+
+# Rule: Treat any .wasm file as a compiled WebAssembly module
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = false
+
+# Assets configuration for SPA fallback
+[assets]
+directory = "../../dist/client"
+not_found_handling = "single-page-application"
+
+[build]
+command = ""
