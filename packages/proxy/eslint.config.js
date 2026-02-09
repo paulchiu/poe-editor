@@ -4,13 +4,7 @@ import prettierConfig from 'eslint-config-prettier'
 
 export default [
   {
-    ignores: [
-      'node_modules/**',
-      'dist/**',
-      '.wrangler/**',
-      'package-lock.json',
-      'scripts/**',
-    ],
+    ignores: ['node_modules/**', 'dist/**', '.wrangler/**', 'package-lock.json', 'scripts/**'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
