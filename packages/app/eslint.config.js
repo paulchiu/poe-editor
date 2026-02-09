@@ -6,7 +6,14 @@ import prettierConfig from 'eslint-config-prettier'
 
 export default [
   {
-    ignores: ['node_modules', 'dist', 'build', '.next', 'package-lock.json'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      '.next/**',
+      '**/.wrangler/**',
+      'package-lock.json',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -15,6 +22,12 @@ export default [
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+      },
       parserOptions: {
         ecmaFeatures: {
           jsx: true,

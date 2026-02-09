@@ -6,6 +6,7 @@ import {
   decompressDocumentFromHash,
   type DocumentData,
 } from '@/utils/compression'
+import { generateShareableUrl, parsePathMetadata } from '@/utils/urlShare'
 
 interface UseUrlStateOptions {
   debounceMs?: number
@@ -128,7 +129,13 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
         const title = emoji ? heading.replace(emoji, '').trim() : heading
         document.title = title || documentName
       } else {
-        document.title = documentName
+        // Check for metadata in URL path (for shared links)
+        const pathMetadata = parsePathMetadata(window.location.pathname)
+        if (pathMetadata) {
+          document.title = pathMetadata.title
+        } else {
+          document.title = documentName
+        }
         updateFavicon(null)
       }
 
@@ -165,11 +172,19 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
 
       // If we found an emoji, remove it from the title to avoid duplication/clutter
       // We only remove the *exact* extracted emoji string once.
-      const title = firstHeading
+      let title = firstHeading
         ? emoji
           ? firstHeading.replace(emoji, '').trim()
           : firstHeading
-        : documentNameRef.current
+        : null
+
+      // If no heading, check for metadata in URL path (for shared links)
+      if (!title) {
+        const pathMetadata = parsePathMetadata(window.location.pathname)
+        if (pathMetadata) {
+          title = pathMetadata.title
+        }
+      }
 
       document.title = title || documentNameRef.current
 
@@ -183,18 +198,27 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       }
 
       // Update URL regardless of length (allow users to continue editing)
-      const newHash = compressed ? `#${compressed}` : ''
+      // Use shareable URL format with metadata in path segments
+      const shareableUrl = generateShareableUrl(
+        contentRef.current,
+        documentNameRef.current,
+        compressed
+      )
 
       // Preserve existing query parameters
       const currentUrl = new URL(window.location.href)
-      currentUrl.hash = newHash
+      const newUrl = new URL(shareableUrl)
+
+      // Copy query params from current URL to new URL
+      currentUrl.searchParams.forEach((value, key) => {
+        if (key !== 'limit') {
+          // Don't copy the limit param used for testing
+          newUrl.searchParams.set(key, value)
+        }
+      })
 
       // We use replaceState to update the URL without adding a new history entry for every keystroke
-      // but we need to make sure we don't lose the query params
-      // Use relative path (search + hash) to avoid SecurityError in some environments
-      // and to ensure we stay on the same page.
-      const relativePath = currentUrl.search + currentUrl.hash
-      window.history.replaceState(null, '', relativePath)
+      window.history.replaceState(null, '', newUrl.toString())
     }, debounceMs)
   }, [debounceMs, maxLength, onLengthWarning])
 
@@ -211,7 +235,17 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
         const emoji = heading ? extractFirstEmoji(heading) : null
         updateFavicon(emoji)
 
-        const title = heading ? (emoji ? heading.replace(emoji, '').trim() : heading) : newName
+        // First try to use heading from content
+        let title = heading ? (emoji ? heading.replace(emoji, '').trim() : heading) : null
+
+        // If no heading, check for metadata in URL path (for shared links)
+        if (!title) {
+          const pathMetadata = parsePathMetadata(window.location.pathname)
+          if (pathMetadata) {
+            title = pathMetadata.title
+          }
+        }
+
         document.title = title || newName
       }
 

@@ -6,7 +6,7 @@ A Markdown editor with live preview, Vim keybindings, and custom text transforma
 
 ## Overview
 
-Poe combines a clean writing interface with practical tools for text manipulation. It is built for developers and technical writers who need more than a basic editor, without the overhead of account management or cloud dependencies.
+Poe combines a clean writing interface with tools for text manipulation. It is built for Markdown writers who need more than a basic editor, without the overhead of account management or cloud dependencies.
 
 ### URL-Based Persistence
 
@@ -26,19 +26,19 @@ The editor includes 25+ text operations that can be chained into reusable pipeli
 ## Features
 
 - Live preview with synchronised scrolling.
-- Vim mode via Monaco Editor and monaco-vim.
+- Vim mode via Monaco Editor and `monaco-vim`.
 - 25+ text transformers with custom pipeline support.
 - One-click export to Markdown or HTML.
 - Dark and light themes with system detection.
 - Mobile-optimised tab interface.
-- Zero backend; all processing occurs in browser.
+- Zero (editor) backend; all processing occurs in browser.
+- Open Graph preview generation backend via Cloudflare Workers.
 
 ## Use Cases
 
 - Documentation: write READMEs, API docs, and wikis with live preview.
 - Data cleaning: transform CSVs, logs, and structured text with custom pipelines.
 - Note taking: capture thoughts and share via URL without account setup.
-- Blogging: draft posts in Markdown and export clean HTML.
 - Quick sharing: create temporary documents that do not require storage.
 
 ## Technical Stack
@@ -48,28 +48,66 @@ The editor includes 25+ text operations that can be chained into reusable pipeli
 - [Tailwind CSS v4](https://tailwindcss.com/) and [Shadcn UI](https://ui.shadcn.com/) components.
 - [Markdown-it](https://github.com/markdown-it/markdown-it) for parsing with [highlight.js](https://highlightjs.org/) for syntax highlighting.
 - [LZ-String](https://github.com/pieroxy/lz-string) for URL compression.
-- Deployed on [Cloudflare Workers](https://workers.cloudflare.com/).
+- Monorepo managed with npm workspaces.
+- Deployed on [Cloudflare Pages](https://pages.cloudflare.com/) (app) and [Cloudflare Workers](https://workers.cloudflare.com/) (Open Graph proxy).
+
+## Monorepo Structure
+
+```
+poe-editor/
+├── packages/
+│   ├── app/           # React SPA (main editor)
+│   └── proxy/         # Cloudflare Worker (Open Graph image generation)
+```
 
 ## Development
 
 ```bash
+# Install dependencies for all workspaces
 npm install
-npm run dev        # Start development server
-npm run test       # Run unit tests
-npm run test:e2e   # Run end-to-end tests
-npm run deploy     # Deploy to Cloudflare Workers
+
+# Start both app and proxy concurrently
+npm run dev
+
+# Or start them individually
+npm run dev:app     # App only (Vite)
+npm run dev:proxy   # Proxy only (Wrangler)
+
+# Build the app
+npm run build
+
+# Run tests
+npm test            # Unit tests
+npm run test:e2e    # End-to-end tests
+```
+
+## Deployment
+
+Both packages deploy automatically via Cloudflare's Git integration:
+
+- App (`packages/app/`): Deploys to Cloudflare Pages on every push to main.
+- Proxy (`packages/proxy/`): Deploys to Cloudflare Workers on every push to main.
+
+### Manual Deployment
+
+```bash
+# Deploy app manually
+npm run deploy:app
+
+# Deploy proxy manually
+npm run deploy:proxy
 ```
 
 ## Manual Testing Features
 
 The editor includes several built-in utilities to assist with manual testing and debugging:
 
-- **Debug Commands**:
+- Debug Commands:
   - `/add-all`: Type this in the Transformer Toolbox search bar to add all available operations to the workbench.
-- **URL Parameters**:
+- URL Parameters:
   - `?limit=[number]`: Override the default URL length limit (default: 32,000 chars). Useful for testing storage limits.
-- **UI Testing**:
-  - **Show Splash**: Accessed via the Menu (three dots) > Show Splash. Displays the splash screen for debugging.
+- UI Testing:
+  - Show Splash: Accessed via the Menu (three dots) > Show Splash. Displays the splash screen for debugging.
 
 ## Keyboard Shortcuts
 
@@ -91,4 +129,4 @@ Due to browser security restrictions on the Clipboard API, Vim mode clipboard in
 
 Inspired by [Dillinger](https://dillinger.io) and the [TypeScript Playground](https://www.typescriptlang.org/play).
 
-MIT License &copy; 2026 Paul Chiu
+MIT License © 2026 Paul Chiu

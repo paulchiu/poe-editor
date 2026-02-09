@@ -35,7 +35,7 @@ describe('useUrlState', () => {
     expect(result.current.documentName).toBe('decoded.md')
   })
 
-  it('should update hash when content changes', () => {
+  it('should update URL with shareable format when content changes', () => {
     vi.useFakeTimers()
     const { result } = renderHook(() => useUrlState())
 
@@ -55,10 +55,6 @@ describe('useUrlState', () => {
       name: 'untitled.md', // default name
     })
 
-    // Verify replaceState was called (implicitly by checking hash? no replaceState doesn't update hash prop in jsdom immediately usually? or does it?)
-    // In JSDOM, replaceState updates the history object. window.location.hash usually reflects it.
-    // However, the hook uses window.history.replaceState(null, '', newHash)
-
     // Let's spy on replaceState
     const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
 
@@ -72,7 +68,9 @@ describe('useUrlState', () => {
     })
 
     expect(replaceStateSpy).toHaveBeenCalled()
-    expect(replaceStateSpy.mock.calls[0][2]).toBe('#new-hash')
+    // Now using shareable URL format with path segments: /:title/:snippet#hash
+    expect(replaceStateSpy.mock.calls[0][2]).toContain('/untitled/')
+    expect(replaceStateSpy.mock.calls[0][2]).toContain('#new-hash')
 
     vi.useRealTimers()
   })
@@ -155,16 +153,17 @@ describe('useUrlState', () => {
     vi.useRealTimers()
     querySelectorSpy.mockRestore()
   })
-  it('should preserve query parameters when updating hash', () => {
+  it('should preserve query parameters when updating URL', () => {
     vi.useFakeTimers()
-    const { result } = renderHook(() => useUrlState())
 
-    // Simulate existing query params
-    const baseUrl = 'http://localhost/?foo=bar'
+    // Set up window.location with query params
+    const baseUrl = 'http://localhost:3000/?foo=bar'
     Object.defineProperty(window, 'location', {
       value: new URL(baseUrl),
       writable: true,
     })
+
+    const { result } = renderHook(() => useUrlState())
 
     // Mock history.replaceState to verify the URL being passed
     const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
