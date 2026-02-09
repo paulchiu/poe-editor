@@ -1,7 +1,7 @@
 import satori from 'satori'
 import { initWasm as initResvg, Resvg } from '@resvg/resvg-wasm'
 import initYoga from 'yoga-wasm-web'
-import React from 'react'
+import { createElement } from 'react'
 
 // Import WASM modules - these will be handled by wrangler's CompiledWasm rule
 import yogaWasm from 'yoga-wasm-web/dist/yoga.wasm'
@@ -173,7 +173,7 @@ async function generateOgImage(title: string, snippet: string): Promise<Uint8Arr
   const displaySnippet = snippet.length > 150 ? snippet.slice(0, 147) + '...' : snippet
 
   // Create the OG image layout
-  const element = React.createElement(
+  const element = createElement(
     'div',
     {
       style: {
@@ -190,7 +190,7 @@ async function generateOgImage(title: string, snippet: string): Promise<Uint8Arr
       },
     },
     // Header with logo
-    React.createElement(
+    createElement(
       'div',
       {
         style: {
@@ -199,7 +199,7 @@ async function generateOgImage(title: string, snippet: string): Promise<Uint8Arr
           marginBottom: '40px',
         },
       },
-      React.createElement(
+      createElement(
         'span',
         {
           style: {
@@ -212,7 +212,7 @@ async function generateOgImage(title: string, snippet: string): Promise<Uint8Arr
       )
     ),
     // Title
-    React.createElement(
+    createElement(
       'h1',
       {
         style: {
@@ -228,7 +228,7 @@ async function generateOgImage(title: string, snippet: string): Promise<Uint8Arr
       displayTitle
     ),
     // Snippet
-    React.createElement(
+    createElement(
       'p',
       {
         style: {
