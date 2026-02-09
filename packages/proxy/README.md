@@ -121,9 +121,9 @@ Features:
 
 Configure Cloudflare Workers Git Integration:
 
-1. Go to *Cloudflare Dashboard → Workers & Pages*
-2. Click *Create Application*
-3. Select *"Import a repository"*
+1. Go to _Cloudflare Dashboard → Workers & Pages_
+2. Click _Create Application_
+3. Select _"Import a repository"_
 4. Connect your GitHub repo
 5. Configure:
    - Root Directory: `packages/proxy/`

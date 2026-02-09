@@ -72,7 +72,7 @@ npm run deploy
 
 This app deploys to Cloudflare Pages via Git integration:
 
-1. Go to *Cloudflare Dashboard → Pages*
+1. Go to _Cloudflare Dashboard → Pages_
 2. Your project should already be connected to the repo
 3. Update the build settings:
    - Root Directory: `packages/app/`
@@ -110,12 +110,12 @@ packages/app/
 
 ## Technical Stack
 
-* [React 19](https://react.dev/)
-* [TypeScript](https://www.typescriptlang.org/)
-* [Vite](https://vitejs.dev/)
-* [Tailwind CSS v4](https://tailwindcss.com/)
-* [Monaco Editor](https://microsoft.github.io/monaco-editor/) for a VS Code-like editing experience.
-* [Markdown-it](https://github.com/markdown-it/markdown-it) for extensible markdown parsing and rendering.
-* [LZ-String](https://pieroxy.net/blog/pages/lz-string/index.html) for efficient URL-based state compression.
+- [React 19](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vitejs.dev/)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/) for a VS Code-like editing experience.
+- [Markdown-it](https://github.com/markdown-it/markdown-it) for extensible markdown parsing and rendering.
+- [LZ-String](https://pieroxy.net/blog/pages/lz-string/index.html) for efficient URL-based state compression.
 
 MIT License © 2026 Paul Chiu

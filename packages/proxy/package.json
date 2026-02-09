@@ -10,7 +10,9 @@
     "build": "tsc",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:og": "node scripts/og-test.js"
+    "test:og": "node scripts/og-test.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "satori": "^0.12.2",
@@ -24,6 +26,7 @@
     "@cloudflare/workers-types": "^4.20250204.0",
     "@types/react": "^18.3.18",
     "vitest": "^3.0.5",
-    "miniflare": "^3.20241230.0"
+    "miniflare": "^3.20241230.0",
+    "prettier": "^3.8.1"
   }
 }
