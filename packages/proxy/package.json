@@ -8,6 +8,8 @@
     "dev": "wrangler dev --config wrangler.toml",
     "deploy": "wrangler deploy",
     "build": "tsc",
+    "lint": "echo 'No lint configured for proxy package'",
+    "lint:fix": "echo 'No lint configured for proxy package'",
     "test": "vitest",
     "test:run": "vitest run",
     "test:og": "node scripts/og-test.js",
