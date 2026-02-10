@@ -146,9 +146,11 @@ npm run deploy
 
 ## Configuration
 
-The `wrangler.toml` includes a rule for WASM module handling:
+The `wrangler.toml` enables compiled WASM imports (required for Workers' no-JIT environment):
 
 ```toml
+compatibility_flags = ["nodejs_compat"]
+
 [[rules]]
 type = "CompiledWasm"
 globs = ["**/*.wasm"]
