@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --config wrangler.toml",
+    "dev:remote": "wrangler dev --remote --config wrangler.toml",
     "deploy": "wrangler deploy",
     "build": "tsc",
     "lint": "eslint .",
