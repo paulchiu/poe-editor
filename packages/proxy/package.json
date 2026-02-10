@@ -17,7 +17,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "satori": "^0.12.2",
+    "satori": "^0.19.1",
     "yoga-wasm-web": "^0.3.3",
     "@resvg/resvg-wasm": "^2.6.2",
     "react": "^18.3.1"
