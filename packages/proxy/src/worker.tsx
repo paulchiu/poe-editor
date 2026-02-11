@@ -1,9 +1,9 @@
-import satori from 'satori'
+import satori, { init as initSatori } from 'satori/wasm'
 import { initWasm as initResvg, Resvg } from '@resvg/resvg-wasm'
 import initYoga from 'yoga-wasm-web'
 import { createElement } from 'react'
 
-// Import WASM modules - these will be handled by wrangler's CompiledWasm rule
+// Import WASM modules - handled by wrangler's CompiledWasm rule
 import yogaWasm from 'yoga-wasm-web/dist/yoga.wasm'
 import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
 
@@ -11,7 +11,37 @@ import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
 let isInitialized = false
 let initializationPromise: Promise<void> | null = null
 
-async function initialize(): Promise<void> {
+function requireWasmModule(value: unknown, name: string): WebAssembly.Module {
+  if (typeof WebAssembly === 'undefined') {
+    throw new Error('WebAssembly is not available in this runtime.')
+  }
+
+  if (value instanceof WebAssembly.Module) {
+    return value
+  }
+
+  const valueType =
+    value && typeof value === 'object' && 'constructor' in value && value.constructor
+      ? value.constructor.name
+      : typeof value
+
+  throw new Error(
+    `${name} must be a compiled WebAssembly.Module (got ${valueType}). ` +
+      'Ensure wrangler.toml enables CompiledWasm for *.wasm imports.'
+  )
+}
+
+function resolveWasmModules(env: Env): { yoga: WebAssembly.Module; resvg: WebAssembly.Module } {
+  const yogaModule = env.YOGA_WASM ?? yogaWasm
+  const resvgModule = env.RESVG_WASM ?? resvgWasm
+
+  return {
+    yoga: requireWasmModule(yogaModule, 'YOGA_WASM'),
+    resvg: requireWasmModule(resvgModule, 'RESVG_WASM'),
+  }
+}
+
+async function initialize(env: Env): Promise<void> {
   if (isInitialized) return
 
   if (initializationPromise) {
@@ -20,11 +50,14 @@ async function initialize(): Promise<void> {
 
   initializationPromise = (async () => {
     try {
+      const { yoga: yogaModule, resvg: resvgModule } = resolveWasmModules(env)
+
       // Initialize Yoga layout engine
-      await initYoga(yogaWasm)
+      const yoga = await initYoga(yogaModule)
+      initSatori(yoga)
 
       // Initialize Resvg for PNG rendering
-      await initResvg(resvgWasm)
+      await initResvg(resvgModule)
 
       isInitialized = true
     } catch (error) {
@@ -105,49 +138,68 @@ function parsePathMetadata(pathname: string): { title: string; snippet: string }
 }
 
 /**
- * HTMLRewriter handler to inject OG meta tags
+ * Escapes HTML special characters
+ * @param text - The text to escape
+ * @returns Escaped HTML string
  */
-class OpenGraphHandler {
-  private title: string
-  private snippet: string
-  private ogImageUrl: string
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
 
-  constructor(title: string, snippet: string, ogImageUrl: string) {
-    this.title = title
-    this.snippet = snippet
-    this.ogImageUrl = ogImageUrl
-  }
+/**
+ * HTMLRewriter element content handlers interface
+ */
+interface ElementContentHandlers {
+  element?(element: Element): void | Promise<void>
+  comments?(comment: Comment): void | Promise<void>
+  text?(text: Text): void | Promise<void>
+}
 
-  element(element: Element) {
-    // Inject OG meta tags in the <head>
-    if (element.tagName === 'head') {
+/**
+ * Creates an HTMLRewriter handler for the <head> element to inject OG meta tags
+ * @param title - The page title
+ * @param snippet - The page snippet/description
+ * @param ogImageUrl - The OG image URL
+ * @returns Element handler object for HTMLRewriter
+ */
+function createHeadHandler(
+  title: string,
+  snippet: string,
+  ogImageUrl: string
+): ElementContentHandlers {
+  return {
+    element(element: Element): void {
       const metaTags = `
-<meta property="og:title" content="${this.escapeHtml(this.title)}" />
-<meta property="og:description" content="${this.escapeHtml(this.snippet)}" />
-<meta property="og:image" content="${this.ogImageUrl}" />
+<meta property="og:title" content="${escapeHtml(title)}" />
+<meta property="og:description" content="${escapeHtml(snippet)}" />
+<meta property="og:image" content="${ogImageUrl}" />
 <meta property="og:type" content="article" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="${this.escapeHtml(this.title)}" />
-<meta name="twitter:description" content="${this.escapeHtml(this.snippet)}" />
-<meta name="twitter:image" content="${this.ogImageUrl}" />
-<meta name="description" content="${this.escapeHtml(this.snippet)}" />
+<meta name="twitter:title" content="${escapeHtml(title)}" />
+<meta name="twitter:description" content="${escapeHtml(snippet)}" />
+<meta name="twitter:image" content="${ogImageUrl}" />
+<meta name="description" content="${escapeHtml(snippet)}" />
 `
       element.prepend(metaTags, { html: true })
-    }
-
-    // Update the <title> tag
-    if (element.tagName === 'title') {
-      element.setInnerContent(this.title)
-    }
+    },
   }
+}
 
-  private escapeHtml(text: string): string {
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
+/**
+ * Creates an HTMLRewriter handler for the <title> element
+ * @param title - The page title
+ * @returns Element handler object for HTMLRewriter
+ */
+function createTitleHandler(title: string): ElementContentHandlers {
+  return {
+    element(element: Element): void {
+      element.setInnerContent(title)
+    },
   }
 }
 
@@ -155,10 +207,11 @@ class OpenGraphHandler {
  * Generates an OG image using Satori
  * @param title - The title text
  * @param snippet - The snippet text
+ * @param env - Worker environment with compiled WASM modules
  * @returns PNG image buffer
  */
-async function generateOgImage(title: string, snippet: string): Promise<Uint8Array> {
-  await initialize()
+async function generateOgImage(title: string, snippet: string, env: Env): Promise<Uint8Array> {
+  await initialize(env)
 
   // Load fonts
   const interFontUrl =
@@ -276,9 +329,9 @@ async function generateOgImage(title: string, snippet: string): Promise<Uint8Arr
   return pngData.asPng()
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Env {
-  // Environment variables can be added here if needed
+  YOGA_WASM?: WebAssembly.Module
+  RESVG_WASM?: WebAssembly.Module
 }
 
 export default {
@@ -293,7 +346,7 @@ export default {
       const snippet = url.searchParams.get('snippet') || 'A document on poemd.dev'
 
       try {
-        const pngBuffer = await generateOgImage(title, snippet)
+        const pngBuffer = await generateOgImage(title, snippet, env)
 
         return new Response(pngBuffer, {
           headers: {
@@ -345,8 +398,8 @@ export default {
 
       // Rewrite HTML to inject meta tags
       const rewriter = new HTMLRewriter()
-        .on('head', new OpenGraphHandler(metadata.title, metadata.snippet, ogImageUrl.toString()))
-        .on('title', new OpenGraphHandler(metadata.title, metadata.snippet, ogImageUrl.toString()))
+        .on('head', createHeadHandler(metadata.title, metadata.snippet, ogImageUrl.toString()))
+        .on('title', createTitleHandler(metadata.title))
 
       return rewriter.transform(indexResponse)
     }

@@ -1,12 +1,17 @@
 import { describe, it, expect, beforeAll, vi, beforeEach } from 'vitest'
+import type { Env } from './worker'
+
+const WASM_MODULE = vi.hoisted(
+  () => new WebAssembly.Module(new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]))
+)
 
 // Mock the WASM modules before importing the worker
 vi.mock('yoga-wasm-web/dist/yoga.wasm', () => ({
-  default: new Uint8Array([0, 1, 2, 3]),
+  default: WASM_MODULE,
 }))
 
 vi.mock('@resvg/resvg-wasm/index_bg.wasm', () => ({
-  default: new Uint8Array([0, 1, 2, 3]),
+  default: WASM_MODULE,
 }))
 
 // Mock satori and resvg
@@ -28,11 +33,12 @@ vi.mock('yoga-wasm-web', () => ({
 }))
 
 interface WorkerModule {
-  fetch: (
-    request: Request,
-    env: Record<string, unknown>,
-    ctx: ExecutionContext
-  ) => Promise<Response>
+  fetch: (request: Request, env: Env, ctx: ExecutionContext) => Promise<Response>
+}
+
+const MOCK_ENV: Env = {
+  YOGA_WASM: WASM_MODULE,
+  RESVG_WASM: WASM_MODULE,
 }
 
 // Mock HTMLRewriter for Node.js environment
@@ -105,7 +111,7 @@ describe('Worker E2E Tests', () => {
       )
 
       const request = new Request('http://localhost:8787/My-Title/My-Snippet')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toContain('text/html')
@@ -126,7 +132,7 @@ describe('Worker E2E Tests', () => {
       )
 
       const request = new Request('http://localhost:8787/Hello-World/Some-Content')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
     })
@@ -146,7 +152,7 @@ describe('Worker E2E Tests', () => {
       )
 
       const request = new Request('http://localhost:8787/Hello%20World/My%20Snippet')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
     })
@@ -158,7 +164,7 @@ describe('Worker E2E Tests', () => {
       fetchMock.mockResolvedValueOnce(mockResponse)
 
       const request = new Request('http://localhost:8787/favicon.ico')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response).toBeDefined()
     })
@@ -171,7 +177,7 @@ describe('Worker E2E Tests', () => {
       fetchMock.mockResolvedValueOnce(mockResponse)
 
       const request = new Request('http://localhost:8787/assets/index.js')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response).toBeDefined()
     })
@@ -184,7 +190,7 @@ describe('Worker E2E Tests', () => {
       fetchMock.mockResolvedValueOnce(mockResponse)
 
       const request = new Request('http://localhost:8787/assets/style.css')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response).toBeDefined()
     })
@@ -197,7 +203,7 @@ describe('Worker E2E Tests', () => {
       fetchMock.mockResolvedValueOnce(mockResponse)
 
       const request = new Request('http://localhost:8787/images/logo.png')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response).toBeDefined()
     })
@@ -210,7 +216,7 @@ describe('Worker E2E Tests', () => {
       fetchMock.mockResolvedValueOnce(mockResponse)
 
       const request = new Request('http://localhost:8787/manifest.json')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response).toBeDefined()
     })
@@ -234,7 +240,7 @@ describe('Worker E2E Tests', () => {
       const request = new Request(
         'http://localhost:8787/%3Cscript%3Ealert(1)%3C%2Fscript%3E/Snippet'
       )
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
     })
@@ -256,7 +262,7 @@ describe('Worker E2E Tests', () => {
       const request = new Request(
         'http://localhost:8787/Title/%3Cimg%20src%3Dx%20onerror%3Dalert(1)%3E'
       )
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
     })
@@ -276,7 +282,7 @@ describe('Worker E2E Tests', () => {
       )
 
       const request = new Request('http://localhost:8787/Title%20%22with%20quotes/Snippet')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
     })
@@ -285,7 +291,7 @@ describe('Worker E2E Tests', () => {
   describe('/api/og endpoint', () => {
     it('should return PNG image with correct content type', async () => {
       const request = new Request('http://localhost:8787/api/og?title=Test&snippet=Hello')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toBe('image/png')
@@ -294,7 +300,7 @@ describe('Worker E2E Tests', () => {
 
     it('should use default values when parameters are missing', async () => {
       const request = new Request('http://localhost:8787/api/og')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toBe('image/png')
@@ -304,7 +310,7 @@ describe('Worker E2E Tests', () => {
       // This test would need actual mocking of satori failure
       // For now, we just verify the endpoint exists
       const request = new Request('http://localhost:8787/api/og?title=Test')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
     })
@@ -316,7 +322,7 @@ describe('Worker E2E Tests', () => {
       fetchMock.mockResolvedValueOnce(mockResponse)
 
       const request = new Request('http://localhost:8787/')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response).toBeDefined()
     })
@@ -326,7 +332,7 @@ describe('Worker E2E Tests', () => {
       fetchMock.mockResolvedValueOnce(mockResponse)
 
       const request = new Request('http://localhost:8787/single')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response).toBeDefined()
     })
@@ -336,7 +342,7 @@ describe('Worker E2E Tests', () => {
       fetchMock.mockResolvedValueOnce(mockResponse)
 
       const request = new Request('http://localhost:8787/one/two/three')
-      const response = await worker.fetch(request, {}, {} as ExecutionContext)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response).toBeDefined()
     })

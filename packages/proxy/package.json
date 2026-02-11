@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --config wrangler.toml",
+    "dev:remote": "wrangler dev --remote --config wrangler.toml",
     "deploy": "wrangler deploy",
     "build": "tsc",
     "lint": "eslint .",
@@ -17,7 +18,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "satori": "^0.19.1",
+    "satori": "0.12.2",
     "yoga-wasm-web": "^0.3.3",
     "@resvg/resvg-wasm": "^2.6.2",
     "react": "^19.2.4"
