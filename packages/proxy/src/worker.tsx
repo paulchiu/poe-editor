@@ -1,91 +1,5 @@
-import satori, { init as initSatori } from 'satori/wasm'
-import { initWasm as initResvg, Resvg } from '@resvg/resvg-wasm'
-import initYoga from 'yoga-wasm-web'
+import { ImageResponse } from '@cf-wasm/og'
 import { createElement } from 'react'
-
-// Import WASM modules - handled by wrangler's CompiledWasm rule
-import yogaWasm from 'yoga-wasm-web/dist/yoga.wasm'
-import resvgWasm from '@resvg/resvg-wasm/index_bg.wasm'
-
-// Singleton pattern for WASM initialization
-let isInitialized = false
-let initializationPromise: Promise<void> | null = null
-
-function requireWasmModule(value: unknown, name: string): WebAssembly.Module {
-  if (typeof WebAssembly === 'undefined') {
-    throw new Error('WebAssembly is not available in this runtime.')
-  }
-
-  if (value instanceof WebAssembly.Module) {
-    return value
-  }
-
-  const valueType =
-    value && typeof value === 'object' && 'constructor' in value && value.constructor
-      ? value.constructor.name
-      : typeof value
-
-  throw new Error(
-    `${name} must be a compiled WebAssembly.Module (got ${valueType}). ` +
-      'Ensure wrangler.toml enables CompiledWasm for *.wasm imports.'
-  )
-}
-
-function resolveWasmModules(env: Env): { yoga: WebAssembly.Module; resvg: WebAssembly.Module } {
-  const yogaModule = env.YOGA_WASM ?? yogaWasm
-  const resvgModule = env.RESVG_WASM ?? resvgWasm
-
-  return {
-    yoga: requireWasmModule(yogaModule, 'YOGA_WASM'),
-    resvg: requireWasmModule(resvgModule, 'RESVG_WASM'),
-  }
-}
-
-async function initialize(env: Env): Promise<void> {
-  if (isInitialized) return
-
-  if (initializationPromise) {
-    return initializationPromise
-  }
-
-  initializationPromise = (async () => {
-    try {
-      const { yoga: yogaModule, resvg: resvgModule } = resolveWasmModules(env)
-
-      // Initialize Yoga layout engine
-      const yoga = await initYoga(yogaModule)
-      initSatori(yoga)
-
-      // Initialize Resvg for PNG rendering
-      await initResvg(resvgModule)
-
-      isInitialized = true
-    } catch (error) {
-      console.error('Failed to initialize WASM modules:', error)
-      throw error
-    }
-  })()
-
-  return initializationPromise
-}
-
-// Font cache to avoid re-fetching
-const fontCache: Map<string, ArrayBuffer> = new Map()
-
-async function loadFont(url: string): Promise<ArrayBuffer> {
-  if (fontCache.has(url)) {
-    return fontCache.get(url)!
-  }
-
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`Failed to fetch font: ${response.status} ${response.statusText}`)
-  }
-
-  const fontBuffer = await response.arrayBuffer()
-  fontCache.set(url, fontBuffer)
-  return fontBuffer
-}
 
 // Static asset patterns to exclude from OG handling
 const STATIC_ASSET_PATTERNS = [
@@ -203,23 +117,39 @@ function createTitleHandler(title: string): ElementContentHandlers {
   }
 }
 
+// Font cache to avoid re-fetching
+const fontCache: Map<string, ArrayBuffer> = new Map()
+
+async function loadFont(url: string): Promise<ArrayBuffer> {
+  if (fontCache.has(url)) {
+    return fontCache.get(url)!
+  }
+
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch font: ${response.status} ${response.statusText}`)
+  }
+
+  const fontBuffer = await response.arrayBuffer()
+  fontCache.set(url, fontBuffer)
+  return fontBuffer
+}
+
 /**
- * Generates an OG image using Satori
+ * Generates an OG image using ImageResponse
  * @param title - The title text
  * @param snippet - The snippet text
- * @param env - Worker environment with compiled WASM modules
- * @returns PNG image buffer
+ * @returns ImageResponse object
  */
-async function generateOgImage(title: string, snippet: string, env: Env): Promise<Uint8Array> {
-  await initialize(env)
-
+async function generateOgImage(title: string, snippet: string): Promise<Response> {
   // Load fonts
+  // Note: ImageResponse handles font loading, but caching locally is good practice
   const interFontUrl =
     'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff'
   const interBoldUrl =
     'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff'
-  const interFont = await loadFont(interFontUrl)
-  const interBold = await loadFont(interBoldUrl)
+
+  const [interFont, interBold] = await Promise.all([loadFont(interFontUrl), loadFont(interBoldUrl)])
 
   // Truncate texts for display
   const displayTitle = title.length > 60 ? title.slice(0, 57) + '...' : title
@@ -297,8 +227,7 @@ async function generateOgImage(title: string, snippet: string, env: Env): Promis
     )
   )
 
-  // Generate SVG using Satori
-  const svg = await satori(element, {
+  return new ImageResponse(element, {
     width: 1200,
     height: 630,
     fonts: [
@@ -315,28 +244,15 @@ async function generateOgImage(title: string, snippet: string, env: Env): Promis
         style: 'normal',
       },
     ],
-  })
-
-  // Render SVG to PNG using Resvg
-  const resvg = new Resvg(svg, {
-    fitTo: {
-      mode: 'width',
-      value: 1200,
+    headers: {
+      'Cache-Control': 'public, max-age=3600',
     },
   })
-
-  const pngData = resvg.render()
-  return pngData.asPng()
-}
-
-export interface Env {
-  YOGA_WASM?: WebAssembly.Module
-  RESVG_WASM?: WebAssembly.Module
 }
 
 export default {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: unknown, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
     const pathname = url.pathname
 
@@ -346,16 +262,8 @@ export default {
       const snippet = url.searchParams.get('snippet') || 'A document on poemd.dev'
 
       try {
-        const pngBuffer = await generateOgImage(title, snippet, env)
-
-        return new Response(pngBuffer, {
-          headers: {
-            'Content-Type': 'image/png',
-            'Cache-Control': 'public, max-age=3600',
-          },
-        })
+        return await generateOgImage(title, snippet)
       } catch (error) {
-        console.error('Error generating OG image:', error)
         return new Response(
           JSON.stringify({
             error: 'Failed to generate image',
