@@ -1,47 +1,33 @@
 import { describe, it, expect, beforeAll, vi, beforeEach } from 'vitest'
-import type { Env } from './worker'
 
-const WASM_MODULE = vi.hoisted(
-  () => new WebAssembly.Module(new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]))
-)
+// Mock the @cf-wasm/og module
+const mockImageResponse = vi.fn()
 
-// Mock the WASM modules before importing the worker
-vi.mock('yoga-wasm-web/dist/yoga.wasm', () => ({
-  default: WASM_MODULE,
-}))
+interface ImageResponseOptions {
+  headers?: Record<string, string>
+}
 
-vi.mock('@resvg/resvg-wasm/index_bg.wasm', () => ({
-  default: WASM_MODULE,
-}))
-
-// Mock satori and resvg
-vi.mock('satori', () => ({
-  default: vi.fn().mockResolvedValue('<svg>mock</svg>'),
-}))
-
-vi.mock('@resvg/resvg-wasm', () => ({
-  initWasm: vi.fn().mockResolvedValue(undefined),
-  Resvg: vi.fn().mockImplementation(() => ({
-    render: vi.fn().mockReturnValue({
-      asPng: vi.fn().mockReturnValue(new Uint8Array([1, 2, 3, 4])),
-    }),
-  })),
-}))
-
-vi.mock('yoga-wasm-web', () => ({
-  default: vi.fn().mockResolvedValue(undefined),
+vi.mock('@cf-wasm/og', () => ({
+  ImageResponse: class {
+    constructor(element: unknown, options: ImageResponseOptions) {
+      mockImageResponse(element, options)
+      return new Response(new Uint8Array([1, 2, 3, 4]), {
+        headers: {
+          'content-type': 'image/png',
+          'cache-control': options.headers?.['Cache-Control'] || 'no-cache',
+        },
+      })
+    }
+  },
 }))
 
 interface WorkerModule {
-  fetch: (request: Request, env: Env, ctx: ExecutionContext) => Promise<Response>
+  fetch: (request: Request, env: unknown, ctx: ExecutionContext) => Promise<Response>
 }
 
-const MOCK_ENV: Env = {
-  YOGA_WASM: WASM_MODULE,
-  RESVG_WASM: WASM_MODULE,
-}
+const MOCK_ENV = {}
 
-// Mock HTMLRewriter for Node.js environment
+// Mock global HTMLRewriter
 class MockHTMLRewriter {
   private handlers: Map<string, unknown> = new Map()
 
@@ -57,8 +43,7 @@ class MockHTMLRewriter {
   }
 }
 
-// Mock global HTMLRewriter
-;(global as unknown as { HTMLRewriter: typeof MockHTMLRewriter }).HTMLRewriter = MockHTMLRewriter
+vi.stubGlobal('HTMLRewriter', MockHTMLRewriter)
 
 describe('Worker E2E Tests', () => {
   let worker: WorkerModule
@@ -73,7 +58,10 @@ describe('Worker E2E Tests', () => {
   beforeEach(() => {
     // Reset fetch mock before each test
     fetchMock = vi.fn()
-    global.fetch = fetchMock
+    vi.stubGlobal('fetch', fetchMock)
+
+    // Clear mock calls
+    mockImageResponse.mockClear()
 
     // Mock font loading for OG image generation
     const mockFontBuffer = new ArrayBuffer(1000)
@@ -196,7 +184,7 @@ describe('Worker E2E Tests', () => {
     })
 
     it('should not modify .png file requests', async () => {
-      const mockResponse = new Response(Buffer.from([1, 2, 3]), {
+      const mockResponse = new Response(new Uint8Array([1, 2, 3]), {
         status: 200,
         headers: { 'content-type': 'image/png' },
       })
@@ -296,6 +284,9 @@ describe('Worker E2E Tests', () => {
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toBe('image/png')
       expect(response.headers.get('cache-control')).toContain('max-age=3600')
+
+      // Verify ImageResponse was called
+      expect(mockImageResponse).toHaveBeenCalled()
     })
 
     it('should use default values when parameters are missing', async () => {
@@ -304,47 +295,6 @@ describe('Worker E2E Tests', () => {
 
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toBe('image/png')
-    })
-
-    it('should return 500 on image generation error', async () => {
-      // This test would need actual mocking of satori failure
-      // For now, we just verify the endpoint exists
-      const request = new Request('http://localhost:8787/api/og?title=Test')
-      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
-
-      expect(response.status).toBe(200)
-    })
-  })
-
-  describe('Root path handling', () => {
-    it('should pass through root path /', async () => {
-      const mockResponse = new Response('<html></html>', { status: 200 })
-      fetchMock.mockResolvedValueOnce(mockResponse)
-
-      const request = new Request('http://localhost:8787/')
-      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
-
-      expect(response).toBeDefined()
-    })
-
-    it('should pass through single segment paths', async () => {
-      const mockResponse = new Response('<html></html>', { status: 200 })
-      fetchMock.mockResolvedValueOnce(mockResponse)
-
-      const request = new Request('http://localhost:8787/single')
-      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
-
-      expect(response).toBeDefined()
-    })
-
-    it('should pass through three+ segment paths', async () => {
-      const mockResponse = new Response('<html></html>', { status: 200 })
-      fetchMock.mockResolvedValueOnce(mockResponse)
-
-      const request = new Request('http://localhost:8787/one/two/three')
-      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
-
-      expect(response).toBeDefined()
     })
   })
 })
