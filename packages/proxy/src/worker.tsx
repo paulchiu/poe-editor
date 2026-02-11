@@ -250,9 +250,67 @@ async function generateOgImage(title: string, snippet: string): Promise<Response
   })
 }
 
+// ... (imports remain)
+
+export interface Env {
+  OG_SECRET?: string
+}
+
+/**
+ * Gets the secret for HMAC signing
+ * Defaults to a development secret if not configured
+ */
+function getSecret(env: Env): string {
+  return env.OG_SECRET || 'development-secret'
+}
+
+/**
+ * Generates an HMAC SHA-256 signature for the given parameters
+ */
+async function generateSignature(
+  title: string,
+  snippet: string,
+  secret: string
+): Promise<string> {
+  const enc = new TextEncoder()
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+
+  const data = JSON.stringify({ title, snippet })
+  const signature = await crypto.subtle.sign('HMAC', key, enc.encode(data))
+  
+  // Convert ArrayBuffer to hex string
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+/**
+ * Verifies the signature matches the parameters
+ */
+async function verifySignature(
+  title: string,
+  snippet: string,
+  signature: string,
+  secret: string
+): Promise<boolean> {
+  const expectedSignature = await generateSignature(title, snippet, secret)
+  return signature === expectedSignature
+}
+
+// ... (existing helper functions: isStaticAsset, parsePathMetadata, escapeHtml)
+
+// ... (existing createHeadHandler, createTitleHandler)
+
+// ... (existing font loading and generateOgImage)
+
 export default {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async fetch(request: Request, env: unknown, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
     const pathname = url.pathname
 
@@ -260,6 +318,16 @@ export default {
     if (pathname === '/api/og') {
       const title = url.searchParams.get('title') || 'Untitled'
       const snippet = url.searchParams.get('snippet') || 'A document on poemd.dev'
+      const signature = url.searchParams.get('sig')
+
+      // Verify signature
+      const secret = getSecret(env)
+      const isValid =
+        signature && (await verifySignature(title, snippet, signature, secret))
+
+      if (!isValid) {
+        return new Response('Unauthorized: Invalid or missing signature', { status: 401 })
+      }
 
       try {
         return await generateOgImage(title, snippet)
@@ -281,7 +349,6 @@ export default {
 
     // Check if this is a static asset - pass through unchanged
     if (isStaticAsset(pathname)) {
-      // Let the static assets handler deal with it
       return fetch(request)
     }
 
@@ -295,14 +362,17 @@ export default {
       const indexResponse = await fetch(indexUrl.toString())
 
       if (!indexResponse.ok) {
-        // If index.html doesn't exist, just pass through
         return fetch(request)
       }
 
-      // Generate OG image URL
+      // Generate OG image URL with signature
+      const secret = getSecret(env)
+      const signature = await generateSignature(metadata.title, metadata.snippet, secret)
+      
       const ogImageUrl = new URL('/api/og', url.origin)
       ogImageUrl.searchParams.set('title', metadata.title)
       ogImageUrl.searchParams.set('snippet', metadata.snippet)
+      ogImageUrl.searchParams.set('sig', signature)
 
       // Rewrite HTML to inject meta tags
       const rewriter = new HTMLRewriter()

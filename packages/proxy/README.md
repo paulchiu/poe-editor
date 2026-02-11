@@ -33,6 +33,22 @@ Example: `https://poemd.dev/The-Raven/Once-upon-a-midnight-dreary#abc123...`
 - [Yoga](https://yogalayout.com/) layout engine (WASM).
 - [Resvg](https://github.com/RazrFalcon/resvg) for SVG-to-PNG rasterization (WASM).
 
+## Security
+
+To prevent unauthorized usage of the image generation endpoint, all requests to `/api/og` must be signed.
+
+### Environment Variable
+
+- `OG_SECRET`: A secret string used to sign and verify URLs.
+  - Production: MUST be set in your Cloudflare Worker environment variables.
+  - Development: If not set, defaults to `"development-secret"`. This ensures `wrangler dev` works out of the box.
+
+### How it Works
+
+1. When the proxy renders `index.html`, it generates an `og:image` URL containing a `sig` parameter.
+2. The `sig` is an HMAC-SHA256 hash of the `title` and `snippet` signed with `OG_SECRET`.
+3. When `/api/og` is requested, it verifies the signature. If invalid/missing, it returns `401 Unauthorized`.
+
 ## Development
 
 This package is part of a monorepo. Run all commands from the repository root:
@@ -68,7 +84,9 @@ npm run deploy
 
 ## Testing Open Graph Images
 
-The `npm run test:og` script provides an interactive CLI for testing Open Graph image generation during development. Quickly preview, download, and inspect generated preview images:
+The `npm run test:og` script (and `scripts/og-test.js`) has been updated to automatically handle signatures using the local development secret.
+
+It provides an interactive CLI for testing Open Graph image generation during development. Quickly preview, download, and inspect generated preview images:
 
 ```bash
 # Show help
@@ -93,27 +111,19 @@ npm run test:og -- info "http://localhost:5173/poe-markdown-editors/my-title"
 npm run test:og -- preview "http://localhost:5173/poe-markdown-editors/my-title" -p http://localhost:8787
 ```
 
-Or run the script directly:
+### Manual Testing with Curl
 
+If you want to test manually with `curl`, you must generate a signature using `OG_SECRET` (default: `"development-secret"`).
+
+One-liner to generate a signature:
 ```bash
-node scripts/og-test.js --help
-node scripts/og-test.js preview "http://localhost:5173/poe-markdown-editors/my-title"
+node -e 'console.log(require("crypto").createHmac("sha256", "development-secret").update(JSON.stringify({title:"Test",snippet:"Hello"})).digest("hex"))'
 ```
 
-Available Commands:
-
-- `preview` — Fetch and display response headers (useful for debugging connectivity and headers).
-- `download` — Download the generated Open Graph image as PNG to a file.
-- `open` — Download and automatically open the image in your default viewer.
-- `info` — Display parsed URL information without making network requests.
-
-Features:
-
-- Color-coded output for easy reading (blue for info, green for success, yellow for warnings, red for errors).
-- Automatic curl command execution.
-- Cross-platform image opening (macOS, Linux, Windows).
-- Converts hyphenated URL slugs to proper title case.
-- Customizable proxy URL and output filename.
+Then append it to your request:
+```bash
+curl "http://localhost:8787/api/og?title=Test&snippet=Hello&sig=<YOUR_SIGNATURE>"
+```
 
 ## Deployment
 
@@ -129,6 +139,7 @@ Configure Cloudflare Workers Git Integration:
    - Root Directory: `packages/proxy/`
    - Build Command: (leave empty)
    - Deploy Command: `npx wrangler deploy`
+   - Environment Variables: Add `OG_SECRET` (encrypt it).
 
 The worker will deploy automatically on every push to main.
 

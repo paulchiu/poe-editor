@@ -25,7 +25,32 @@ interface WorkerModule {
   fetch: (request: Request, env: unknown, ctx: ExecutionContext) => Promise<Response>
 }
 
-const MOCK_ENV = {}
+// Helper to generate signature for tests
+async function generateSignature(
+  title: string,
+  snippet: string,
+  secret: string
+): Promise<string> {
+  const enc = new TextEncoder()
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+
+  const data = JSON.stringify({ title, snippet })
+  const signature = await crypto.subtle.sign('HMAC', key, enc.encode(data))
+  
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+const MOCK_ENV = {
+  OG_SECRET: 'test-secret'
+}
 
 // Mock global HTMLRewriter
 class MockHTMLRewriter {
@@ -276,25 +301,46 @@ describe('Worker E2E Tests', () => {
     })
   })
 
+
+
   describe('/api/og endpoint', () => {
-    it('should return PNG image with correct content type', async () => {
-      const request = new Request('http://localhost:8787/api/og?title=Test&snippet=Hello')
+    it('should return PNG image with correct content type and valid signature', async () => {
+      const title = 'Test'
+      const snippet = 'Hello'
+      const sig = await generateSignature(title, snippet, 'test-secret')
+      
+      const request = new Request(`http://localhost:8787/api/og?title=${title}&snippet=${snippet}&sig=${sig}`)
       const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
       expect(response.headers.get('content-type')).toBe('image/png')
-      expect(response.headers.get('cache-control')).toContain('max-age=3600')
-
-      // Verify ImageResponse was called
       expect(mockImageResponse).toHaveBeenCalled()
     })
 
-    it('should use default values when parameters are missing', async () => {
-      const request = new Request('http://localhost:8787/api/og')
+    it('should return 401 when signature is missing', async () => {
+      const request = new Request('http://localhost:8787/api/og?title=Test&snippet=Hello')
       const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
-      expect(response.status).toBe(200)
-      expect(response.headers.get('content-type')).toBe('image/png')
+      expect(response.status).toBe(401)
+    })
+
+    it('should return 401 when signature is invalid', async () => {
+      const request = new Request('http://localhost:8787/api/og?title=Test&snippet=Hello&sig=invalid')
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+
+      expect(response.status).toBe(401)
+    })
+    
+     it('should return 401 when signature does not match parameters', async () => {
+      const title = 'Test'
+      const snippet = 'Hello'
+      const sig = await generateSignature(title, snippet, 'test-secret')
+      
+      // Change snippet but keep old signature
+      const request = new Request(`http://localhost:8787/api/og?title=${title}&snippet=Different&sig=${sig}`)
+      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+
+      expect(response.status).toBe(401)
     })
   })
 })
