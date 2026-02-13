@@ -1,5 +1,6 @@
 import { ImageResponse } from '@cf-wasm/og'
 import { createElement } from 'react'
+import { SPLASH_IMAGE_BASE64 } from './assets'
 
 // Static asset patterns to exclude from OG handling
 const STATIC_ASSET_PATTERNS = [
@@ -18,6 +19,15 @@ const STATIC_ASSET_PATTERNS = [
   /^\/manifest\.json$/i,
   /^\/robots\.txt$/i,
 ]
+
+/**
+ * Checks if the current environment is development
+ * @param url - The current request URL
+ * @returns true if running in development (localhost or 127.0.0.1)
+ */
+function isDevelopment(url: URL): boolean {
+  return url.hostname === 'localhost' || url.hostname === '127.0.0.1'
+}
 
 /**
  * Checks if a path is a static asset that should pass through unchanged
@@ -188,11 +198,6 @@ async function generateOgImage(
       loadFont(playfairItalicUrl),
     ])
 
-    // Fetch the splash image
-    // Note: In local dev, we might need a full URL if relative paths don't work in ImageResponse fetch
-    // specific logic for checking origin existence
-    const absoluteSplashUrl = new URL('/splash-bw.png', origin).toString()
-
     return new ImageResponse(
       (
         <div
@@ -232,14 +237,13 @@ async function generateOgImage(
               display: 'flex',
             }}
           >
-            {/* Using img tag with absolute URL */}
+            {/* Using img tag with embedded base64 data URI */}
             <img
-              src={absoluteSplashUrl}
+              src={SPLASH_IMAGE_BASE64}
               style={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
-                filter: 'invert(1) contrast(1.25)',
               }}
             />
           </div>
@@ -248,7 +252,6 @@ async function generateOgImage(
           <div
             style={{
               position: 'relative',
-              zIndex: 10,
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
@@ -307,7 +310,7 @@ async function generateOgImage(
                 margin: 0,
               }}
             >
-              Where prose meets poetry.
+              Modal editing for Markdown
             </p>
 
             {/* Footer / URL */}
@@ -325,7 +328,6 @@ async function generateOgImage(
                 style={{
                   fontSize: '20px', // text-xl
                   letterSpacing: '0.1em', // widest
-                  textTransform: 'uppercase',
                   fontWeight: 600,
                   opacity: 0.6,
                 }}
@@ -552,137 +554,161 @@ async function verifySignature(
 
 // ... (existing font loading and generateOgImage)
 
+/**
+ * Handles the /api/og endpoint
+ */
+async function handleApiOg(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url)
+  const title = url.searchParams.get('title') || 'Untitled'
+  const snippet = url.searchParams.get('snippet') || 'A document on poemd.dev'
+  const platform = url.searchParams.get('platform')
+  const signature = url.searchParams.get('sig')
+
+  const secret = getSecret(env)
+  const isHome = platform === 'home'
+  const isValid =
+    isHome || (signature && (await verifySignature(title, snippet, platform, signature, secret)))
+
+  if (!isValid) {
+    return new Response('Unauthorized: Invalid or missing signature', { status: 401 })
+  }
+
+  if (isHome && !isDevelopment(url)) {
+    return Response.redirect(`${url.origin}/og-home.png`, 307)
+  }
+
+  try {
+    return await generateOgImage(title, snippet, platform, url.origin)
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to generate image',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    )
+  }
+}
+
+/**
+ * Handles the home page route
+ */
+async function handleHome(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url)
+  const indexResponse = await fetch(request.url)
+  if (!indexResponse.ok) return fetch(request)
+
+  if (!isDevelopment(url)) {
+    return indexResponse
+  }
+
+  const secret = getSecret(env)
+  const homePlatform = 'home'
+  const homeSignature = await generateSignature('Home', '', homePlatform, secret)
+
+  const ogImageUrl = new URL('/api/og', url.origin)
+  ogImageUrl.searchParams.set('title', 'Home')
+  ogImageUrl.searchParams.set('snippet', '')
+  ogImageUrl.searchParams.set('platform', homePlatform)
+  ogImageUrl.searchParams.set('sig', homeSignature)
+
+  const rewriter = new HTMLRewriter()
+    .on(
+      'head',
+      createHeadHandler(
+        'Poe Markdown Editor',
+        'Modal editing for Markdown',
+        ogImageUrl.toString(),
+        ogImageUrl.toString(),
+        url.toString()
+      )
+    )
+    .on('meta[property^="og:"]', removeElementHandler)
+    .on('meta[name^="twitter:"]', removeElementHandler)
+
+  return rewriter.transform(indexResponse)
+}
+
+/**
+ * Handles metadata routes (/:title/:snippet)
+ */
+async function handleMetadataRoute(
+  request: Request,
+  env: Env,
+  metadata: { title: string; snippet: string }
+): Promise<Response> {
+  const url = new URL(request.url)
+  const indexUrl = new URL('/index.html', url.origin)
+  const indexResponse = await fetch(indexUrl.toString())
+
+  if (!indexResponse.ok) {
+    return fetch(request)
+  }
+
+  const secret = getSecret(env)
+
+  // 1. Generate Standard OG Image
+  const sigDefault = await generateSignature(metadata.title, metadata.snippet, null, secret)
+  const ogImageUrl = new URL('/api/og', url.origin)
+  ogImageUrl.searchParams.set('title', metadata.title)
+  ogImageUrl.searchParams.set('snippet', metadata.snippet)
+  ogImageUrl.searchParams.set('sig', sigDefault)
+
+  // 2. Generate Twitter OG Image
+  const sigTwitter = await generateSignature(metadata.title, metadata.snippet, 'twitter', secret)
+  const twitterOgImageUrl = new URL('/api/og', url.origin)
+  twitterOgImageUrl.searchParams.set('title', metadata.title)
+  twitterOgImageUrl.searchParams.set('snippet', metadata.snippet)
+  twitterOgImageUrl.searchParams.set('platform', 'twitter')
+  twitterOgImageUrl.searchParams.set('sig', sigTwitter)
+
+  const rewriter = new HTMLRewriter()
+    .on(
+      'head',
+      createHeadHandler(
+        metadata.title,
+        metadata.snippet,
+        ogImageUrl.toString(),
+        twitterOgImageUrl.toString(),
+        url.toString()
+      )
+    )
+    .on('title', createTitleHandler(metadata.title))
+    .on('meta[property^="og:"]', removeElementHandler)
+    .on('meta[name^="twitter:"]', removeElementHandler)
+    .on('meta[name="description"]', removeElementHandler)
+
+  return rewriter.transform(indexResponse)
+}
+
+
 export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
-    const pathname = url.pathname
+    const { pathname } = url
 
-    // Handle /api/og endpoint
+    // Pattern matching style routing
     if (pathname === '/api/og') {
-      const title = url.searchParams.get('title') || 'Untitled'
-      const snippet = url.searchParams.get('snippet') || 'A document on poemd.dev'
-      const platform = url.searchParams.get('platform')
-      const signature = url.searchParams.get('sig')
-
-      // Verify signature
-      const secret = getSecret(env)
-      const isValid = signature && (await verifySignature(title, snippet, platform, signature, secret))
-
-      if (!isValid) {
-        return new Response('Unauthorized: Invalid or missing signature', { status: 401 })
-      }
-
-      try {
-        return await generateOgImage(title, snippet, platform, url.origin)
-      } catch (error) {
-        return new Response(
-          JSON.stringify({
-            error: 'Failed to generate image',
-            message: error instanceof Error ? error.message : 'Unknown error',
-          }),
-          {
-            status: 500,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
-      }
+      return handleApiOg(request, env)
     }
 
-    // Check if this is a static asset - pass through unchanged
     if (isStaticAsset(pathname)) {
       return fetch(request)
     }
 
-    // Handle Root Path (Home Page OG)
     if (pathname === '/') {
-       const indexResponse = await fetch(request.url) // Fetch index.html
-       if (!indexResponse.ok) return fetch(request)
-
-       // Provide "Home" OG image (standard) and "Home" Twitter image (also standard for home)
-       // We can use platform='home' for both if we want the unique design for both
-       const secret = getSecret(env)
-       const homePlatform = 'home'
-       
-       // Use dummy values for title/snippet as they aren't used for home layout
-       const homeSignature = await generateSignature('Home', '', homePlatform, secret)
-       
-       const ogImageUrl = new URL('/api/og', url.origin)
-       ogImageUrl.searchParams.set('title', 'Home')
-       ogImageUrl.searchParams.set('snippet', '')
-       ogImageUrl.searchParams.set('platform', homePlatform)
-       ogImageUrl.searchParams.set('sig', homeSignature)
-
-       // Reuse for Twitter for now as requested (or we could make custom twitter home)
-       // User didn't specify distinct Twitter HOME design, only Twitter ARTICLE design.
-       // Assuming Home Image Design applies to both OG and Twitter on Home Page.
-       
-       // Need to implement custom handler for Home? or reuse createHeadHandler?
-       // createHeadHandler expects title/snippet. Home page usually has static title in index.html.
-       // We might want to just inject valid meta tags for Home.
-       // Let's create a specialized handler or just use existing with "Poe Editor" title.
-       
-       const rewriter = new HTMLRewriter()
-        .on('head', createHeadHandler('Poe Markdown Editor', 'Where prose meets poetry.', ogImageUrl.toString(), ogImageUrl.toString(), url.toString()))
-        .on('meta[property^="og:"]', removeElementHandler)
-        .on('meta[name^="twitter:"]', removeElementHandler)
-        // Keep existing description if present or replace?
-       
-       return rewriter.transform(indexResponse)
+      return handleHome(request, env)
     }
 
-    // Check for metadata path (exactly 2 segments)
     const metadata = parsePathMetadata(pathname)
-
     if (metadata) {
-      // This is a dynamic route with title/snippet
-      // Fetch the index.html and inject OG meta tags
-      const indexUrl = new URL('/index.html', url.origin)
-      const indexResponse = await fetch(indexUrl.toString())
-
-      if (!indexResponse.ok) {
-        return fetch(request)
-      }
-
-      const secret = getSecret(env)
-      
-      // 1. Generate Standard OG Image (Default)
-      const sigDefault = await generateSignature(metadata.title, metadata.snippet, null, secret)
-      const ogImageUrl = new URL('/api/og', url.origin)
-      ogImageUrl.searchParams.set('title', metadata.title)
-      ogImageUrl.searchParams.set('snippet', metadata.snippet)
-      ogImageUrl.searchParams.set('sig', sigDefault)
-
-      // 2. Generate Twitter OG Image (Platform = twitter)
-      const sigTwitter = await generateSignature(metadata.title, metadata.snippet, 'twitter', secret)
-      const twitterOgImageUrl = new URL('/api/og', url.origin)
-      twitterOgImageUrl.searchParams.set('title', metadata.title)
-      twitterOgImageUrl.searchParams.set('snippet', metadata.snippet)
-      twitterOgImageUrl.searchParams.set('platform', 'twitter')
-      twitterOgImageUrl.searchParams.set('sig', sigTwitter)
-
-      // Rewrite HTML to inject meta tags
-      const rewriter = new HTMLRewriter()
-        .on(
-          'head',
-          createHeadHandler(
-            metadata.title, 
-            metadata.snippet, 
-            ogImageUrl.toString(), 
-            twitterOgImageUrl.toString(), 
-            url.toString()
-          )
-        )
-        .on('title', createTitleHandler(metadata.title))
-        .on('meta[property^="og:"]', removeElementHandler)
-        .on('meta[name^="twitter:"]', removeElementHandler)
-        .on('meta[name="description"]', removeElementHandler)
-
-      return rewriter.transform(indexResponse)
+      return handleMetadataRoute(request, env, metadata)
     }
 
-    // For all other requests (root path, other routes), pass through to static assets
     return fetch(request)
   },
+
 }

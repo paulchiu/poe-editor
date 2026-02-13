@@ -132,10 +132,7 @@ describe('Worker E2E Tests', () => {
          return Promise.resolve(new Response('<html></html>', { status: 200 }))
       }
       
-      // Allow relative splash image fetch (simulated)
-      if (urlString.includes('splash-bw.png')) {
-         return Promise.resolve(new Response(new ArrayBuffer(10)))
-      }
+
 
       return Promise.resolve(new Response('Not Found', { status: 404 }))
     })
@@ -393,7 +390,64 @@ describe('Worker E2E Tests', () => {
        const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
  
        expect(response.status).toBe(200)
+       expect(response.headers.get('content-type')).toBe('image/png')
      })
+
+     it('should return PNG image with Platform=home and NO signature', async () => {
+        const request = new Request(
+          `http://localhost:8787/api/og?platform=home`
+        )
+        const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+  
+        expect(response.status).toBe(200)
+        expect(response.headers.get('content-type')).toBe('image/png')
+      })
+
+      it('should redirect to static image (production mode) for workers.dev domain with Platform=home', async () => {
+        const request = new Request(
+          `https://poe-editor-proxy.accounts-8d2.workers.dev/api/og?platform=home`
+        )
+        const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+  
+        expect(response.status).toBe(307)
+        expect(response.headers.get('location')).toBe('https://poe-editor-proxy.accounts-8d2.workers.dev/og-home.png')
+      })
+
+      it('should redirect to static image (production mode) for other domains with Platform=home', async () => {
+        const request = new Request(
+          `https://poemd.dev/api/og?platform=home`
+        )
+        const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+  
+        expect(response.status).toBe(307)
+        expect(response.headers.get('location')).toBe('https://poemd.dev/og-home.png')
+      })
+
+     it('should return valid PNG image even if splash image fetch fails', async () => {
+        // Override mock for this specific test to return 404 for splash
+        fetchMock.mockImplementation((url: string | Request | URL) => {
+           const urlString = typeof url === 'string' ? url : url.toString()
+           if (urlString.includes('splash-bw.png')) {
+              return Promise.resolve(new Response('Not Found', { status: 404 }))
+           }
+           // Keep other mocks valid (fonts, etc)
+           if (urlString.includes('fontsource')) {
+             return Promise.resolve(new Response(new ArrayBuffer(10), { status: 200 }))
+           }
+           if (urlString === 'http://localhost:8787/') {
+              return Promise.resolve(new Response('<html></html>', { status: 200 }))
+           }
+           return Promise.resolve(new Response('Not Found', { status: 404 }))
+        })
+
+        const request = new Request(
+          `http://localhost:8787/api/og?platform=home`
+        )
+        const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+  
+        expect(response.status).toBe(200)
+        expect(response.headers.get('content-type')).toBe('image/png')
+      })
 
     it('should return 401 when signature is missing', async () => {
       const request = new Request('http://localhost:8787/api/og?title=Test&snippet=Hello')
