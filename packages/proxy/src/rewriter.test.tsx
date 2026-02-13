@@ -218,9 +218,47 @@ describe('Worker Rewriter Tests', () => {
     expect(text).toContain('<meta property="og:title" content="My Title" />')
     expect(text).toContain('<meta property="og:description" content="My Snippet" />')
 
+    // Check for OG Image (Default)
+    // Should NOT contain platform=twitter
+    expect(text).toMatch(/<meta property="og:image" content="http:\/\/localhost:8787\/api\/og\?title=My\+Title&snippet=My\+Snippet&sig=[a-f0-9]+"/);
+    
+    // Check for Twitter Image (Platform=twitter)
+    expect(text).toMatch(/<meta name="twitter:image" content="http:\/\/localhost:8787\/api\/og\?title=My\+Title&snippet=My\+Snippet&platform=twitter&sig=[a-f0-9]+"/);
+
     // Check for absence of old tags
     expect(text).not.toContain('<meta property="og:title" content="Old Title" />')
     expect(text).not.toContain('<meta property="og:description" content="Old Desc" />')
     expect(text).not.toContain('<meta name="description" content="Old Desc" />')
+  })
+
+  it('should return HTML with Home OG meta tags for Root path', async () => {
+    // Mock the index.html response
+    const mockHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Home</title>
+</head>
+<body></body>
+</html>`
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(mockHtml, {
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+      })
+    )
+
+    const request = new Request('http://localhost:8787/')
+    const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+    const text = await response.text()
+
+    expect(response.status).toBe(200)
+
+    // Check for Home Tags
+    expect(text).toContain('<meta property="og:title" content="Poe Markdown Editor" />')
+    
+    // Check for Home Image (platform=home)
+    expect(text).toMatch(/<meta property="og:image" content="http:\/\/localhost:8787\/api\/og\?title=Home&snippet=&platform=home&sig=[a-f0-9]+"/);
+    expect(text).toMatch(/<meta name="twitter:image" content="http:\/\/localhost:8787\/api\/og\?title=Home&snippet=&platform=home&sig=[a-f0-9]+"/);
   })
 })

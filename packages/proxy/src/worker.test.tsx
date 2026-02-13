@@ -28,12 +28,18 @@ interface WorkerModule {
     title: string,
     snippet: string,
     ogImageUrl: string,
+    twitterOgImageUrl: string,
     url: string
   ) => { element: (element: Element) => void }
 }
 
 // Helper to generate signature for tests
-async function generateSignature(title: string, snippet: string, secret: string): Promise<string> {
+async function generateSignature(
+  title: string, 
+  snippet: string, 
+  platform: string | null,
+  secret: string
+): Promise<string> {
   const enc = new TextEncoder()
   const key = await crypto.subtle.importKey(
     'raw',
@@ -43,7 +49,7 @@ async function generateSignature(title: string, snippet: string, secret: string)
     ['sign']
   )
 
-  const data = JSON.stringify({ title, snippet })
+  const data = JSON.stringify({ title, snippet, platform: platform || '' })
   const signature = await crypto.subtle.sign('HMAC', key, enc.encode(data))
 
   return Array.from(new Uint8Array(signature))
@@ -85,6 +91,7 @@ describe('Worker E2E Tests', () => {
     title: string,
     snippet: string,
     ogImageUrl: string,
+    twitterOgImageUrl: string,
     url: string
   ) => { element?: (element: Element) => void | Promise<void> }
   let fetchMock: ReturnType<typeof vi.fn>
@@ -118,6 +125,16 @@ describe('Worker E2E Tests', () => {
             headers: { 'content-type': 'font/woff' },
           })
         )
+      }
+      
+      // Allow self-requests (for home page test)
+      if (urlString === 'http://localhost:8787/') {
+         return Promise.resolve(new Response('<html></html>', { status: 200 }))
+      }
+      
+      // Allow relative splash image fetch (simulated)
+      if (urlString.includes('splash-bw.png')) {
+         return Promise.resolve(new Response(new ArrayBuffer(10)))
       }
 
       return Promise.resolve(new Response('Not Found', { status: 404 }))
@@ -185,6 +202,21 @@ describe('Worker E2E Tests', () => {
       const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(200)
+    })
+    
+    it('should handle Root path / and inject Home OG tags', async () => {
+       const mockHtml = `<!DOCTYPE html><html><head><title>Home</title></head><body></body></html>`
+       fetchMock.mockResolvedValueOnce(
+          new Response(mockHtml, { 
+             status: 200, 
+             headers: { 'content-type': 'text/html' }
+          })
+       )
+       
+       const request = new Request('http://localhost:8787/')
+       const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+       
+       expect(response.status).toBe(200)
     })
   })
 
@@ -322,7 +354,7 @@ describe('Worker E2E Tests', () => {
     it('should return PNG image with correct content type and valid signature', async () => {
       const title = 'Test'
       const snippet = 'Hello'
-      const sig = await generateSignature(title, snippet, 'test-secret')
+      const sig = await generateSignature(title, snippet, null, 'test-secret')
 
       const request = new Request(
         `http://localhost:8787/api/og?title=${title}&snippet=${snippet}&sig=${sig}`
@@ -333,6 +365,35 @@ describe('Worker E2E Tests', () => {
       expect(response.headers.get('content-type')).toBe('image/png')
       expect(mockImageResponse).toHaveBeenCalled()
     })
+    
+    it('should return PNG image with Platform=twitter and valid signature', async () => {
+       const title = 'Test'
+       const snippet = 'Hello'
+       const platform = 'twitter'
+       const sig = await generateSignature(title, snippet, platform, 'test-secret')
+ 
+       const request = new Request(
+         `http://localhost:8787/api/og?title=${title}&snippet=${snippet}&platform=${platform}&sig=${sig}`
+       )
+       const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+ 
+       expect(response.status).toBe(200)
+       expect(response.headers.get('content-type')).toBe('image/png')
+     })
+
+     it('should return PNG image with Platform=home and valid signature', async () => {
+       const title = 'Test'
+       const snippet = 'Hello'
+       const platform = 'home'
+       const sig = await generateSignature(title, snippet, platform, 'test-secret')
+ 
+       const request = new Request(
+         `http://localhost:8787/api/og?title=${title}&snippet=${snippet}&platform=${platform}&sig=${sig}`
+       )
+       const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+ 
+       expect(response.status).toBe(200)
+     })
 
     it('should return 401 when signature is missing', async () => {
       const request = new Request('http://localhost:8787/api/og?title=Test&snippet=Hello')
@@ -353,7 +414,7 @@ describe('Worker E2E Tests', () => {
     it('should return 401 when signature does not match parameters', async () => {
       const title = 'Test'
       const snippet = 'Hello'
-      const sig = await generateSignature(title, snippet, 'test-secret')
+      const sig = await generateSignature(title, snippet, null, 'test-secret')
 
       // Change snippet but keep old signature
       const request = new Request(
@@ -381,9 +442,10 @@ describe('Worker E2E Tests', () => {
       const title = 'Test Title'
       const snippet = 'Test Snippet'
       const ogImageUrl = 'https://example.com/og.png'
+      const twitterOgImageUrl = 'https://example.com/twitter-og.png'
       const url = 'https://example.com/page'
 
-      const handler = createHeadHandler(title, snippet, ogImageUrl, url)
+      const handler = createHeadHandler(title, snippet, ogImageUrl, twitterOgImageUrl, url)
       if (handler.element) {
         handler.element(mockElement as unknown as Element)
       } else {
@@ -397,6 +459,9 @@ describe('Worker E2E Tests', () => {
       expect(injectedHtml).toContain('<meta property="og:description" content="Test Snippet" />')
       expect(injectedHtml).toContain(
         '<meta property="og:image" content="https://example.com/og.png" />'
+      )
+      expect(injectedHtml).toContain(
+        '<meta name="twitter:image" content="https://example.com/twitter-og.png" />'
       )
       expect(injectedHtml).toContain(
         '<meta property="og:url" content="https://example.com/page" />'
