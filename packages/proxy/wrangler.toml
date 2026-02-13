@@ -11,3 +11,6 @@ fallthrough = false
 
 [build]
 command = ""
+
+[env.dev]
+vars = { ENVIRONMENT = "development" }

@@ -43,6 +43,10 @@ To prevent unauthorized usage of the image generation endpoint, all requests to 
   - Production: MUST be set in your Cloudflare Worker environment variables.
   - Development: If not set, defaults to `"development-secret"`. This ensures `wrangler dev` works out of the box.
 
+- `ENVIRONMENT`: Controls the development mode behavior.
+  - Development: Set to `"development"` to enable development features like redirecting home page to `og-home.png` and skipping signature checks.
+  - Production: Leave unset or set to anything else.
+
 ### How it Works
 
 1. When the proxy renders `index.html`, it generates an `og:image` URL containing a `sig` parameter.
@@ -71,8 +75,11 @@ If running directly in this package:
 ```bash
 cd packages/proxy
 
-# Start local dev server
+# Start local dev server (uses --env dev)
 npm run dev
+
+# Start remote dev server (uses --env dev)
+npm run dev:remote
 
 # Run tests
 npm test              # Watch mode
