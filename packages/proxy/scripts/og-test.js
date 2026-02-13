@@ -23,6 +23,7 @@
 import { spawn } from 'child_process'
 import { parseArgs } from 'util'
 import { existsSync, rmSync } from 'fs'
+import { createHmac } from 'crypto'
 
 const COLORS = {
   reset: '\x1b[0m',
@@ -110,9 +111,16 @@ function parseEditorUrl(urlString) {
   }
 }
 
+function generateSignature(title, snippet) {
+  const secret = process.env.OG_SECRET || 'development-secret'
+  const data = JSON.stringify({ title, snippet })
+  return createHmac('sha256', secret).update(data).digest('hex')
+}
+
 function buildOgUrl(proxyUrl, title, snippet) {
   const base = proxyUrl.replace(/\/$/, '')
-  const params = new URLSearchParams({ title, snippet })
+  const sig = generateSignature(title, snippet)
+  const params = new URLSearchParams({ title, snippet, sig })
   return `${base}/api/og?${params.toString()}`
 }
 
