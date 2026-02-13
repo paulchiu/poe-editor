@@ -116,11 +116,13 @@ npm run test:og -- preview "http://localhost:5173/poe-markdown-editors/my-title"
 If you want to test manually with `curl`, you must generate a signature using `OG_SECRET` (default: `"development-secret"`).
 
 One-liner to generate a signature:
+
 ```bash
 node -e 'console.log(require("crypto").createHmac("sha256", "development-secret").update(JSON.stringify({title:"Test",snippet:"Hello"})).digest("hex"))'
 ```
 
 Then append it to your request:
+
 ```bash
 curl "http://localhost:8787/api/og?title=Test&snippet=Hello&sig=<YOUR_SIGNATURE>"
 ```

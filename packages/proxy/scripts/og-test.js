@@ -23,6 +23,7 @@
 import { spawn } from 'child_process'
 import { parseArgs } from 'util'
 import { existsSync, rmSync } from 'fs'
+import { createHmac } from 'crypto'
 
 const COLORS = {
   reset: '\x1b[0m',
@@ -109,8 +110,6 @@ function parseEditorUrl(urlString) {
     process.exit(1)
   }
 }
-
-import { createHmac } from 'crypto'
 
 function generateSignature(title, snippet) {
   const secret = process.env.OG_SECRET || 'development-secret'

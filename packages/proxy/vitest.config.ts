@@ -5,11 +5,7 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     pool: 'threads',
-    poolOptions: {
-      threads: {
-        execArgv: ['--experimental-vm-modules'],
-      },
-    },
+    execArgv: ['--experimental-vm-modules'],
   },
   esbuild: {
     target: 'ES2022',
