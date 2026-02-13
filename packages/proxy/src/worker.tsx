@@ -75,17 +75,29 @@ interface ElementContentHandlers {
 }
 
 /**
+ * Handler to remove existing meta tags
+ */
+export const removeElementHandler = {
+  element(element: Element): void {
+    element.remove()
+  },
+}
+
+/**
  * Creates an HTMLRewriter handler for the <head> element to inject OG meta tags
  * @param title - The page title
  * @param snippet - The page snippet/description
  * @param ogImageUrl - The OG image URL
+ * @param url - The current page URL
  * @returns Element handler object for HTMLRewriter
  */
-function createHeadHandler(
+export function createHeadHandler(
   title: string,
   snippet: string,
-  ogImageUrl: string
+  ogImageUrl: string,
+  url: string
 ): ElementContentHandlers {
+  const origin = new URL(url).origin
   return {
     element(element: Element): void {
       const metaTags = `
@@ -93,10 +105,14 @@ function createHeadHandler(
 <meta property="og:description" content="${escapeHtml(snippet)}" />
 <meta property="og:image" content="${ogImageUrl}" />
 <meta property="og:type" content="article" />
+<meta property="og:url" content="${url}" />
+<meta property="og:site_name" content="Poe Markdown Editor" />
+<meta property="og:logo" content="${origin}/favicon.svg" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="${escapeHtml(title)}" />
 <meta name="twitter:description" content="${escapeHtml(snippet)}" />
 <meta name="twitter:image" content="${ogImageUrl}" />
+<meta name="twitter:url" content="${url}" />
 <meta name="description" content="${escapeHtml(snippet)}" />
 `
       element.prepend(metaTags, { html: true })
@@ -382,8 +398,14 @@ export default {
 
       // Rewrite HTML to inject meta tags
       const rewriter = new HTMLRewriter()
-        .on('head', createHeadHandler(metadata.title, metadata.snippet, ogImageUrl.toString()))
+        .on(
+          'head',
+          createHeadHandler(metadata.title, metadata.snippet, ogImageUrl.toString(), url.toString())
+        )
         .on('title', createTitleHandler(metadata.title))
+        .on('meta[property^="og:"]', removeElementHandler)
+        .on('meta[name^="twitter:"]', removeElementHandler)
+        .on('meta[name="description"]', removeElementHandler)
 
       return rewriter.transform(indexResponse)
     }
