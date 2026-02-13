@@ -23,6 +23,13 @@ vi.mock('@cf-wasm/og', () => ({
 
 interface WorkerModule {
   fetch: (request: Request, env: unknown, ctx: ExecutionContext) => Promise<Response>
+  removeElementHandler: { element: (element: Element) => void }
+  createHeadHandler: (
+    title: string,
+    snippet: string,
+    ogImageUrl: string,
+    url: string
+  ) => { element: (element: Element) => void }
 }
 
 // Helper to generate signature for tests
@@ -48,32 +55,46 @@ const MOCK_ENV = {
   OG_SECRET: 'test-secret',
 }
 
-// Mock global HTMLRewriter
-class MockHTMLRewriter {
-  private handlers: Map<string, unknown> = new Map()
+interface MockHTMLRewriterInstance {
+  on(selector: string, handler: unknown): MockHTMLRewriterInstance
+  transform(response: Response): Response
+}
 
-  on(selector: string, handler: unknown) {
-    this.handlers.set(selector, handler)
+// Mock global HTMLRewriter
+const MockHTMLRewriter = function (this: MockHTMLRewriterInstance) {
+  const handlers = new Map<string, unknown>()
+
+  this.on = (selector: string, handler: unknown) => {
+    handlers.set(selector, handler)
     return this
   }
 
-  transform(response: Response): Response {
+  this.transform = (response: Response) => {
     // In a real test environment, we'd actually transform the HTML
     // For unit tests, we'll just return the response
     return response
   }
-}
+} as unknown as { new (): MockHTMLRewriterInstance }
 
 vi.stubGlobal('HTMLRewriter', MockHTMLRewriter)
 
 describe('Worker E2E Tests', () => {
   let worker: WorkerModule
+  let removeElementHandler: { element: (element: Element) => void | Promise<void> }
+  let createHeadHandler: (
+    title: string,
+    snippet: string,
+    ogImageUrl: string,
+    url: string
+  ) => { element?: (element: Element) => void | Promise<void> }
   let fetchMock: ReturnType<typeof vi.fn>
 
   beforeAll(async () => {
     // Import the worker module dynamically after mocks are set up
     const workerModule = await import('./worker')
     worker = workerModule.default as WorkerModule
+    removeElementHandler = workerModule.removeElementHandler
+    createHeadHandler = workerModule.createHeadHandler
   })
 
   beforeEach(() => {
@@ -341,6 +362,48 @@ describe('Worker E2E Tests', () => {
       const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
 
       expect(response.status).toBe(401)
+    })
+  })
+
+  describe('HTMLRewriter Handlers', () => {
+    it('removeElementHandler should call element.remove()', () => {
+      const mockElement = {
+        remove: vi.fn(),
+      }
+      removeElementHandler.element(mockElement as unknown as Element)
+      expect(mockElement.remove).toHaveBeenCalled()
+    })
+
+    it('createHeadHandler should prepend meta tags', () => {
+      const mockElement = {
+        prepend: vi.fn(),
+      }
+      const title = 'Test Title'
+      const snippet = 'Test Snippet'
+      const ogImageUrl = 'https://example.com/og.png'
+      const url = 'https://example.com/page'
+
+      const handler = createHeadHandler(title, snippet, ogImageUrl, url)
+      if (handler.element) {
+        handler.element(mockElement as unknown as Element)
+      } else {
+        throw new Error('handler.element is undefined')
+      }
+
+      expect(mockElement.prepend).toHaveBeenCalled()
+
+      const injectedHtml = mockElement.prepend.mock.calls[0][0] as string
+      expect(injectedHtml).toContain('<meta property="og:title" content="Test Title" />')
+      expect(injectedHtml).toContain('<meta property="og:description" content="Test Snippet" />')
+      expect(injectedHtml).toContain(
+        '<meta property="og:image" content="https://example.com/og.png" />'
+      )
+      expect(injectedHtml).toContain(
+        '<meta property="og:url" content="https://example.com/page" />'
+      )
+      expect(injectedHtml).toContain(
+        '<meta property="og:site_name" content="Poe Markdown Editor" />'
+      )
     })
   })
 })
