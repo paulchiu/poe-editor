@@ -464,10 +464,10 @@ export function EditorToolbar({
       </div>
 
       <div className="order-3 md:order-none w-full md:w-auto mt-2 md:mt-0 flex-none overflow-x-auto flex items-center gap-1 bg-muted/50 rounded-lg p-1 scrollbar-hide">
-        <ToolbarButton icon={Bold} label="Bold (Cmd+B)" onClick={onFormatBold} />
-        <ToolbarButton icon={Italic} label="Italic (Cmd+I)" onClick={onFormatItalic} />
-        <ToolbarButton icon={Link} label="Link (Cmd+K)" onClick={onFormatLink} />
-        <ToolbarButton icon={Code} label="Code (Cmd+E)" onClick={onFormatCode} />
+        <ToolbarButton icon={Bold} label="Bold" onClick={onFormatBold} />
+        <ToolbarButton icon={Italic} label="Italic" onClick={onFormatItalic} />
+        <ToolbarButton icon={Link} label="Link" onClick={onFormatLink} />
+        <ToolbarButton icon={Code} label="Code" onClick={onFormatCode} />
         <div className="w-px h-5 bg-border mx-1" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -495,7 +495,7 @@ export function EditorToolbar({
               }}
             >
               <Heading1 className="size-4" />
-              Heading 1 (Cmd+Opt+1)
+              Heading 1
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -504,7 +504,7 @@ export function EditorToolbar({
               }}
             >
               <Heading2 className="size-4" />
-              Heading 2 (Cmd+Opt+2)
+              Heading 2
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -513,31 +513,19 @@ export function EditorToolbar({
               }}
             >
               <Heading3 className="size-4" />
-              Heading 3 (Cmd+Opt+3)
+              Heading 3
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <ToolbarButton icon={Quote} label="Quote (Cmd+Opt+B)" onClick={onFormatQuote} />
-        <ToolbarButton icon={List} label="Bullet List (Cmd+Shift+U)" onClick={onFormatBulletList} />
-        <ToolbarButton
-          icon={ListOrdered}
-          label="Numbered List (Cmd+Shift+O)"
-          onClick={onFormatNumberedList}
-        />
-        <ToolbarButton
-          icon={CodeSquare}
-          label="Code Block (Cmd+Shift+K)"
-          onClick={onFormatCodeBlock}
-        />
-        <ToolbarButton icon={Table} label="Format Table (Cmd+Shift+T)" onClick={onFormatTable} />
+        <ToolbarButton icon={Quote} label="Quote" onClick={onFormatQuote} />
+        <ToolbarButton icon={List} label="Bullet List" onClick={onFormatBulletList} />
+        <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={onFormatNumberedList} />
+        <ToolbarButton icon={CodeSquare} label="Code Block" onClick={onFormatCodeBlock} />
+        <ToolbarButton icon={Table} label="Format Table" onClick={onFormatTable} />
 
         <div className="w-px h-5 bg-border mx-1" />
 
-        <ToolbarButton
-          icon={Wand2}
-          label="Transform Selection (Cmd+Shift+M)"
-          onClick={onOpenTransformer}
-        />
+        <ToolbarButton icon={Wand2} label="Transform Selection" onClick={onOpenTransformer} />
 
         {pipelines && pipelines.length > 0 && (
           <DndContext
