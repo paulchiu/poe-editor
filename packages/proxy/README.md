@@ -27,25 +27,11 @@ Example: `https://poemd.dev/The-Raven/Once-upon-a-midnight-dreary#abc123...`
 - Root-level URL routing for clean, shareable links without query parameters.
 - Built-in XSS prevention through HTML escaping of all path parameters.
 
-## Security
-
-To prevent unauthorized usage of the image generation endpoint, all requests to `/api/og` must be signed.
-
-### Environment Variable
-
-- `OG_SECRET`: A secret string used to sign and verify URLs.
-  - Production: MUST be set in your Cloudflare Worker environment variables.
-  - Development: If not set, defaults to `"development-secret"`. This ensures `wrangler dev` works out of the box.
+## Environment Variables
 
 - `ENVIRONMENT`: Controls the development mode behavior.
-  - Development: Set to `"development"` to enable development features like redirecting home page to `og-home.png` and skipping signature checks.
+  - Development: Set to `"development"` to enable development features.
   - Production: Leave unset or set to anything else.
-
-### How it Works
-
-1. When the proxy renders `index.html`, it generates an `og:image` URL containing a `sig` parameter.
-2. The `sig` is an HMAC-SHA256 hash of the `title` and `snippet` signed with `OG_SECRET`.
-3. When `/api/og` is requested, it verifies the signature. If invalid/missing, it returns `401 Unauthorized`.
 
 ## Development
 
@@ -97,7 +83,6 @@ Configure Cloudflare Workers Git Integration:
    - Root Directory: `packages/proxy/`
    - Build Command: (leave empty)
    - Deploy Command: `npx wrangler deploy`
-   - Environment Variables: Add `OG_SECRET` (encrypt it).
 
 The worker will deploy automatically on every push to main.
 
