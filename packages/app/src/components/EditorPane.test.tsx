@@ -2,19 +2,16 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { EditorPane } from './EditorPane'
 import { copyToClipboard } from '@/utils/clipboard'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/useToast'
 import { initVimMode } from 'monaco-vim'
 
-// Mock the utilities and sonner
+// Mock the utilities and toast hook
 vi.mock('@/utils/clipboard', () => ({
   copyToClipboard: vi.fn(),
 }))
 
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
+vi.mock('@/hooks/useToast', () => ({
+  toast: vi.fn(),
 }))
 
 // Mock Monaco Editor
@@ -71,7 +68,7 @@ describe('EditorPane', () => {
 
     await waitFor(() => {
       expect(copyToClipboard).toHaveBeenCalledWith(value)
-      expect(toast.success).toHaveBeenCalledWith('Markdown copied to clipboard!')
+      expect(toast).toHaveBeenCalledWith({ description: 'Markdown copied to clipboard!' })
     })
   })
 
@@ -83,7 +80,10 @@ describe('EditorPane', () => {
     fireEvent.click(copyButton)
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to copy to clipboard')
+      expect(toast).toHaveBeenCalledWith({
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
+      })
     })
   })
 

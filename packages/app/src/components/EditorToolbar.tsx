@@ -80,6 +80,7 @@ import {
   RotateCcw,
   WholeWord,
   Hash,
+  Table,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/transformer/constants'
 import { cn } from '@/utils/classnames'
@@ -251,6 +252,7 @@ interface EditorToolbarProps {
   onFormatBulletList: () => void
   onFormatNumberedList: () => void
   onFormatCodeBlock: () => void
+  onFormatTable: () => void
   toggleVimMode: () => void
   toggleTheme: () => void
   setShowShortcuts: (show: boolean) => void
@@ -299,6 +301,7 @@ export function EditorToolbar({
   onFormatBulletList,
   onFormatNumberedList,
   onFormatCodeBlock,
+  onFormatTable,
   toggleVimMode,
   toggleTheme,
   setShowShortcuts,
@@ -501,6 +504,7 @@ export function EditorToolbar({
         <ToolbarButton icon={List} label="Bullet List" onClick={onFormatBulletList} />
         <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={onFormatNumberedList} />
         <ToolbarButton icon={CodeSquare} label="Code Block" onClick={onFormatCodeBlock} />
+        <ToolbarButton icon={Table} label="Format Table" onClick={onFormatTable} />
 
         <div className="w-px h-5 bg-border mx-1" />
 

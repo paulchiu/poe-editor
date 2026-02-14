@@ -3,7 +3,7 @@ import { useState, type ReactElement, forwardRef } from 'react'
 import { Copy, Check, Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/useToast'
 import { copyToClipboard, stripHtml } from '@/utils/clipboard'
 
 interface PreviewPaneProps {
@@ -26,10 +26,13 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
         await copyToClipboard(plainText, htmlContent)
 
         setCopied(true)
-        toast.success('Rich text copied to clipboard!')
+        toast({ description: 'Rich text copied to clipboard!' })
         setTimeout(() => setCopied(false), 2000)
       } catch {
-        toast.error('Failed to copy to clipboard')
+        toast({
+          description: 'Failed to copy to clipboard',
+          variant: 'destructive',
+        })
       }
     }
 
