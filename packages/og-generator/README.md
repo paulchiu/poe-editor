@@ -16,7 +16,10 @@ Or from this package directory:
 npm run generate
 ```
 
-This will create `og-home.png` in `packages/app/public`.
+This will generate two Open Graph images in `packages/app/public`:
+
+- `og-home.png` (1200x630) - Standard OG image for Facebook, LinkedIn, etc.
+- `og-twitter.png` (1200x1200) - Square format optimized for Twitter cards
 
 ## Resources
 

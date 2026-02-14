@@ -1,12 +1,8 @@
 import { describe, it, expect, beforeAll, vi, beforeEach } from 'vitest'
 
-
-
 interface WorkerModule {
   fetch: (request: Request, env: unknown, ctx: ExecutionContext) => Promise<Response>
 }
-
-
 
 interface MockElement {
   remove(): void
@@ -215,7 +211,9 @@ describe('Worker Rewriter Tests', () => {
 
     // Check for PRESERVED OG Image
     // It should NOT be replaced by the worker, so it should be the one from mockHtml
-    expect(text).toContain('<meta property="og:image" content="https://example.com/existing-image.png" />')
+    expect(text).toContain(
+      '<meta property="og:image" content="https://example.com/existing-image.png" />'
+    )
 
     // Check for absence of old tags (title, description)
     expect(text).not.toContain('<meta property="og:title" content="Old Title" />')

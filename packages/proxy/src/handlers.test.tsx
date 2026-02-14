@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { handleMetadataRoute } from './handlers'
-import { Env } from './utils'
 
 // Mock HTMLRewriter
 const mockHTMLRewriter = {
@@ -15,9 +14,7 @@ vi.stubGlobal('HTMLRewriter', function () {
 })
 
 describe('Handlers', () => {
-  const mockEnv: Env = {}
-
-  let fetchMock: any
+  let fetchMock: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     fetchMock = vi.fn()

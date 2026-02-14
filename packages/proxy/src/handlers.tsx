@@ -1,4 +1,3 @@
-import { type Env } from './utils'
 import { createHeadHandler, createTitleHandler, removeElementHandler } from './rewriter'
 
 /**
@@ -17,14 +16,7 @@ export async function handleMetadataRoute(
   }
 
   const rewriter = new HTMLRewriter()
-    .on(
-      'head',
-      createHeadHandler(
-        metadata.title,
-        metadata.snippet,
-        url.toString()
-      )
-    )
+    .on('head', createHeadHandler(metadata.title, metadata.snippet, url.toString()))
     .on('title', createTitleHandler(metadata.title))
     .on('meta[property="og:title"]', removeElementHandler)
     .on('meta[property="og:description"]', removeElementHandler)

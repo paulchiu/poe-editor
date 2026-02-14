@@ -1,6 +1,4 @@
-export interface Env {}
-
-
+export type Env = Record<string, never>
 
 /**
  * Parses metadata from URL path segments
@@ -38,5 +36,3 @@ export function escapeHtml(text: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
 }
-
-

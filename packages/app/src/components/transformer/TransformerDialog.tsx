@@ -108,7 +108,6 @@ export function TransformerDialog({
     if (open && !wasOpen) {
       hasShownEscapeToastRef.current = false
       if (editPipeline) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPipelineName(editPipeline.name)
 
         setPipelineIcon(editPipeline.icon)
