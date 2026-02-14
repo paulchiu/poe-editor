@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import type { PipelineStep, TransformerOperation } from './types'
 import { PipelineStepsArraySchema } from './toolbarSchema'
 import { cn } from '@/utils/classnames'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/useToast'
 import { z } from 'zod'
 
 interface TransformerWorkbenchProps {
@@ -296,7 +296,10 @@ export function TransformerWorkbench({
     } else {
       // Switching to GUI
       if (!isValidJson) {
-        toast.error('Cannot switch to GUI mode with invalid JSON')
+        toast({
+          description: 'Cannot switch to GUI mode with invalid JSON',
+          variant: 'destructive',
+        })
         return
       }
 
@@ -312,10 +315,16 @@ export function TransformerWorkbench({
         if (error instanceof z.ZodError) {
           const message = `Validation error: ${error.issues.map((i) => i.message).join(', ')}`
           setValidationError(message)
-          toast.error(message)
+          toast({
+            description: message,
+            variant: 'destructive',
+          })
         } else {
           setValidationError('Invalid JSON format')
-          toast.error('Invalid JSON format')
+          toast({
+            description: 'Invalid JSON format',
+            variant: 'destructive',
+          })
         }
         setIsValidJson(false)
       }

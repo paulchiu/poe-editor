@@ -1,6 +1,5 @@
-
 import { describe, it, expect } from 'vitest'
-import { formatMarkdownTable } from '../src/utils/markdownTable'
+import { formatMarkdownTable, isMarkdownTable } from './markdownTable'
 
 describe('formatMarkdownTable', () => {
   it('formats a simple table', () => {
@@ -40,7 +39,7 @@ describe('formatMarkdownTable', () => {
     // 张三 (4 width) | 25 (2 width) -> pad to 4 -> 25__
     // Li (2 width)   | 30 (2 width) -> pad to 4 -> 30__
     // Max cols: 4, 4
-    
+
     const expected = `| 名字 | 年龄 |
 | ---- | ---- |
 | 张三 | 25   |
@@ -54,18 +53,18 @@ describe('formatMarkdownTable', () => {
 | :--- | :---: | ---: |
 | 1 | 2 | 3 |
 `.trim()
-    
+
     // Left (4) | Center (6) | Right (5)
     // 1 (1) -> 1___ | 2 (1) -> 2_____ | 3 (1) -> 3____
-    
+
     const expected = `| Left | Center | Right |
 | :--- | :----: | ----: |
 | 1    | 2      | 3     |`
     expect(formatMarkdownTable(input)).toBe(expected)
   })
-  
+
   it('handles empty cells', () => {
-      const input = `
+    const input = `
 | A | B |
 |---|---|
 | 1 | |
@@ -76,5 +75,26 @@ describe('formatMarkdownTable', () => {
 | 1   |     |
 |     | 2   |`
     expect(formatMarkdownTable(input)).toBe(expected)
+  })
+})
+
+describe('isMarkdownTable', () => {
+  it('returns true for a valid markdown table', () => {
+    const input = `
+| A | B |
+|---|---|
+| 1 | 2 |
+`.trim()
+
+    expect(isMarkdownTable(input)).toBe(true)
+  })
+
+  it('returns false for pipe-delimited text without a separator row', () => {
+    const input = `
+| A | B |
+| 1 | 2 |
+`.trim()
+
+    expect(isMarkdownTable(input)).toBe(false)
   })
 })

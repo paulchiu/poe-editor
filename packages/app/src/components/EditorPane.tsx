@@ -5,10 +5,10 @@ import { initVimMode, VimMode, type VimMode as VimAdapter } from 'monaco-vim'
 import { Copy, Check, Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/useToast'
 import { copyToClipboard } from '@/utils/clipboard'
 import { getAutoContinueEdit } from '@/utils/formatting'
-import { formatMarkdownTable } from '@/utils/markdownTable'
+import { formatMarkdownTable, isMarkdownTable } from '@/utils/markdownTable'
 import { cn } from '@/utils/classnames'
 
 // Setup clipboard integration for monaco-vim
@@ -92,7 +92,10 @@ function setupVim() {
       const text = cm.getSelection()
       if (text) {
         navigator.clipboard.writeText(text).catch(() => {
-          toast.error('Failed to write to system clipboard')
+          toast({
+            description: 'Failed to write to system clipboard',
+            variant: 'destructive',
+          })
         })
 
         // Update internal register for consistency so 'p' works internally
@@ -126,7 +129,10 @@ function setupVim() {
         }
       }
     } catch {
-      toast.error('Failed to read from system clipboard')
+      toast({
+        description: 'Failed to read from system clipboard',
+        variant: 'destructive',
+      })
     }
   })
 
@@ -380,7 +386,10 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           try {
             vimInstanceRef.current = initVimMode(editorRef.current, statusBarRef.current)
           } catch {
-            toast.error('Error initializing vim mode')
+            toast({
+              description: 'Error initializing vim mode',
+              variant: 'destructive',
+            })
           }
         }
       }, 0)
@@ -394,10 +403,13 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       try {
         await copyToClipboard(value)
         setCopied(true)
-        toast.success('Markdown copied to clipboard!')
+        toast({ description: 'Markdown copied to clipboard!' })
         setTimeout(() => setCopied(false), 2000)
       } catch {
-        toast.error('Failed to copy to clipboard')
+        toast({
+          description: 'Failed to copy to clipboard',
+          variant: 'destructive',
+        })
       }
     }
 
@@ -521,7 +533,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           },
         }
       },
-    
+
       formatTable: () => {
         const editor = editorRef.current
         if (!editor) return
@@ -534,10 +546,16 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
         const currentLine = position.lineNumber
         const isTableLine = (lineContent: string) => lineContent.includes('|')
+        const noTableMessage = "Couldn't find a table at cursor"
+        const showNoTableToast = () => {
+          toast({
+            description: noTableMessage,
+          })
+        }
 
         // Check if we are on a table line
         if (!isTableLine(model.getLineContent(currentLine))) {
-          toast.error('No markdown table found at cursor')
+          showNoTableToast()
           return
         }
 
@@ -554,17 +572,22 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         }
 
         // Select and format
-        // Use monaco.Range directly or via reference if imported. 
+        // Use monaco.Range directly or via reference if imported.
         // Since we don't import monaco object here directly except via type, we can use the instance or import * as monaco.
         // Or simpler: construct range object literal which Monaco accepts.
         const range = {
-            startLineNumber: startLine,
-            startColumn: 1,
-            endLineNumber: endLine,
-            endColumn: model.getLineMaxColumn(endLine)
+          startLineNumber: startLine,
+          startColumn: 1,
+          endLineNumber: endLine,
+          endColumn: model.getLineMaxColumn(endLine),
         }
-        
+
         const tableText = model.getValueInRange(range)
+        if (!isMarkdownTable(tableText)) {
+          showNoTableToast()
+          return
+        }
+
         const formatted = formatMarkdownTable(tableText)
 
         if (formatted !== tableText) {

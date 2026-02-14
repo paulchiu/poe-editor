@@ -2,19 +2,16 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { PreviewPane } from './PreviewPane'
 import { copyToClipboard } from '@/utils/clipboard'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/useToast'
 
-// Mock the utilities and sonner
+// Mock the utilities and toast hook
 vi.mock('@/utils/clipboard', () => ({
   copyToClipboard: vi.fn(),
   stripHtml: vi.fn((html) => html.replace(/<[^>]*>?/gm, '')),
 }))
 
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
+vi.mock('@/hooks/useToast', () => ({
+  toast: vi.fn(),
 }))
 
 describe('PreviewPane', () => {
@@ -37,7 +34,7 @@ describe('PreviewPane', () => {
 
     await waitFor(() => {
       expect(copyToClipboard).toHaveBeenCalledWith('Test content', htmlContent)
-      expect(toast.success).toHaveBeenCalledWith('Rich text copied to clipboard!')
+      expect(toast).toHaveBeenCalledWith({ description: 'Rich text copied to clipboard!' })
     })
   })
 
@@ -49,7 +46,10 @@ describe('PreviewPane', () => {
     fireEvent.click(copyButton)
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to copy to clipboard')
+      expect(toast).toHaveBeenCalledWith({
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
+      })
     })
   })
 })
