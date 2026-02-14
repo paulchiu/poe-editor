@@ -74,10 +74,12 @@ ${color('Commands:', 'yellow')}
 ${color('Options:', 'yellow')}
   -p, --proxy <url>     Proxy server URL (default: http://localhost:8787)
   -o, --output <file>   Output filename for download (default: og-test.png)
+  -P, --platform <name> Platform variant (e.g., twitter, home)
   -h, --help            Show this help message
 
 ${color('Examples:', 'yellow')}
   node og-test.js ${color('preview', 'cyan')} "http://localhost:5173/poe-markdown-editors/my-title"
+  node og-test.js ${color('preview', 'cyan')} "http://localhost:5173/poe-markdown-editors/my-title" --platform twitter
   node og-test.js ${color('download', 'cyan')} "http://localhost:5173/poe-markdown-editors/my-title" -o my-image.png
   node og-test.js ${color('open', 'cyan')} "http://localhost:5173/poe-markdown-editors/my-title"
   node og-test.js ${color('info', 'cyan')} "http://localhost:5173/poe-markdown-editors/my-title"
@@ -157,6 +159,7 @@ function parseArguments() {
       options: {
         proxy: { type: 'string', short: 'p', default: 'http://localhost:8787' },
         output: { type: 'string', short: 'o', default: 'og-test.png' },
+        platform: { type: 'string', short: 'P' },
         help: { type: 'boolean', short: 'h' },
       },
       allowPositionals: true,
@@ -182,7 +185,13 @@ function parseArguments() {
       process.exit(1)
     }
 
-    return { command, editorUrl, proxyUrl: values.proxy, outputFile: values.output }
+    return {
+      command,
+      editorUrl,
+      proxyUrl: values.proxy,
+      outputFile: values.output,
+      platform: values.platform,
+    }
   } catch (error) {
     log('error', error.message)
     process.exit(1)
@@ -289,7 +298,7 @@ function runInfo(editorUrl, proxyUrl) {
 }
 
 async function main() {
-  const { command, editorUrl, proxyUrl, outputFile } = parseArguments()
+  const { command, editorUrl, proxyUrl, outputFile, platform } = parseArguments()
 
   console.log('')
   log('info', `Running ${color(command, 'green')} command`)
@@ -300,10 +309,19 @@ async function main() {
   }
 
   const { title, snippet } = parseEditorUrl(editorUrl)
-  const ogUrl = buildOgUrl(proxyUrl, title, snippet)
+  let ogUrl
 
-  console.log(`  ${color('Title:', 'dim')}   ${title}`)
-  console.log(`  ${color('URL:', 'dim')}     ${ogUrl}`)
+  if (platform === 'home') {
+    ogUrl = `${proxyUrl.replace(/\/$/, '')}/api/og?platform=home`
+  } else {
+    ogUrl = buildOgUrl(proxyUrl, title, snippet, platform)
+  }
+
+  console.log(`  ${color('Title:', 'dim')}    ${platform === 'home' ? 'Home' : title}`)
+  if (platform) {
+    console.log(`  ${color('Platform:', 'dim')} ${platform}`)
+  }
+  console.log(`  ${color('URL:', 'dim')}      ${ogUrl}`)
   console.log('')
 
   switch (command) {

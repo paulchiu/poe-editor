@@ -119,6 +119,9 @@ npm run test:og -- --help
 # Preview headers only (fast connectivity check)
 npm run test:og -- preview "http://localhost:5173/poe-markdown-editors/my-title"
 
+# Preview for a specific platform (e.g., twitter, home)
+npm run test:og -- preview "http://localhost:5173/poe-markdown-editors/my-title" --platform twitter
+
 # Download the Open Graph image to a file
 npm run test:og -- download "http://localhost:5173/poe-markdown-editors/my-title"
 
@@ -126,9 +129,9 @@ npm run test:og -- download "http://localhost:5173/poe-markdown-editors/my-title
 npm run test:og -- download "http://localhost:5173/poe-markdown-editors/my-title" -o my-og.png
 
 # Download and automatically open the image
-npm run test:og -- open "http://localhost:5173/poe-markdown-editors/my-title"
+npm run test:og -- open "http://localhost:5173/poe-markdown-editors/my-title" --platform home
 
-# Just display parsed URL info (no network request)
+# Display parsed URL info and all platform endpoints (Standard, Twitter, Home)
 npm run test:og -- info "http://localhost:5173/poe-markdown-editors/my-title"
 
 # Use a custom proxy URL
