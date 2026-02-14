@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/utils/clipboard'
 import { getAutoContinueEdit } from '@/utils/formatting'
+import { formatMarkdownTable } from '@/utils/markdownTable'
 import { cn } from '@/utils/classnames'
 
 // Setup clipboard integration for monaco-vim
@@ -216,6 +217,8 @@ export interface EditorPaneHandle {
   getClientHeight: () => number
   /** Register a scroll listener */
   onScroll: (callback: () => void) => { dispose: () => void }
+  /** Format the table at the current cursor position */
+  formatTable: () => void
 }
 
 /**
@@ -516,6 +519,64 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
             disposed = true
             realDisposable?.dispose()
           },
+        }
+      },
+    
+      formatTable: () => {
+        const editor = editorRef.current
+        if (!editor) return
+
+        const position = editor.getPosition()
+        if (!position) return
+
+        const model = editor.getModel()
+        if (!model) return
+
+        const currentLine = position.lineNumber
+        const isTableLine = (lineContent: string) => lineContent.includes('|')
+
+        // Check if we are on a table line
+        if (!isTableLine(model.getLineContent(currentLine))) {
+          toast.error('No markdown table found at cursor')
+          return
+        }
+
+        // Find start of table
+        let startLine = currentLine
+        while (startLine > 1 && isTableLine(model.getLineContent(startLine - 1))) {
+          startLine--
+        }
+
+        // Find end of table
+        let endLine = currentLine
+        while (endLine < model.getLineCount() && isTableLine(model.getLineContent(endLine + 1))) {
+          endLine++
+        }
+
+        // Select and format
+        // Use monaco.Range directly or via reference if imported. 
+        // Since we don't import monaco object here directly except via type, we can use the instance or import * as monaco.
+        // Or simpler: construct range object literal which Monaco accepts.
+        const range = {
+            startLineNumber: startLine,
+            startColumn: 1,
+            endLineNumber: endLine,
+            endColumn: model.getLineMaxColumn(endLine)
+        }
+        
+        const tableText = model.getValueInRange(range)
+        const formatted = formatMarkdownTable(tableText)
+
+        if (formatted !== tableText) {
+          editor.executeEdits('format-table', [
+            {
+              range,
+              text: formatted,
+              forceMoveMarkers: true,
+            },
+          ])
+          // Restore cursor position roughly? Or focus.
+          editor.focus()
         }
       },
     }))

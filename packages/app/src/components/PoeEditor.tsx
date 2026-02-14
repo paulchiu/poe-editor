@@ -206,6 +206,10 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     formatNumberedList(sourceRef.current)
   }, [sourceRef])
 
+  const handleFormatTable = useCallback((): void => {
+    sourceRef.current?.formatTable()
+  }, [sourceRef])
+
   const handleApplyPipeline = useCallback(
     (pipeline: TransformationPipeline) => {
       const editor = sourceRef.current
@@ -492,6 +496,7 @@ ${htmlContent}
           onFormatBulletList={handleFormatBulletList}
           onFormatNumberedList={handleFormatNumberedList}
           onFormatCodeBlock={handleFormatCodeBlock}
+          onFormatTable={handleFormatTable}
           toggleVimMode={toggleVimMode}
           toggleTheme={toggleTheme}
           setShowShortcuts={setShowShortcuts}
