@@ -1,18 +1,39 @@
+import type { Env } from './utils'
 import { createHeadHandler, createTitleHandler, removeElementHandler } from './rewriter'
 
 /**
+ * Fetches a URL, using ORIGIN_URL env var as base if set
+ * @param url - The URL to fetch
+ * @param env - Worker environment bindings
+ * @returns Fetch response
+ */
+function fetchFromOrigin(url: string, env: Env): Promise<Response> {
+  if (env.ORIGIN_URL) {
+    const parsed = new URL(url)
+    const originUrl = new URL(parsed.pathname + parsed.search, env.ORIGIN_URL)
+    return fetch(originUrl.toString())
+  }
+  return fetch(url)
+}
+
+/**
  * Handles the home page route
+ * @param request - The incoming request
+ * @param metadata - Parsed title and snippet from the path
+ * @param env - Worker environment bindings
+ * @returns Rewritten HTML response with OG meta tags
  */
 export async function handleMetadataRoute(
   request: Request,
-  metadata: { title: string; snippet: string }
+  metadata: { title: string; snippet: string },
+  env: Env
 ): Promise<Response> {
   const url = new URL(request.url)
   const indexUrl = new URL('/index.html', url.origin)
-  const indexResponse = await fetch(indexUrl.toString())
+  const indexResponse = await fetchFromOrigin(indexUrl.toString(), env)
 
   if (!indexResponse.ok) {
-    return fetch(request)
+    return fetchFromOrigin(request.url, env)
   }
 
   const rewriter = new HTMLRewriter()

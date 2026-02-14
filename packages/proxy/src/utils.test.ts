@@ -26,6 +26,14 @@ describe('Utils', () => {
       expect(parsePathMetadata('/OneSegment')).toBeNull()
       expect(parsePathMetadata('/Too/Many/Segments')).toBeNull()
     })
+
+    it('should return null for static asset paths', () => {
+      expect(parsePathMetadata('/assets/index-vDEImsbE.js')).toBeNull()
+      expect(parsePathMetadata('/assets/index-B4kUc-lG.css')).toBeNull()
+      expect(parsePathMetadata('/images/logo.png')).toBeNull()
+      expect(parsePathMetadata('/favicon.ico')).toBeNull()
+      expect(parsePathMetadata('/manifest.json')).toBeNull()
+    })
   })
 
   describe('escapeHtml', () => {

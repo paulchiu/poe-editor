@@ -245,10 +245,20 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
     const vimInstanceRef = useRef<VimAdapter | null>(null)
     const statusBarRef = useRef<HTMLDivElement | null>(null)
+    const pendingScrollCallbacks = useRef<
+      Array<{ callback: () => void; resolve: (disposable: { dispose: () => void }) => void }>
+    >([])
     const [copied, setCopied] = useState(false)
 
     const handleEditorDidMount: OnMount = (editor, monaco): void => {
       editorRef.current = editor
+
+      // Drain any scroll callbacks that were queued before Monaco mounted
+      for (const { callback, resolve } of pendingScrollCallbacks.current) {
+        const disposable = editor.onDidScrollChange(() => callback())
+        resolve(disposable)
+      }
+      pendingScrollCallbacks.current = []
 
       // Initialize vim mode immediately after editor mounts if vimMode is enabled
       if (vimMode) {
@@ -481,11 +491,32 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       getScrollHeight: () => editorRef.current?.getScrollHeight() ?? 0,
       getClientHeight: () => editorRef.current?.getLayoutInfo().height ?? 0,
       onScroll: (callback) => {
-        if (!editorRef.current) return { dispose: () => {} }
-        const disposable = editorRef.current.onDidScrollChange(() => {
-          callback()
+        if (editorRef.current) {
+          const disposable = editorRef.current.onDidScrollChange(() => {
+            callback()
+          })
+          return disposable
+        }
+        // Editor not mounted yet — queue the callback and return a disposable
+        // that will dispose the real listener once it's attached
+        let realDisposable: { dispose: () => void } | null = null
+        let disposed = false
+        pendingScrollCallbacks.current.push({
+          callback,
+          resolve: (d) => {
+            if (disposed) {
+              d.dispose()
+            } else {
+              realDisposable = d
+            }
+          },
         })
-        return disposable
+        return {
+          dispose: () => {
+            disposed = true
+            realDisposable?.dispose()
+          },
+        }
       },
     }))
 

@@ -1,5 +1,19 @@
 import { test, expect } from '@playwright/test'
 
+interface MonacoEditor {
+  getScrollHeight: () => number
+  getLayoutInfo: () => { height: number }
+  setScrollTop: (scrollTop: number) => void
+}
+
+interface MonacoEditorGlobal {
+  monaco?: {
+    editor?: {
+      getEditors?: () => MonacoEditor[]
+    }
+  }
+}
+
 test.describe('Editor Integration', () => {
   const isMac = process.platform === 'darwin'
   const modifier = isMac ? 'Meta' : 'Control'
@@ -69,42 +83,47 @@ test.describe('Editor Integration', () => {
       .map((_, i) => `Line ${i}`)
       .join('\n')
 
-    // Use clipboard to paste for speed (typing 100 lines is slow)
-    // Actually, let's just use the clipboard API since we have the permission in some contexts,
-    // or just evaluating JS to set the model value if we exposed it, but typing is safer for blackbox.
-    // Let's type a smaller amount that still overflows or just newline spam.
-
     // Clear editor using Select All + Backspace
     await page.locator('.monaco-editor').first().click()
     await page.keyboard.press(`${modifier}+A`)
     await page.keyboard.press('Backspace')
 
-    // Faster way to set content: Focus editor and paste
+    // Paste long content via clipboard
     await page.locator('.monaco-editor').click()
     await page.evaluate((text) => navigator.clipboard.writeText(text), longContent)
     await page.keyboard.press(`${modifier}+V`)
 
-    // Wait for preview to update and sync hook to attach (polling interval is 100ms)
+    // Wait for preview to render all content
     await expect(page.locator('.markdown-body')).toContainText('Line 99')
-    await page.waitForTimeout(1000)
+    await page.waitForTimeout(500)
 
-    // 2. Scroll Editor
-    // Select the scrollable DOM node of Monaco.
-    // Usually .monaco-scrollable-element or .lines-content
-    // We can just use mouse wheel on the editor
-    await page.locator('.monaco-scrollable-element').first().hover()
-    await page.mouse.wheel(0, 500)
+    // 2. Scroll the editor programmatically via Monaco's API.
+    // Monaco uses virtual scrolling (DOM scrollTop stays at 0), so keyboard/mouse
+    // scrolling may not trigger onDidScrollChange reliably in headless tests.
+    await page.evaluate(() => {
+      const editorInstances = (
+        window as unknown as MonacoEditorGlobal
+      ).monaco?.editor?.getEditors?.()
+      if (editorInstances && editorInstances.length > 0) {
+        const editor = editorInstances[0]
+        const maxScroll = editor.getScrollHeight() - editor.getLayoutInfo().height
+        editor.setScrollTop(maxScroll)
+      }
+    })
 
     // 3. Verify Preview Scrolled
-    // The markdown-body is usually inside the scrollable container.
-    // We check if the preview container has scrolled.
-    // Based on the layout, the parent of .markdown-body is the scrollable area.
+    // Walk up from .markdown-body to find the nearest scrollable ancestor
     const previewLocator = page.locator('.markdown-body')
 
     // Use toPass to retry until the scroll sync happens (it's debounced)
     await expect(async () => {
       const previewScrollTop = await previewLocator.evaluate((el: Element) => {
-        return el.parentElement?.scrollTop || 0
+        let node = el.parentElement
+        while (node) {
+          if (node.scrollTop > 0) return node.scrollTop
+          node = node.parentElement
+        }
+        return 0
       })
       expect(previewScrollTop).toBeGreaterThan(0)
     }).toPass()

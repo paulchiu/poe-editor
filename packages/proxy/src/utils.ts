@@ -1,4 +1,23 @@
-export type Env = Record<string, never>
+export interface Env {
+  ORIGIN_URL?: string
+}
+
+/** Static asset patterns to exclude from metadata handling */
+const STATIC_ASSET_PATTERNS = [
+  /\.\w+$/i, // Any path with a file extension
+  /^\/favicon\.ico$/i,
+  /^\/manifest\.json$/i,
+  /^\/robots\.txt$/i,
+]
+
+/**
+ * Checks if a path is a static asset that should pass through unchanged
+ * @param path - The URL pathname
+ * @returns true if it's a static asset
+ */
+function isStaticAsset(path: string): boolean {
+  return STATIC_ASSET_PATTERNS.some((pattern) => pattern.test(path))
+}
 
 /**
  * Parses metadata from URL path segments
@@ -7,6 +26,8 @@ export type Env = Record<string, never>
  * @returns Object with title and snippet, or null if invalid
  */
 export function parsePathMetadata(pathname: string): { title: string; snippet: string } | null {
+  if (isStaticAsset(pathname)) return null
+
   const segments = pathname.split('/').filter(Boolean)
 
   // Must have exactly 2 segments for metadata
