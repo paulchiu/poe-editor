@@ -3,7 +3,13 @@ main = "src/worker.tsx"
 compatibility_date = "2025-01-30"
 compatibility_flags = ["nodejs_compat"]
 
+# Serving static assets from the public folder
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
 # Rule: Treat any .wasm file as a compiled WebAssembly module
+
 [[rules]]
 type = "CompiledWasm"
 globs = ["**/*.wasm"]
@@ -13,4 +19,5 @@ fallthrough = false
 command = ""
 
 [env.dev]
-vars = { ENVIRONMENT = "development" }
+vars = { ENVIRONMENT = "development", CDN_URL_INTER_REGULAR = "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff", CDN_URL_INTER_BOLD = "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff", CDN_URL_PLAYFAIR_REGULAR = "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-400-normal.woff", CDN_URL_PLAYFAIR_BLACK = "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-900-normal.woff", CDN_URL_PLAYFAIR_ITALIC = "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-400-italic.woff", CDN_URL_SPLASH_IMAGE = "https://poe-editor-proxy.accounts-8d2.workers.dev/proxy/splash.png" }
+

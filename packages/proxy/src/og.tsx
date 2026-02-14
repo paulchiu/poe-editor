@@ -1,58 +1,48 @@
 import { ImageResponse } from '@cf-wasm/og'
 import { createElement } from 'react'
-import { SPLASH_IMAGE_BASE64 } from './assets'
-
-// Font cache to avoid re-fetching
-const fontCache: Map<string, ArrayBuffer> = new Map()
-
-async function loadFont(url: string): Promise<ArrayBuffer> {
-  if (fontCache.has(url)) {
-    return fontCache.get(url)!
-  }
-
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`Failed to fetch font: ${response.status} ${response.statusText}`)
-  }
-
-  const fontBuffer = await response.arrayBuffer()
-  fontCache.set(url, fontBuffer)
-  return fontBuffer
-}
+import { SPLASH_IMAGE_PATH } from './assets'
+import { loadAsset, loadImageAsBase64 } from './loaders'
+import { Env } from './utils'
 
 /**
  * Generates an OG image using ImageResponse
  * @param title - The title text
  * @param snippet - The snippet text
  * @param platform - The platform variant (home, twitter, or undefined)
- * @param origin - The origin URL for fetching assets
+ * @param env - The Worker environment
  * @returns ImageResponse object
  */
 export async function generateOgImage(
   title: string,
   snippet: string,
   platform: string | null,
-  origin: string
+  env: Env
 ): Promise<Response> {
   // Common fonts
-  const interFontUrl =
-    'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff'
-  const interBoldUrl =
-    'https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff'
+  const interFontUrl = '/proxy/fonts/inter-regular.woff'
+  const interBoldUrl = '/proxy/fonts/inter-bold.woff'
 
   // Home Page Design
   if (platform === 'home') {
-    const playfairRegularUrl =
-      'https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-400-normal.woff'
-    const playfairBlackUrl =
-      'https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-900-normal.woff'
-    const playfairItalicUrl =
-      'https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-400-italic.woff'
+    const playfairRegularUrl = '/proxy/fonts/playfair-regular.woff'
+    const playfairBlackUrl = '/proxy/fonts/playfair-black.woff'
+    const playfairItalicUrl = '/proxy/fonts/playfair-italic.woff'
 
-    const [playfairRegular, playfairBlack, playfairItalic] = await Promise.all([
-      loadFont(playfairRegularUrl),
-      loadFont(playfairBlackUrl),
-      loadFont(playfairItalicUrl),
+    // Fallbacks
+    if (
+      !env.CDN_URL_PLAYFAIR_REGULAR ||
+      !env.CDN_URL_PLAYFAIR_BLACK ||
+      !env.CDN_URL_PLAYFAIR_ITALIC ||
+      !env.CDN_URL_SPLASH_IMAGE
+    ) {
+      throw new Error('Missing one or more CDN URLs for Home page assets')
+    }
+
+    const [playfairRegular, playfairBlack, playfairItalic, splashImageBase64] = await Promise.all([
+      loadAsset(playfairRegularUrl, env.ASSETS, env.CDN_URL_PLAYFAIR_REGULAR),
+      loadAsset(playfairBlackUrl, env.ASSETS, env.CDN_URL_PLAYFAIR_BLACK),
+      loadAsset(playfairItalicUrl, env.ASSETS, env.CDN_URL_PLAYFAIR_ITALIC),
+      loadImageAsBase64(SPLASH_IMAGE_PATH, env.ASSETS, env.CDN_URL_SPLASH_IMAGE),
     ])
 
     return new ImageResponse(
@@ -94,9 +84,9 @@ export async function generateOgImage(
               display: 'flex',
             }}
           >
-            {/* Using img tag with embedded base64 data URI */}
+            {/* Using img tag with pre-fetched base64 data to avoid network loopback */}
             <img
-              src={SPLASH_IMAGE_BASE64}
+              src={splashImageBase64}
               style={{
                 width: '100%',
                 height: '100%',
@@ -238,7 +228,14 @@ export async function generateOgImage(
   }
 
   // Standard/Twitter Layout
-  const [interFont, interBold] = await Promise.all([loadFont(interFontUrl), loadFont(interBoldUrl)])
+  if (!env.CDN_URL_INTER_REGULAR || !env.CDN_URL_INTER_BOLD) {
+    throw new Error('Missing CDN URLs for Inter font')
+  }
+
+  const [interFont, interBold] = await Promise.all([
+    loadAsset(interFontUrl, env.ASSETS, env.CDN_URL_INTER_REGULAR),
+    loadAsset(interBoldUrl, env.ASSETS, env.CDN_URL_INTER_BOLD),
+  ])
 
   const displayTitle = title.length > 60 ? title.slice(0, 57) + '...' : title
   const displaySnippet = snippet.length > 150 ? snippet.slice(0, 147) + '...' : snippet

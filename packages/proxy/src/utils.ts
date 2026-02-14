@@ -20,6 +20,15 @@ const STATIC_ASSET_PATTERNS = [
 export interface Env {
   OG_SECRET?: string
   ENVIRONMENT?: string
+  ASSETS?: Fetcher
+  
+  // CDN Fallback URLs
+  CDN_URL_INTER_REGULAR?: string
+  CDN_URL_INTER_BOLD?: string
+  CDN_URL_PLAYFAIR_REGULAR?: string
+  CDN_URL_PLAYFAIR_BLACK?: string
+  CDN_URL_PLAYFAIR_ITALIC?: string
+  CDN_URL_SPLASH_IMAGE?: string
 }
 
 /**

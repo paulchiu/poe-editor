@@ -29,7 +29,7 @@ export async function handleApiOg(request: Request, env: Env): Promise<Response>
   }
 
   try {
-    return await generateOgImage(title, snippet, platform, url.origin)
+    return await generateOgImage(title, snippet, platform, env)
   } catch (error) {
     return new Response(
       JSON.stringify({
