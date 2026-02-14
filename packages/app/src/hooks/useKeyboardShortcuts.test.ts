@@ -16,6 +16,15 @@ describe('useKeyboardShortcuts', () => {
     onClear: vi.fn(),
     onCopyLink: vi.fn(),
     onReset: vi.fn(),
+    onHeading: vi.fn(),
+    onQuote: vi.fn(),
+    onBulletList: vi.fn(),
+    onNumberedList: vi.fn(),
+    onTable: vi.fn(),
+    onTransform: vi.fn(),
+    onDownload: vi.fn(),
+    onFocusEditor: vi.fn(),
+    onFocusDocument: vi.fn(),
   }
 
   const triggerKeyDown = (key: string, options: KeyboardEventInit = {}) => {
@@ -102,6 +111,48 @@ describe('useKeyboardShortcuts', () => {
     renderHook(() => useKeyboardShortcuts(handlers))
     triggerKeyDown('F2')
     expect(handlers.onRename).toHaveBeenCalled()
+  })
+
+  it('should trigger onHeading with Cmd+Alt+1/2/3', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('1', { metaKey: true, altKey: true, code: 'Digit1' })
+    expect(handlers.onHeading).toHaveBeenCalledWith(1)
+    triggerKeyDown('2', { metaKey: true, altKey: true, code: 'Digit2' })
+    expect(handlers.onHeading).toHaveBeenCalledWith(2)
+    triggerKeyDown('3', { metaKey: true, altKey: true, code: 'Digit3' })
+    expect(handlers.onHeading).toHaveBeenCalledWith(3)
+  })
+
+  it('should trigger onQuote with Cmd+Alt+B', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('b', { metaKey: true, altKey: true, code: 'KeyB' })
+    expect(handlers.onQuote).toHaveBeenCalled()
+  })
+
+  it('should trigger onFocusEditor with Cmd+Alt+E', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('e', { metaKey: true, altKey: true, code: 'KeyE' })
+    expect(handlers.onFocusEditor).toHaveBeenCalled()
+  })
+
+  it('should trigger onFocusDocument with Cmd+Alt+A', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('a', { metaKey: true, altKey: true, code: 'KeyA' })
+    expect(handlers.onFocusDocument).toHaveBeenCalled()
+  })
+
+  it('should trigger formatting shortcuts with Cmd+Shift', () => {
+    renderHook(() => useKeyboardShortcuts(handlers))
+    triggerKeyDown('u', { metaKey: true, shiftKey: true })
+    expect(handlers.onBulletList).toHaveBeenCalled()
+    triggerKeyDown('o', { metaKey: true, shiftKey: true })
+    expect(handlers.onNumberedList).toHaveBeenCalled()
+    triggerKeyDown('t', { metaKey: true, shiftKey: true })
+    expect(handlers.onTable).toHaveBeenCalled()
+    triggerKeyDown('m', { metaKey: true, shiftKey: true })
+    expect(handlers.onTransform).toHaveBeenCalled()
+    triggerKeyDown('s', { metaKey: true, shiftKey: true })
+    expect(handlers.onDownload).toHaveBeenCalled()
   })
 
   it('should NOT trigger shortcuts when typing in an input', () => {

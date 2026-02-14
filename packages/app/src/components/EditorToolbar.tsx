@@ -1,4 +1,11 @@
-import { type ElementType, forwardRef, useState, useRef } from 'react'
+import {
+  type ElementType,
+  forwardRef,
+  useState,
+  useRef,
+  type MouseEvent,
+  type RefObject,
+} from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -87,6 +94,9 @@ import { cn } from '@/utils/classnames'
 import type { ReactElement } from 'react'
 import type { TransformationPipeline } from '@/components/transformer/types'
 
+/**
+ * Props for the ToolbarButton component
+ */
 interface ToolbarButtonProps {
   icon: ElementType
   label: string
@@ -154,7 +164,11 @@ const ToolbarButton = forwardRef<HTMLButtonElement, ToolbarButtonProps>(
 )
 ToolbarButton.displayName = 'ToolbarButton'
 
-// Sortable Button Wrapper for Pipelines
+/**
+ * Sortable wrapper for a transformation pipeline button
+ * @param props - Component props
+ * @returns Sortable pipeline button
+ */
 function SortablePipelineButton({
   pipeline,
   isActive,
@@ -273,6 +287,7 @@ interface EditorToolbarProps {
   toggleLineNumbers?: () => void
   startEmpty?: boolean
   toggleStartEmpty?: () => void
+  documentMenuRef?: RefObject<HTMLButtonElement | null>
 }
 
 /**
@@ -321,6 +336,7 @@ export function EditorToolbar({
   toggleLineNumbers,
   startEmpty,
   toggleStartEmpty,
+  documentMenuRef,
 }: EditorToolbarProps): ReactElement {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
   const [pipelineToDelete, setPipelineToDelete] = useState<TransformationPipeline | null>(null)
@@ -328,7 +344,7 @@ export function EditorToolbar({
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
   const headingActionRef = useRef(false)
 
-  const handleClearClick = (e: React.MouseEvent) => {
+  const handleClearClick = (e: MouseEvent) => {
     if (!isConfirmingClear) {
       e.preventDefault()
       setIsConfirmingClear(true)
@@ -386,6 +402,7 @@ export function EditorToolbar({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
+              ref={documentMenuRef}
               variant="ghost"
               className={cn(
                 'gap-2 text-sm font-medium',
@@ -410,7 +427,7 @@ export function EditorToolbar({
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Download className="size-4" />
-                Download
+                Download (Cmd+Shift+S)
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuItem onClick={onDownloadMarkdown}>
@@ -478,7 +495,7 @@ export function EditorToolbar({
               }}
             >
               <Heading1 className="size-4" />
-              Heading 1
+              Heading 1 (Cmd+Opt+1)
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -487,7 +504,7 @@ export function EditorToolbar({
               }}
             >
               <Heading2 className="size-4" />
-              Heading 2
+              Heading 2 (Cmd+Opt+2)
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -496,19 +513,31 @@ export function EditorToolbar({
               }}
             >
               <Heading3 className="size-4" />
-              Heading 3
+              Heading 3 (Cmd+Opt+3)
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <ToolbarButton icon={Quote} label="Quote" onClick={onFormatQuote} />
-        <ToolbarButton icon={List} label="Bullet List" onClick={onFormatBulletList} />
-        <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={onFormatNumberedList} />
-        <ToolbarButton icon={CodeSquare} label="Code Block" onClick={onFormatCodeBlock} />
-        <ToolbarButton icon={Table} label="Format Table" onClick={onFormatTable} />
+        <ToolbarButton icon={Quote} label="Quote (Cmd+Opt+B)" onClick={onFormatQuote} />
+        <ToolbarButton icon={List} label="Bullet List (Cmd+Shift+U)" onClick={onFormatBulletList} />
+        <ToolbarButton
+          icon={ListOrdered}
+          label="Numbered List (Cmd+Shift+O)"
+          onClick={onFormatNumberedList}
+        />
+        <ToolbarButton
+          icon={CodeSquare}
+          label="Code Block (Cmd+Shift+K)"
+          onClick={onFormatCodeBlock}
+        />
+        <ToolbarButton icon={Table} label="Format Table (Cmd+Shift+T)" onClick={onFormatTable} />
 
         <div className="w-px h-5 bg-border mx-1" />
 
-        <ToolbarButton icon={Wand2} label="Transform Selection" onClick={onOpenTransformer} />
+        <ToolbarButton
+          icon={Wand2}
+          label="Transform Selection (Cmd+Shift+M)"
+          onClick={onOpenTransformer}
+        />
 
         {pipelines && pipelines.length > 0 && (
           <DndContext

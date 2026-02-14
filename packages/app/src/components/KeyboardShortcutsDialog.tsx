@@ -53,6 +53,42 @@ export function KeyboardShortcutsDialog({
                   <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Cmd/Ctrl + K</code>
                 </div>
                 <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Heading 1/2/3</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Opt + 1/2/3
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Quote</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Opt + B
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Bullet List</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Shift + U
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Numbered List</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Shift + O
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Format Table</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Shift + T
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Transform Selection</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Shift + M
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Code Block</span>
                   <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
                     Cmd/Ctrl + Shift + K
@@ -67,7 +103,13 @@ export function KeyboardShortcutsDialog({
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">New Document</span>
                   <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
-                    Cmd/Ctrl + Alt + N
+                    Cmd/Ctrl + Opt + N
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Download (Markdown)</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Shift + S
                   </code>
                 </div>
                 <div className="flex justify-between items-center text-sm">
@@ -97,6 +139,18 @@ export function KeyboardShortcutsDialog({
             <div>
               <h3 className="font-semibold text-sm mb-3">Application</h3>
               <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Focus Editor</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Opt + E
+                  </code>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground">Focus Document Menu</span>
+                  <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
+                    Cmd/Ctrl + Opt + A
+                  </code>
+                </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">Save</span>
                   <code className="bg-muted px-2 py-1 rounded text-xs font-mono">Cmd/Ctrl + S</code>

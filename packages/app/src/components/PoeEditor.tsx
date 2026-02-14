@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, type ReactElement } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef, type ReactElement } from 'react'
 import { useTheme } from 'next-themes'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useUrlState } from '@/hooks/useUrlState'
@@ -102,6 +102,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     lineNumber: 1,
     column: 1,
   })
+  const documentMenuRef = useRef<HTMLButtonElement>(null)
 
   /* View mode management */
   const { viewMode, setViewMode } = useViewMode()
@@ -372,6 +373,19 @@ ${htmlContent}
     onClear: handleClear,
     onCopyLink: handleCopyLink,
     onReset: () => setShowResetConfirm(true),
+    onHeading: handleFormatHeading,
+    onQuote: handleFormatQuote,
+    onBulletList: handleFormatBulletList,
+    onNumberedList: handleFormatNumberedList,
+    onTable: handleFormatTable,
+    onTransform: () => {
+      const selection = sourceRef.current?.getSelection()
+      setSelectedText(selection || undefined)
+      setShowTransformer(true)
+    },
+    onDownload: handleDownloadMarkdown,
+    onFocusEditor: () => sourceRef.current?.focus(),
+    onFocusDocument: () => documentMenuRef.current?.focus(),
   })
 
   // Effects
@@ -520,6 +534,7 @@ ${htmlContent}
           toggleLineNumbers={toggleLineNumbers}
           startEmpty={startEmpty}
           toggleStartEmpty={toggleStartEmpty}
+          documentMenuRef={documentMenuRef}
         />
 
         <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
