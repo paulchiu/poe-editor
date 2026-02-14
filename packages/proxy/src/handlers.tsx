@@ -32,7 +32,7 @@ export async function handleApiOg(request: Request, env: Env): Promise<Response>
   }
 
   try {
-    const response = await generateOgImage(title, snippet, platform, env)
+    const response = await generateOgImage(title, snippet, platform)
     perf.mark('generateOgImage')
     console.warn(perf.summary())
     return response

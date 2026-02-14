@@ -1,9 +1,5 @@
 import { GoogleFont, ImageResponse } from '@cf-wasm/og'
-import { loadImageAsBase64 } from './loaders'
 import { createPerfTracer } from './perf'
-import { type Env } from './utils'
-
-const SPLASH_IMAGE_PATH = '/proxy/splash.png'
 
 /**
  * Generates an OG image using ImageResponse
@@ -16,23 +12,13 @@ const SPLASH_IMAGE_PATH = '/proxy/splash.png'
 export async function generateOgImage(
   title: string,
   snippet: string,
-  platform: string | null,
-  env: Env
+  platform: string | null
 ): Promise<Response> {
   const perf = createPerfTracer('generateOgImage')
 
   // Home Page Design
   if (platform === 'home') {
-    if (!env.STATIC_BUCKET && !env.ASSETS) {
-      throw new Error('No asset source available (ASSETS or STATIC_BUCKET)')
-    }
 
-    const splashImageBase64 = await loadImageAsBase64(
-      SPLASH_IMAGE_PATH,
-      env.ASSETS,
-      env.STATIC_BUCKET
-    )
-    perf.mark('loadAssets')
 
     const response = await ImageResponse.async(
       <div
@@ -59,28 +45,7 @@ export async function generateOgImage(
           }}
         />
 
-        {/* Ghostly Illustration */}
-        <div
-          style={{
-            position: 'absolute',
-            right: '-50px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '700px',
-            height: '700px',
-            opacity: 0.25,
-            display: 'flex',
-          }}
-        >
-          <img
-            src={splashImageBase64}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-            }}
-          />
-        </div>
+
 
         {/* Content Container */}
         <div
