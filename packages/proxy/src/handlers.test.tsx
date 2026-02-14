@@ -25,7 +25,7 @@ describe('Handlers', () => {
     it('should proxy index request', async () => {
       fetchMock.mockResolvedValueOnce(new Response('Index HTML', { status: 200 }))
       const request = new Request('http://localhost/Title/Snippet')
-      await handleMetadataRoute(request, { title: 'Title', snippet: 'Snippet' })
+      await handleMetadataRoute(request, { title: 'Title', snippet: 'Snippet' }, {})
       expect(fetchMock).toHaveBeenCalledWith('http://localhost/index.html')
     })
   })

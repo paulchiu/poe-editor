@@ -13,3 +13,6 @@ fallthrough = false
 [build]
 command = ""
 
+[env.dev]
+vars = { ORIGIN_URL = "http://localhost:5173" }
+
