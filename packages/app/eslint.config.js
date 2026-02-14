@@ -1,8 +1,8 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
-import tseslint from 'typescript-eslint';
+import js from '@eslint/js'
+import globals from 'globals'
+import react from 'eslint-plugin-react'
+import reactHooks from 'eslint-plugin-react-hooks'
+import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
@@ -55,5 +55,5 @@ export default tseslint.config(
       ],
       'no-console': ['warn', { allow: ['error', 'warn'] }],
     },
-  },
-);
+  }
+)

@@ -107,24 +107,19 @@ export function TransformerDialog({
     // Only run when dialog opens (was closed, now open)
     if (open && !wasOpen) {
       hasShownEscapeToastRef.current = false
-      if (editPipeline) {
-        setPipelineName(editPipeline.name)
 
-        setPipelineIcon(editPipeline.icon)
+      // Defer state updates to avoid synchronous setState in effect
+      queueMicrotask(() => {
+        const name = editPipeline?.name ?? ''
+        const icon = editPipeline?.icon ?? '🪄'
+        const newSteps = editPipeline?.steps ?? []
 
-        setSteps(editPipeline.steps)
-      } else {
-        // Reset to default for new pipeline
-
-        setPipelineName('')
-
-        setPipelineIcon('🪄')
-
-        setSteps([])
-      }
-
-      setActiveTab('pipeline')
-      setIsToolboxOpen(false)
+        setPipelineName(name)
+        setPipelineIcon(icon)
+        setSteps(newSteps)
+        setActiveTab('pipeline')
+        setIsToolboxOpen(false)
+      })
     }
   }, [open, editPipeline])
 
