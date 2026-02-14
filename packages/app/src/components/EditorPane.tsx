@@ -72,6 +72,9 @@ interface VimModeModule {
   Vim: VimAPI
 }
 
+/**
+ * Initializes Vim mode for Monaco editor including custom operators and actions
+ */
 function setupVim() {
   if (vimClipboardSetup || !VimMode) {
     return
@@ -225,6 +228,8 @@ export interface EditorPaneHandle {
   onScroll: (callback: () => void) => { dispose: () => void }
   /** Format the table at the current cursor position */
   formatTable: () => void
+  /** Focus the editor */
+  focus: () => void
 }
 
 /**
@@ -601,6 +606,10 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           // Restore cursor position roughly? Or focus.
           editor.focus()
         }
+      },
+
+      focus: () => {
+        editorRef.current?.focus()
       },
     }))
 

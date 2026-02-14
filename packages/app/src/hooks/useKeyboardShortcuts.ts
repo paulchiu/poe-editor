@@ -13,6 +13,15 @@ interface ShortcutHandlers {
   onClear: () => void
   onCopyLink: () => void
   onReset: () => void
+  onHeading: (level: number) => void
+  onQuote: () => void
+  onBulletList: () => void
+  onNumberedList: () => void
+  onTable: () => void
+  onTransform: () => void
+  onDownload: () => void
+  onFocusEditor: () => void
+  onFocusDocument: () => void
 }
 
 /**
@@ -52,15 +61,39 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
       // Handle modifier-based shortcuts
       if (isMod) {
         // Shift + K for code block
-        if (event.shiftKey && event.key.toLowerCase() === 'k') {
-          event.preventDefault()
-          handlers.onCodeBlock()
-          return
+        if (event.shiftKey) {
+          switch (event.key.toLowerCase()) {
+            case 'k':
+              event.preventDefault()
+              handlers.onCodeBlock()
+              return
+            case 's':
+              event.preventDefault()
+              handlers.onDownload()
+              return
+            case 'u':
+              event.preventDefault()
+              handlers.onBulletList()
+              return
+            case 'o':
+              event.preventDefault()
+              handlers.onNumberedList()
+              return
+            case 't':
+              event.preventDefault()
+              handlers.onTable()
+              return
+            case 'm':
+              event.preventDefault()
+              handlers.onTransform()
+              return
+          }
         }
 
         // App-level shortcuts (Cmd+Alt+...)
         if (isAlt) {
           // Use event.code for reliable detection across layouts (ignoring Option key side-effects on character output)
+          // macOS: Option acts as Alt.
           switch (event.code) {
             case 'KeyN':
               event.preventDefault()
@@ -81,6 +114,34 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers): void {
             case 'Digit0':
               event.preventDefault()
               handlers.onReset()
+              break
+            // Headings
+            case 'Digit1':
+              event.preventDefault()
+              handlers.onHeading(1)
+              break
+            case 'Digit2':
+              event.preventDefault()
+              handlers.onHeading(2)
+              break
+            case 'Digit3':
+              event.preventDefault()
+              handlers.onHeading(3)
+              break
+            // Quote (Cmd+Opt+B)
+            case 'KeyB':
+              event.preventDefault()
+              handlers.onQuote()
+              break
+            // Focus Editor (Cmd+Opt+E)
+            case 'KeyE':
+              event.preventDefault()
+              handlers.onFocusEditor()
+              break
+            // Focus Document Menu (Cmd+Opt+A)
+            case 'KeyA':
+              event.preventDefault()
+              handlers.onFocusDocument()
               break
           }
           return
