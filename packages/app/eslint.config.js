@@ -1,33 +1,28 @@
-import js from '@eslint/js'
-import reactPlugin from 'eslint-plugin-react'
-import reactHooksPlugin from 'eslint-plugin-react-hooks'
-import tseslint from 'typescript-eslint'
-import prettierConfig from 'eslint-config-prettier'
+import js from '@eslint/js';
+import globals from 'globals';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
   {
     ignores: [
-      'node_modules/**',
-      'dist/**',
+      'dist',
+      'node_modules',
+      'coverage',
+      'routeTree.gen.ts',
       'build/**',
       '.next/**',
       '**/.wrangler/**',
       'package-lock.json',
     ],
   },
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: {
-        console: 'readonly',
-        process: 'readonly',
-        URL: 'readonly',
-        URLSearchParams: 'readonly',
-      },
+      ecmaVersion: 2020,
+      globals: globals.browser,
       parserOptions: {
         ecmaFeatures: {
           jsx: true,
@@ -40,14 +35,15 @@ export default [
       },
     },
     plugins: {
-      react: reactPlugin,
-      'react-hooks': reactHooksPlugin,
+      react: react,
+      'react-hooks': reactHooks,
     },
     rules: {
-      ...reactPlugin.configs.recommended.rules,
-      ...reactHooksPlugin.configs.recommended.rules,
+      ...react.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+      'react/jsx-no-target-blank': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-imports': [
         'warn',
@@ -60,5 +56,4 @@ export default [
       'no-console': ['warn', { allow: ['error', 'warn'] }],
     },
   },
-  prettierConfig,
-]
+);
