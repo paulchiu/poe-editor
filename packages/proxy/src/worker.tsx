@@ -17,8 +17,27 @@ export default {
     }
 
     // Serve namespaced proxy assets
-    if (pathname.startsWith('/proxy/') && env.ASSETS) {
-      return env.ASSETS.fetch(request)
+    if (pathname.startsWith('/proxy/')) {
+      // Try serving from Workers Assets first (production)
+      let response = await env.ASSETS?.fetch(request)
+
+      // Fallback to R2 bucket (remote dev or missing asset)
+      if ((!response || response.status === 404) && env.STATIC_BUCKET) {
+        const object = await env.STATIC_BUCKET.get(pathname.slice(1)) // Remove leading slash
+        if (object) {
+          const headers = new Headers()
+          object.writeHttpMetadata(headers)
+          headers.set('etag', object.httpEtag)
+
+          return new Response(object.body, {
+            headers,
+          })
+        }
+      }
+
+      if (response) {
+        return response
+      }
     }
 
     if (isStaticAsset(pathname)) {

@@ -2,41 +2,39 @@
 export async function loadAsset(
   path: string,
   assets: Fetcher | undefined,
-  fallbackUrl: string
+  bucket: R2Bucket | undefined
 ): Promise<ArrayBuffer> {
-  let response: Response
-
+  // 1. Try Workers Assets (Production / Local)
   if (assets) {
-    // Use the binding to fetch local assets directly (bypassing network)
-    // path is expected to be relative like '/proxy/fonts/...'
-    // The binding expects a request to a domain it handles, often just needs the path if correctly bound,
-    // but typically we construct a full URL. `assets.fetch` handles requests.
-    // In previous steps we used `http://assets${path}` which worked.
     const url = `http://assets${path}`
-    response = await assets.fetch(url)
-  } else {
-    // Fallback: fetch from the provided fallback URL (CDN or other)
-    console.log(`[loadAsset] Fallback for ${path} => ${fallbackUrl}`)
-    response = await fetch(fallbackUrl)
+    const response = await assets.fetch(url)
+    if (response.ok) {
+      return await response.arrayBuffer()
+    }
+    console.warn(`[loadAsset] ASSETS fetch failed for ${path} (${response.status})`)
   }
 
-  if (!response.ok) {
-    const attemptedUrl = assets ? `http://assets${path}` : fallbackUrl
-    console.error(`[loadAsset] Failed to fetch: ${attemptedUrl} (Status: ${response.status})`)
-    throw new Error(
-      `Failed to fetch asset ${path}: ${response.status} ${response.statusText} (${attemptedUrl})`
-    )
+  // 2. Try R2 Bucket (Remote Dev / Fallback)
+  if (bucket) {
+    // Remove leading slash for key
+    const key = path.replace(/^\//, '')
+    const object = await bucket.get(key)
+    if (object) {
+      console.log(`[loadAsset] Served from R2: ${key}`)
+      return await object.arrayBuffer() // R2ObjectBody has arrayBuffer()
+    }
+    console.warn(`[loadAsset] R2 Bucket lookup failed for ${key}`)
   }
 
-  return await response.arrayBuffer()
+  throw new Error(`Failed to load asset ${path} from ASSETS or R2`)
 }
 
 export async function loadImageAsBase64(
   path: string,
   assets: Fetcher | undefined,
-  fallbackUrl: string
+  bucket: R2Bucket | undefined
 ): Promise<string> {
-  const buffer = await loadAsset(path, assets, fallbackUrl)
+  const buffer = await loadAsset(path, assets, bucket)
   const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
   return `data:image/png;base64,${base64}`
 }

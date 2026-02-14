@@ -89,6 +89,23 @@ npm run test:run      # Run once
 npm run deploy
 ```
 
+## Static Asset Sync (R2)
+
+Static assets in `public/` (fonts, splash image) are served by Workers Assets in production, but `wrangler dev --remote` cannot serve local static files. To work around this, assets can be synced to the `poe-editor-static` R2 bucket:
+
+```bash
+# Sync to local R2 (for local dev)
+npm run asset-sync
+
+# Sync to remote/production R2
+npm run asset-sync -- --remote
+
+# Preview what would be uploaded
+npm run asset-sync -- --dry-run
+```
+
+This is primarily needed for `npm run dev:remote` to function correctly. Standard local dev (`npm run dev`) and production deployments do not require this step.
+
 ## Testing Open Graph Images
 
 The `npm run test:og` script (and `scripts/og-test.js`) has been updated to automatically handle signatures using the local development secret.

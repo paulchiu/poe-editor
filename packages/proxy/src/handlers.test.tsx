@@ -28,7 +28,13 @@ vi.stubGlobal('HTMLRewriter', function () {
 })
 
 describe('Handlers', () => {
-    const mockEnv: Env = { OG_SECRET: 'test-secret', ENVIRONMENT: 'development' }
+    const mockEnv: Env = { 
+        OG_SECRET: 'test-secret', 
+        ENVIRONMENT: 'development',
+        ASSETS: {
+            fetch: vi.fn().mockImplementation(() => Promise.resolve(new Response(new ArrayBuffer(10))))
+        } as any
+    }
     let fetchMock: any
 
     beforeEach(() => {

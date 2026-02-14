@@ -1,8 +1,9 @@
 import { ImageResponse } from '@cf-wasm/og'
 import { createElement } from 'react'
-import { SPLASH_IMAGE_PATH } from './assets'
 import { loadAsset, loadImageAsBase64 } from './loaders'
 import { Env } from './utils'
+
+const SPLASH_IMAGE_PATH = '/proxy/splash.png'
 
 /**
  * Generates an OG image using ImageResponse
@@ -29,20 +30,15 @@ export async function generateOgImage(
     const playfairItalicUrl = '/proxy/fonts/playfair-italic.woff'
 
     // Fallbacks
-    if (
-      !env.CDN_URL_PLAYFAIR_REGULAR ||
-      !env.CDN_URL_PLAYFAIR_BLACK ||
-      !env.CDN_URL_PLAYFAIR_ITALIC ||
-      !env.CDN_URL_SPLASH_IMAGE
-    ) {
-      throw new Error('Missing one or more CDN URLs for Home page assets')
+    if (!env.STATIC_BUCKET && !env.ASSETS) {
+      throw new Error('No asset source available (ASSETS or STATIC_BUCKET)')
     }
 
     const [playfairRegular, playfairBlack, playfairItalic, splashImageBase64] = await Promise.all([
-      loadAsset(playfairRegularUrl, env.ASSETS, env.CDN_URL_PLAYFAIR_REGULAR),
-      loadAsset(playfairBlackUrl, env.ASSETS, env.CDN_URL_PLAYFAIR_BLACK),
-      loadAsset(playfairItalicUrl, env.ASSETS, env.CDN_URL_PLAYFAIR_ITALIC),
-      loadImageAsBase64(SPLASH_IMAGE_PATH, env.ASSETS, env.CDN_URL_SPLASH_IMAGE),
+      loadAsset(playfairRegularUrl, env.ASSETS, env.STATIC_BUCKET),
+      loadAsset(playfairBlackUrl, env.ASSETS, env.STATIC_BUCKET),
+      loadAsset(playfairItalicUrl, env.ASSETS, env.STATIC_BUCKET),
+      loadImageAsBase64(SPLASH_IMAGE_PATH, env.ASSETS, env.STATIC_BUCKET),
     ])
 
     return new ImageResponse(
@@ -228,13 +224,13 @@ export async function generateOgImage(
   }
 
   // Standard/Twitter Layout
-  if (!env.CDN_URL_INTER_REGULAR || !env.CDN_URL_INTER_BOLD) {
-    throw new Error('Missing CDN URLs for Inter font')
+  if (!env.STATIC_BUCKET && !env.ASSETS) {
+    throw new Error('No asset source available (ASSETS or STATIC_BUCKET)')
   }
 
   const [interFont, interBold] = await Promise.all([
-    loadAsset(interFontUrl, env.ASSETS, env.CDN_URL_INTER_REGULAR),
-    loadAsset(interBoldUrl, env.ASSETS, env.CDN_URL_INTER_BOLD),
+    loadAsset(interFontUrl, env.ASSETS, env.STATIC_BUCKET),
+    loadAsset(interBoldUrl, env.ASSETS, env.STATIC_BUCKET),
   ])
 
   const displayTitle = title.length > 60 ? title.slice(0, 57) + '...' : title

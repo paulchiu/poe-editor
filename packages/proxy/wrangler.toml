@@ -15,9 +15,17 @@ type = "CompiledWasm"
 globs = ["**/*.wasm"]
 fallthrough = false
 
+[[r2_buckets]]
+binding = "STATIC_BUCKET"
+bucket_name = "poe-editor-static"
+
 [build]
 command = ""
 
 [env.dev]
-vars = { ENVIRONMENT = "development", CDN_URL_INTER_REGULAR = "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff", CDN_URL_INTER_BOLD = "https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff", CDN_URL_PLAYFAIR_REGULAR = "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-400-normal.woff", CDN_URL_PLAYFAIR_BLACK = "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-900-normal.woff", CDN_URL_PLAYFAIR_ITALIC = "https://cdn.jsdelivr.net/fontsource/fonts/playfair-display@latest/latin-400-italic.woff", CDN_URL_SPLASH_IMAGE = "https://poe-editor-proxy.accounts-8d2.workers.dev/proxy/splash.png" }
+vars = { ENVIRONMENT = "development" }
+
+[[env.dev.r2_buckets]]
+binding = "STATIC_BUCKET"
+bucket_name = "poe-editor-static"
 

@@ -27,6 +27,10 @@ interface WorkerModule {
 
 const MOCK_ENV = {
   OG_SECRET: 'test-secret',
+  ENVIRONMENT: 'development',
+  ASSETS: {
+    fetch: () => Promise.resolve(new Response(new ArrayBuffer(10)))
+  }
 }
 
 interface MockElement {
