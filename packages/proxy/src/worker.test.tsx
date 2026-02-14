@@ -1,4 +1,3 @@
-
 import { describe, it, expect, beforeAll, vi, beforeEach } from 'vitest'
 
 interface WorkerModule {
@@ -9,6 +8,13 @@ const MOCK_ENV = {
   OG_SECRET: 'test-secret',
 }
 
+// Mock @cf-wasm/og cache to avoid ExecutionContext validation in tests
+vi.mock('@cf-wasm/og', () => ({
+  cache: {
+    setExecutionContext: () => {},
+  },
+}))
+
 // Mock handlers to verify routing logic
 vi.mock('./handlers', () => ({
   handleApiOg: vi.fn(async () => new Response('API OG', { status: 200 })),
@@ -17,7 +23,6 @@ vi.mock('./handlers', () => ({
 }))
 
 import { handleApiOg, handleHome, handleMetadataRoute } from './handlers'
-
 
 describe('Worker Routing', () => {
   let worker: WorkerModule
@@ -37,7 +42,7 @@ describe('Worker Routing', () => {
   it('should route /api/og to handleApiOg', async () => {
     const request = new Request('http://localhost:8787/api/og')
     const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
-    
+
     expect(handleApiOg).toHaveBeenCalled()
     expect(response.status).toBe(200)
     expect(await response.text()).toBe('API OG')
@@ -62,16 +67,16 @@ describe('Worker Routing', () => {
   })
 
   it('should passthrough static assets', async () => {
-      fetchMock.mockResolvedValueOnce(new Response('Static Asset', { status: 200 }))
-      const request = new Request('http://localhost:8787/style.css')
-      const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
-      
-      expect(fetchMock).toHaveBeenCalled()
-      expect(response.status).toBe(200)
-      expect(await response.text()).toBe('Static Asset')
-      
-      expect(handleApiOg).not.toHaveBeenCalled()
-      expect(handleHome).not.toHaveBeenCalled()
-      expect(handleMetadataRoute).not.toHaveBeenCalled()
+    fetchMock.mockResolvedValueOnce(new Response('Static Asset', { status: 200 }))
+    const request = new Request('http://localhost:8787/style.css')
+    const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+
+    expect(fetchMock).toHaveBeenCalled()
+    expect(response.status).toBe(200)
+    expect(await response.text()).toBe('Static Asset')
+
+    expect(handleApiOg).not.toHaveBeenCalled()
+    expect(handleHome).not.toHaveBeenCalled()
+    expect(handleMetadataRoute).not.toHaveBeenCalled()
   })
 })

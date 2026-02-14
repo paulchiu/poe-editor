@@ -8,16 +8,22 @@ interface ImageResponseOptions {
 }
 
 vi.mock('@cf-wasm/og', () => ({
-  ImageResponse: class {
-    constructor(element: unknown, options: ImageResponseOptions) {
-      mockImageResponse(element, options)
+  ImageResponse: {
+    async: async (_element: unknown, options?: ImageResponseOptions) => {
+      mockImageResponse(_element, options)
       return new Response(new Uint8Array([1, 2, 3, 4]), {
         headers: {
           'content-type': 'image/png',
-          'cache-control': options.headers?.['Cache-Control'] || 'no-cache',
+          'cache-control': options?.headers?.['Cache-Control'] || 'no-cache',
         },
       })
-    }
+    },
+  },
+  GoogleFont: class {
+    constructor() {}
+  },
+  cache: {
+    setExecutionContext: () => {},
   },
 }))
 
@@ -29,8 +35,8 @@ const MOCK_ENV = {
   OG_SECRET: 'test-secret',
   ENVIRONMENT: 'development',
   ASSETS: {
-    fetch: () => Promise.resolve(new Response(new ArrayBuffer(10)))
-  }
+    fetch: () => Promise.resolve(new Response(new ArrayBuffer(10))),
+  },
 }
 
 interface MockElement {
@@ -224,10 +230,14 @@ describe('Worker Rewriter Tests', () => {
 
     // Check for OG Image (Default)
     // Should NOT contain platform=twitter
-    expect(text).toMatch(/<meta property="og:image" content="http:\/\/localhost:8787\/api\/og\?title=My\+Title&snippet=My\+Snippet&sig=[a-f0-9]+"/);
-    
+    expect(text).toMatch(
+      /<meta property="og:image" content="http:\/\/localhost:8787\/api\/og\?title=My\+Title&snippet=My\+Snippet&sig=[a-f0-9]+"/
+    )
+
     // Check for Twitter Image (Platform=twitter)
-    expect(text).toMatch(/<meta name="twitter:image" content="http:\/\/localhost:8787\/api\/og\?title=My\+Title&snippet=My\+Snippet&platform=twitter&sig=[a-f0-9]+"/);
+    expect(text).toMatch(
+      /<meta name="twitter:image" content="http:\/\/localhost:8787\/api\/og\?title=My\+Title&snippet=My\+Snippet&platform=twitter&sig=[a-f0-9]+"/
+    )
 
     // Check for absence of old tags
     expect(text).not.toContain('<meta property="og:title" content="Old Title" />')
@@ -260,9 +270,13 @@ describe('Worker Rewriter Tests', () => {
 
     // Check for Home Tags
     expect(text).toContain('<meta property="og:title" content="Poe Markdown Editor" />')
-    
+
     // Check for Home Image (platform=home)
-    expect(text).toMatch(/<meta property="og:image" content="http:\/\/localhost:8787\/api\/og\?title=Home&snippet=&platform=home&sig=[a-f0-9]+"/);
-    expect(text).toMatch(/<meta name="twitter:image" content="http:\/\/localhost:8787\/api\/og\?title=Home&snippet=&platform=home&sig=[a-f0-9]+"/);
+    expect(text).toMatch(
+      /<meta property="og:image" content="http:\/\/localhost:8787\/api\/og\?title=Home&snippet=&platform=home&sig=[a-f0-9]+"/
+    )
+    expect(text).toMatch(
+      /<meta name="twitter:image" content="http:\/\/localhost:8787\/api\/og\?title=Home&snippet=&platform=home&sig=[a-f0-9]+"/
+    )
   })
 })

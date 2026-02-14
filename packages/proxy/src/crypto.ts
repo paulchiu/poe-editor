@@ -1,4 +1,3 @@
-
 /**
  * Generates an HMAC SHA-256 signature for the given parameters
  * @param title - The document title to sign

@@ -1,13 +1,15 @@
-
-import { Env, getSecret, isDevelopment } from './utils'
+import { type Env, getSecret, isDevelopment } from './utils'
 import { generateSignature, verifySignature } from './crypto'
 import { generateOgImage } from './og'
+import { createPerfTracer } from './perf'
 import { createHeadHandler, createTitleHandler, removeElementHandler } from './rewriter'
 
 /**
  * Handles the /api/og endpoint
  */
 export async function handleApiOg(request: Request, env: Env): Promise<Response> {
+  const perf = createPerfTracer('handleApiOg')
+
   const url = new URL(request.url)
   const title = url.searchParams.get('title') || 'Untitled'
   const snippet = url.searchParams.get('snippet') || 'A document on poemd.dev'
@@ -18,6 +20,7 @@ export async function handleApiOg(request: Request, env: Env): Promise<Response>
   const isHome = platform === 'home'
   const isValid =
     isHome || (signature && (await verifySignature(title, snippet, platform, signature, secret)))
+  perf.mark('verifySignature')
 
   if (!isValid) {
     return new Response('Unauthorized: Invalid or missing signature', { status: 401 })
@@ -29,7 +32,10 @@ export async function handleApiOg(request: Request, env: Env): Promise<Response>
   }
 
   try {
-    return await generateOgImage(title, snippet, platform, env)
+    const response = await generateOgImage(title, snippet, platform, env)
+    perf.mark('generateOgImage')
+    console.warn(perf.summary())
+    return response
   } catch (error) {
     return new Response(
       JSON.stringify({

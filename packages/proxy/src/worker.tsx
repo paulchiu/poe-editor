@@ -1,13 +1,14 @@
-
-import { Env, isStaticAsset, parsePathMetadata } from './utils'
+import { cache } from '@cf-wasm/og'
+import { type Env, isStaticAsset, parsePathMetadata } from './utils'
 import { handleApiOg, handleHome, handleMetadataRoute } from './handlers'
 import { createHeadHandler, removeElementHandler } from './rewriter'
 
 export { createHeadHandler, removeElementHandler }
 
 export default {
-  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
-    console.log('Env keys:', Object.keys(env))
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    cache.setExecutionContext(ctx)
+
     const url = new URL(request.url)
     const { pathname } = url
 
@@ -19,7 +20,7 @@ export default {
     // Serve namespaced proxy assets
     if (pathname.startsWith('/proxy/')) {
       // Try serving from Workers Assets first (production)
-      let response = await env.ASSETS?.fetch(request)
+      const response = await env.ASSETS?.fetch(request)
 
       // Fallback to R2 bucket (remote dev or missing asset)
       if ((!response || response.status === 404) && env.STATIC_BUCKET) {

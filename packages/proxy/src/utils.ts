@@ -1,4 +1,3 @@
-
 // Static asset patterns to exclude from OG handling
 const STATIC_ASSET_PATTERNS = [
   /\.js$/i,

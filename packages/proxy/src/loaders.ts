@@ -1,4 +1,3 @@
-
 export async function loadAsset(
   path: string,
   assets: Fetcher | undefined,
@@ -11,19 +10,15 @@ export async function loadAsset(
     if (response.ok) {
       return await response.arrayBuffer()
     }
-    console.warn(`[loadAsset] ASSETS fetch failed for ${path} (${response.status})`)
   }
 
   // 2. Try R2 Bucket (Remote Dev / Fallback)
   if (bucket) {
-    // Remove leading slash for key
     const key = path.replace(/^\//, '')
     const object = await bucket.get(key)
     if (object) {
-      console.log(`[loadAsset] Served from R2: ${key}`)
-      return await object.arrayBuffer() // R2ObjectBody has arrayBuffer()
+      return await object.arrayBuffer()
     }
-    console.warn(`[loadAsset] R2 Bucket lookup failed for ${key}`)
   }
 
   throw new Error(`Failed to load asset ${path} from ASSETS or R2`)
