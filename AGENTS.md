@@ -84,7 +84,9 @@
 - **Install:** `npm install`
 - **Dev:** `npm run dev`
 - **Test:** `npm test` (Unit), `npm test:e2e` (E2E)
+- **Type Check:** `npm run tsc` (Must pass with zero errors).
 - **Lint:** `npm run lint` (Zero warnings tolerance).
+- **Build:** `npm run build` (Must complete successfully).
 - **Format:** `npm run format` (Apply Prettier formatting after code changes).
 
 ## 7. Git Commit Convention
