@@ -427,7 +427,7 @@ export function EditorToolbar({
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>
                 <Download className="size-4" />
-                Download (Cmd+Shift+S)
+                Download
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuItem onClick={onDownloadMarkdown}>
