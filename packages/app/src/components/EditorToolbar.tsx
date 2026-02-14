@@ -59,6 +59,7 @@ import {
   Moon,
   MoreHorizontal,
   FileText,
+  File,
   FilePlus,
   Pencil,
   Download,
@@ -268,6 +269,8 @@ interface EditorToolbarProps {
   toggleWordCount?: () => void
   showLineNumbers?: boolean
   toggleLineNumbers?: () => void
+  startEmpty?: boolean
+  toggleStartEmpty?: () => void
 }
 
 /**
@@ -313,6 +316,8 @@ export function EditorToolbar({
   toggleWordCount,
   showLineNumbers,
   toggleLineNumbers,
+  startEmpty,
+  toggleStartEmpty,
 }: EditorToolbarProps): ReactElement {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
   const [pipelineToDelete, setPipelineToDelete] = useState<TransformationPipeline | null>(null)
@@ -641,6 +646,10 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={toggleLineNumbers}>
               <Hash className="size-4" />
               {showLineNumbers ? 'Hide Line Numbers' : 'Show Line Numbers'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleStartEmpty}>
+              <File className="size-4" />
+              {startEmpty ? 'Start with Default Content' : 'Start with Empty Editor'}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenImportExport}>
               <ArrowRightLeft className="size-4" />

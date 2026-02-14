@@ -9,6 +9,7 @@ import { useLineNumbers } from '@/hooks/useLineNumbers'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSyncScroll } from '@/hooks/useSyncScroll'
 import { useTransformers } from '@/hooks/useTransformers'
+import { useEditorPreferences } from '@/hooks/useEditorPreferences'
 import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
 import { applyPipeline } from '@/utils/transformer-engine'
@@ -133,9 +134,12 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     [toast]
   )
 
+  // Editor preferences
+  const { startEmpty, toggleStartEmpty } = useEditorPreferences()
+
   // URL state management
   const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
-    defaultContent: DEFAULT_CONTENT,
+    defaultContent: startEmpty ? '' : DEFAULT_CONTENT,
     defaultName: 'untitled.md',
     onError: handleError,
     onLengthWarning: handleLengthWarning,
@@ -509,6 +513,8 @@ ${htmlContent}
           toggleWordCount={toggleWordCount}
           showLineNumbers={showLineNumbers}
           toggleLineNumbers={toggleLineNumbers}
+          startEmpty={startEmpty}
+          toggleStartEmpty={toggleStartEmpty}
         />
 
         <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
