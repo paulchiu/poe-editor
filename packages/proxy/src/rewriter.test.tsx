@@ -1,32 +1,7 @@
 import { describe, it, expect, beforeAll, vi, beforeEach } from 'vitest'
 
-// Mock the @cf-wasm/og module
-const mockImageResponse = vi.fn()
-
-interface ImageResponseOptions {
-  headers?: Record<string, string>
-}
-
-vi.mock('@cf-wasm/og', () => ({
-  ImageResponse: class {
-    constructor(element: unknown, options: ImageResponseOptions) {
-      mockImageResponse(element, options)
-      return new Response(new Uint8Array([1, 2, 3, 4]), {
-        headers: {
-          'content-type': 'image/png',
-          'cache-control': options.headers?.['Cache-Control'] || 'no-cache',
-        },
-      })
-    }
-  },
-}))
-
 interface WorkerModule {
   fetch: (request: Request, env: unknown, ctx: ExecutionContext) => Promise<Response>
-}
-
-const MOCK_ENV = {
-  OG_SECRET: 'test-secret',
 }
 
 interface MockElement {
@@ -75,6 +50,7 @@ class MockHTMLRewriter {
               const mockElement = {
                 remove: () => {
                   // Remove matching tags
+                  // Remove matching tags
                   if (selector.includes('property^="og:"')) {
                     html = html.replace(/<meta property="og:[^>]*>/g, '')
                   }
@@ -83,6 +59,20 @@ class MockHTMLRewriter {
                   }
                   if (selector.includes('name="description"')) {
                     html = html.replace(/<meta name="description"[^>]*>/g, '')
+                  }
+
+                  // Handle specific property selectors (e.g. meta[property="og:title"])
+                  const propMatch = selector.match(/meta\[property="([^"]+)"\]/)
+                  if (propMatch) {
+                    const prop = propMatch[1]
+                    html = html.replace(new RegExp(`<meta property="${prop}"[^>]*>`, 'g'), '')
+                  }
+
+                  // Handle specific name selectors (e.g. meta[name="twitter:title"])
+                  const nameMatch = selector.match(/meta\[name="([^"]+)"\]/)
+                  if (nameMatch) {
+                    const name = nameMatch[1]
+                    html = html.replace(new RegExp(`<meta name="${name}"[^>]*>`, 'g'), '')
                   }
                 },
                 getAttribute: () => null,
@@ -187,14 +177,15 @@ describe('Worker Rewriter Tests', () => {
     })
   })
 
-  it('should return HTML with correct OG meta tags and NO duplicates', async () => {
-    // Mock the index.html response with conflicting default tags
+  it('should return HTML with correct OG meta tags and NO duplicates and PRESERVE existing og:image', async () => {
+    // Mock the index.html response with conflicting default tags and an existing OG image
     const mockHtml = `<!DOCTYPE html>
 <html>
 <head>
   <title>Default</title>
   <meta property="og:title" content="Old Title" />
   <meta property="og:description" content="Old Desc" />
+  <meta property="og:image" content="https://example.com/existing-image.png" />
   <meta name="description" content="Old Desc" />
 </head>
 <body></body>
@@ -208,7 +199,7 @@ describe('Worker Rewriter Tests', () => {
     )
 
     const request = new Request('http://localhost:8787/My-Title/My-Snippet')
-    const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+    const response = await worker.fetch(request, {}, {} as ExecutionContext)
     const text = await response.text()
 
     expect(response.status).toBe(200)
@@ -218,7 +209,13 @@ describe('Worker Rewriter Tests', () => {
     expect(text).toContain('<meta property="og:title" content="My Title" />')
     expect(text).toContain('<meta property="og:description" content="My Snippet" />')
 
-    // Check for absence of old tags
+    // Check for PRESERVED OG Image
+    // It should NOT be replaced by the worker, so it should be the one from mockHtml
+    expect(text).toContain(
+      '<meta property="og:image" content="https://example.com/existing-image.png" />'
+    )
+
+    // Check for absence of old tags (title, description)
     expect(text).not.toContain('<meta property="og:title" content="Old Title" />')
     expect(text).not.toContain('<meta property="og:description" content="Old Desc" />')
     expect(text).not.toContain('<meta name="description" content="Old Desc" />')

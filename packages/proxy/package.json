@@ -5,20 +5,18 @@
   "main": "dist/worker.js",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --config wrangler.toml",
-    "dev:remote": "wrangler dev --remote --config wrangler.toml",
+    "dev": "wrangler dev --config wrangler.toml --env dev",
+    "dev:remote": "wrangler dev --remote --config wrangler.toml --env dev",
     "deploy": "wrangler deploy",
     "build": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:og": "node scripts/og-test.js",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@cf-wasm/og": "^0.3.7",
     "react": "^19.2.4"
   },
   "devDependencies": {

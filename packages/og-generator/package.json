@@ -1,0 +1,32 @@
+{
+  "name": "og-generator",
+  "version": "1.0.0",
+  "description": "Static OG image generator for Poe Editor",
+  "main": "src/index.tsx",
+  "type": "module",
+  "scripts": {
+    "generate": "tsx src/index.tsx",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "react": "^18.3.1",
+    "satori": "^0.10.13"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@types/react": "^18.3.3",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.54.0",
+    "vitest": "^2.0.0"
+  }
+}

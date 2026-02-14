@@ -27,12 +27,6 @@ Example: `https://poemd.dev/The-Raven/Once-upon-a-midnight-dreary#abc123...`
 - Root-level URL routing for clean, shareable links without query parameters.
 - Built-in XSS prevention through HTML escaping of all path parameters.
 
-## Technical Stack
-
-- [Satori](https://github.com/vercel/satori) for React-to-SVG conversion.
-- [Yoga](https://yogalayout.com/) layout engine (WASM).
-- [Resvg](https://github.com/RazrFalcon/resvg) for SVG-to-PNG rasterization (WASM).
-
 ## Security
 
 To prevent unauthorized usage of the image generation endpoint, all requests to `/api/og` must be signed.
@@ -42,6 +36,10 @@ To prevent unauthorized usage of the image generation endpoint, all requests to 
 - `OG_SECRET`: A secret string used to sign and verify URLs.
   - Production: MUST be set in your Cloudflare Worker environment variables.
   - Development: If not set, defaults to `"development-secret"`. This ensures `wrangler dev` works out of the box.
+
+- `ENVIRONMENT`: Controls the development mode behavior.
+  - Development: Set to `"development"` to enable development features like redirecting home page to `og-home.png` and skipping signature checks.
+  - Production: Leave unset or set to anything else.
 
 ### How it Works
 
@@ -71,8 +69,11 @@ If running directly in this package:
 ```bash
 cd packages/proxy
 
-# Start local dev server
+# Start local dev server (uses --env dev)
 npm run dev
+
+# Start remote dev server (uses --env dev)
+npm run dev:remote
 
 # Run tests
 npm test              # Watch mode
@@ -82,52 +83,7 @@ npm run test:run      # Run once
 npm run deploy
 ```
 
-## Testing Open Graph Images
-
-The `npm run test:og` script (and `scripts/og-test.js`) has been updated to automatically handle signatures using the local development secret.
-
-It provides an interactive CLI for testing Open Graph image generation during development. Quickly preview, download, and inspect generated preview images:
-
-```bash
-# Show help
-npm run test:og -- --help
-
-# Preview headers only (fast connectivity check)
-npm run test:og -- preview "http://localhost:5173/poe-markdown-editors/my-title"
-
-# Download the Open Graph image to a file
-npm run test:og -- download "http://localhost:5173/poe-markdown-editors/my-title"
-
-# Download with custom output filename
-npm run test:og -- download "http://localhost:5173/poe-markdown-editors/my-title" -o my-og.png
-
-# Download and automatically open the image
-npm run test:og -- open "http://localhost:5173/poe-markdown-editors/my-title"
-
-# Just display parsed URL info (no network request)
-npm run test:og -- info "http://localhost:5173/poe-markdown-editors/my-title"
-
-# Use a custom proxy URL
-npm run test:og -- preview "http://localhost:5173/poe-markdown-editors/my-title" -p http://localhost:8787
-```
-
-### Manual Testing with Curl
-
-If you want to test manually with `curl`, you must generate a signature using `OG_SECRET` (default: `"development-secret"`).
-
-One-liner to generate a signature:
-
-```bash
-node -e 'console.log(require("crypto").createHmac("sha256", "development-secret").update(JSON.stringify({title:"Test",snippet:"Hello"})).digest("hex"))'
-```
-
-Then append it to your request:
-
-```bash
-curl "http://localhost:8787/api/og?title=Test&snippet=Hello&sig=<YOUR_SIGNATURE>"
-```
-
-## Deployment
+## Configuration
 
 ### Automatic (Recommended)
 

@@ -4,6 +4,7 @@ compatibility_date = "2025-01-30"
 compatibility_flags = ["nodejs_compat"]
 
 # Rule: Treat any .wasm file as a compiled WebAssembly module
+
 [[rules]]
 type = "CompiledWasm"
 globs = ["**/*.wasm"]
@@ -11,3 +12,4 @@ fallthrough = false
 
 [build]
 command = ""
+
