@@ -87,10 +87,7 @@ ${color('Note:', 'yellow')} Ensure the proxy server is running: ${color('cd pack
 }
 
 function slugToTitle(slug) {
-  return slug
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+  return decodeURIComponent(slug).replace(/-/g, ' ')
 }
 
 function parseEditorUrl(urlString) {
@@ -102,7 +99,7 @@ function parseEditorUrl(urlString) {
     const title = slugToTitle(titleSlug)
 
     const snippetSlug = pathParts[1] || ''
-    const snippet = snippetSlug ? slugToTitle(snippetSlug).slice(0, 150) : 'A document on poemd.dev'
+    const snippet = snippetSlug ? slugToTitle(snippetSlug) : 'A document on poemd.dev'
 
     return { title, snippet, fullPath: url.pathname }
   } catch {
@@ -111,16 +108,18 @@ function parseEditorUrl(urlString) {
   }
 }
 
-function generateSignature(title, snippet) {
+function generateSignature(title, snippet, platform = '') {
   const secret = process.env.OG_SECRET || 'development-secret'
-  const data = JSON.stringify({ title, snippet })
+  // Match crypto.ts: include platform field (default empty)
+  const data = JSON.stringify({ title, snippet, platform })
   return createHmac('sha256', secret).update(data).digest('hex')
 }
 
-function buildOgUrl(proxyUrl, title, snippet) {
+function buildOgUrl(proxyUrl, title, snippet, platform = '') {
   const base = proxyUrl.replace(/\/$/, '')
-  const sig = generateSignature(title, snippet)
+  const sig = generateSignature(title, snippet, platform)
   const params = new URLSearchParams({ title, snippet, sig })
+  if (platform) params.set('platform', platform)
   return `${base}/api/og?${params.toString()}`
 }
 
@@ -269,13 +268,18 @@ async function runOpen(ogUrl, outputFile) {
 function runInfo(editorUrl, proxyUrl) {
   const { title, snippet, fullPath } = parseEditorUrl(editorUrl)
   const ogUrl = buildOgUrl(proxyUrl, title, snippet)
+  const twitterOgUrl = buildOgUrl(proxyUrl, title, snippet, 'twitter')
+  // Home platform uses simplified URL: ?platform=home
+  const homeOgUrl = `${proxyUrl.replace(/\/$/, '')}/api/og?platform=home`
 
   console.log('')
   log('header', 'URL Information')
   console.log(`  ${color('Source:', 'yellow')}      ${editorUrl}`)
   console.log(`  ${color('Path:', 'yellow')}        ${fullPath}`)
   console.log(`  ${color('Proxy:', 'yellow')}       ${proxyUrl}`)
-  console.log(`  ${color('OG Endpoint:', 'yellow')}  ${ogUrl}`)
+  console.log(`  ${color('OG Endpoint (Default):', 'yellow')}  ${ogUrl}`)
+  console.log(`  ${color('OG Endpoint (Twitter):', 'yellow')}  ${twitterOgUrl}`)
+  console.log(`  ${color('OG Endpoint (Home):', 'yellow')}     ${homeOgUrl}`)
   console.log('')
   log('header', 'Parsed Content')
   console.log(`  ${color('Title:', 'yellow')}    ${title}`)
