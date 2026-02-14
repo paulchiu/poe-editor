@@ -15,18 +15,18 @@
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
-    "react": "^18.3.1",
-    "satori": "^0.10.13"
+    "react": "^19.2.4",
+    "satori": "^0.19.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@types/react": "^18.3.3",
+    "@types/react": "^19.2.14",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.1",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.54.0",
-    "vitest": "^2.0.0"
+    "vitest": "^4.0.18"
   }
 }
