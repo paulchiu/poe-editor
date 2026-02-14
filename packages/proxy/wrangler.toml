@@ -3,11 +3,6 @@ main = "src/worker.tsx"
 compatibility_date = "2025-01-30"
 compatibility_flags = ["nodejs_compat"]
 
-# Serving static assets from the public folder
-[assets]
-directory = "./public"
-binding = "ASSETS"
-
 # Rule: Treat any .wasm file as a compiled WebAssembly module
 
 [[rules]]
@@ -15,17 +10,6 @@ type = "CompiledWasm"
 globs = ["**/*.wasm"]
 fallthrough = false
 
-[[r2_buckets]]
-binding = "STATIC_BUCKET"
-bucket_name = "poe-editor-static"
-
 [build]
 command = ""
-
-[env.dev]
-vars = { ENVIRONMENT = "development" }
-
-[[env.dev.r2_buckets]]
-binding = "STATIC_BUCKET"
-bucket_name = "poe-editor-static"
 

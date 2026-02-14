@@ -57,7 +57,8 @@ The editor includes 25+ text operations that can be chained into reusable pipeli
 poe-editor/
 ├── packages/
 │   ├── app/           # React SPA (main editor)
-│   └── proxy/         # Cloudflare Worker (Open Graph image generation)
+│   ├── og-generator/  # Static OG image generator
+│   └── proxy/         # Cloudflare Worker (HTML rewriter & OG meta tag injection)
 ```
 
 ## Development
@@ -75,6 +76,9 @@ npm run dev:proxy   # Proxy only (Wrangler)
 
 # Build the app
 npm run build
+
+# Generate static OG images
+npm run generate:og
 
 # Run tests
 npm test            # Unit tests

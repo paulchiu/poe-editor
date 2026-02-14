@@ -1,0 +1,20 @@
+{
+    "name": "og-generator",
+    "version": "1.0.0",
+    "description": "Static OG image generator for Poe Editor",
+    "main": "src/index.tsx",
+    "type": "module",
+    "scripts": {
+        "generate": "tsx src/index.tsx"
+    },
+    "dependencies": {
+        "@resvg/resvg-js": "^2.6.2",
+        "react": "^18.3.1",
+        "satori": "^0.10.13"
+    },
+    "devDependencies": {
+        "@types/react": "^18.3.3",
+        "tsx": "^4.19.0",
+        "typescript": "^5.5.4"
+    }
+}

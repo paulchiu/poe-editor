@@ -18,6 +18,7 @@
     "dev:proxy": "npm run dev -w packages/proxy",
     "build": "npm run build -w packages/app",
     "build:proxy": "npm run build -w packages/proxy",
+    "generate:og": "npm run generate -w packages/og-generator",
     "lint": "npm run lint -ws",
     "lint:fix": "npm run lint:fix -ws",
     "format": "npm run format -ws",

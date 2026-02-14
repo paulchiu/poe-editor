@@ -13,13 +13,10 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:og": "node scripts/og-test.js",
-    "asset-sync": "node scripts/asset-sync.js",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@cf-wasm/og": "^0.3.7",
     "react": "^19.2.4"
   },
   "devDependencies": {

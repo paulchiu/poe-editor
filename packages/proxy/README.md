@@ -27,12 +27,6 @@ Example: `https://poemd.dev/The-Raven/Once-upon-a-midnight-dreary#abc123...`
 - Root-level URL routing for clean, shareable links without query parameters.
 - Built-in XSS prevention through HTML escaping of all path parameters.
 
-## Technical Stack
-
-- [Satori](https://github.com/vercel/satori) for React-to-SVG conversion.
-- [Yoga](https://yogalayout.com/) layout engine (WASM).
-- [Resvg](https://github.com/RazrFalcon/resvg) for SVG-to-PNG rasterization (WASM).
-
 ## Security
 
 To prevent unauthorized usage of the image generation endpoint, all requests to `/api/og` must be signed.
@@ -89,72 +83,7 @@ npm run test:run      # Run once
 npm run deploy
 ```
 
-## Static Asset Sync (R2)
-
-Static assets in `public/` (fonts, splash image) are served by Workers Assets in production, but `wrangler dev --remote` cannot serve local static files. To work around this, assets can be synced to the `poe-editor-static` R2 bucket:
-
-```bash
-# Sync to local R2 (for local dev)
-npm run asset-sync
-
-# Sync to remote/production R2
-npm run asset-sync -- --remote
-
-# Preview what would be uploaded
-npm run asset-sync -- --dry-run
-```
-
-This is primarily needed for `npm run dev:remote` to function correctly. Standard local dev (`npm run dev`) and production deployments do not require this step.
-
-## Testing Open Graph Images
-
-The `npm run test:og` script (and `scripts/og-test.js`) has been updated to automatically handle signatures using the local development secret.
-
-It provides an interactive CLI for testing Open Graph image generation during development. Quickly preview, download, and inspect generated preview images:
-
-```bash
-# Show help
-npm run test:og -- --help
-
-# Preview headers only (fast connectivity check)
-npm run test:og -- preview "http://localhost:5173/poe-markdown-editors/my-title"
-
-# Preview for a specific platform (e.g., twitter, home)
-npm run test:og -- preview "http://localhost:5173/poe-markdown-editors/my-title" --platform twitter
-
-# Download the Open Graph image to a file
-npm run test:og -- download "http://localhost:5173/poe-markdown-editors/my-title"
-
-# Download with custom output filename
-npm run test:og -- download "http://localhost:5173/poe-markdown-editors/my-title" -o my-og.png
-
-# Download and automatically open the image
-npm run test:og -- open "http://localhost:5173/poe-markdown-editors/my-title" --platform home
-
-# Display parsed URL info and all platform endpoints (Standard, Twitter, Home)
-npm run test:og -- info "http://localhost:5173/poe-markdown-editors/my-title"
-
-# Use a custom proxy URL
-npm run test:og -- preview "http://localhost:5173/poe-markdown-editors/my-title" -p http://localhost:8787
-```
-
-### Manual Testing with Curl
-
-If you want to test manually with `curl`, you must generate a signature using `OG_SECRET` (default: `"development-secret"`).
-
-One-liner to generate a signature:
-
-```bash
-node -e 'console.log(require("crypto").createHmac("sha256", "development-secret").update(JSON.stringify({title:"Test",snippet:"Hello"})).digest("hex"))'
-```
-
-Then append it to your request:
-
-```bash
-curl "http://localhost:8787/api/og?title=Test&snippet=Hello&sig=<YOUR_SIGNATURE>"
-```
-
-## Deployment
+## Configuration
 
 ### Automatic (Recommended)
 

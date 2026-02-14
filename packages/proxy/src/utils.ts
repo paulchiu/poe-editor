@@ -1,45 +1,6 @@
-// Static asset patterns to exclude from OG handling
-const STATIC_ASSET_PATTERNS = [
-  /\.js$/i,
-  /\.css$/i,
-  /\.png$/i,
-  /\.jpg$/i,
-  /\.jpeg$/i,
-  /\.gif$/i,
-  /\.svg$/i,
-  /\.ico$/i,
-  /\.woff2?$/i,
-  /\.ttf$/i,
-  /\.json$/i,
-  /^\/favicon\.ico$/i,
-  /^\/manifest\.json$/i,
-  /^\/robots\.txt$/i,
-]
+export interface Env {}
 
-export interface Env {
-  OG_SECRET?: string
-  ENVIRONMENT?: string
-  ASSETS?: Fetcher
-  STATIC_BUCKET?: R2Bucket
-}
 
-/**
- * Checks if the current environment is development
- * @param env - The environment variables object
- * @returns true if running in development (env.ENVIRONMENT === 'development')
- */
-export function isDevelopment(env?: Env): boolean {
-  return env?.ENVIRONMENT === 'development'
-}
-
-/**
- * Checks if a path is a static asset that should pass through unchanged
- * @param path - The URL pathname
- * @returns true if it's a static asset
- */
-export function isStaticAsset(path: string): boolean {
-  return STATIC_ASSET_PATTERNS.some((pattern) => pattern.test(path))
-}
 
 /**
  * Parses metadata from URL path segments
@@ -78,12 +39,4 @@ export function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;')
 }
 
-/**
- * Gets the secret for HMAC signing
- * Defaults to a development secret if not configured
- * @param env - The environment variables object
- * @returns The secret string for signing
- */
-export function getSecret(env: Env): string {
-  return env.OG_SECRET || 'development-secret'
-}
+

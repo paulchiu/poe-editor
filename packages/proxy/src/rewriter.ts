@@ -30,8 +30,6 @@ export const removeElementHandler = {
 export function createHeadHandler(
   title: string,
   snippet: string,
-  ogImageUrl: string,
-  twitterOgImageUrl: string,
   url: string
 ): ElementContentHandlers {
   const origin = new URL(url).origin
@@ -40,7 +38,6 @@ export function createHeadHandler(
       const metaTags = `
 <meta property="og:title" content="${escapeHtml(title)}" />
 <meta property="og:description" content="${escapeHtml(snippet)}" />
-<meta property="og:image" content="${ogImageUrl}" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="${url}" />
 <meta property="og:site_name" content="Poe Markdown Editor" />
@@ -48,7 +45,6 @@ export function createHeadHandler(
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="${escapeHtml(title)}" />
 <meta name="twitter:description" content="${escapeHtml(snippet)}" />
-<meta name="twitter:image" content="${twitterOgImageUrl}" />
 <meta name="twitter:url" content="${url}" />
 <meta name="description" content="${escapeHtml(snippet)}" />
 `

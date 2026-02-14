@@ -4,25 +4,12 @@ interface WorkerModule {
   fetch: (request: Request, env: unknown, ctx: ExecutionContext) => Promise<Response>
 }
 
-const MOCK_ENV = {
-  OG_SECRET: 'test-secret',
-}
-
-// Mock @cf-wasm/og cache to avoid ExecutionContext validation in tests
-vi.mock('@cf-wasm/og', () => ({
-  cache: {
-    setExecutionContext: () => {},
-  },
-}))
-
 // Mock handlers to verify routing logic
 vi.mock('./handlers', () => ({
-  handleApiOg: vi.fn(async () => new Response('API OG', { status: 200 })),
-  handleHome: vi.fn(async () => new Response('Home', { status: 200 })),
   handleMetadataRoute: vi.fn(async () => new Response('Metadata', { status: 200 })),
 }))
 
-import { handleApiOg, handleHome, handleMetadataRoute } from './handlers'
+import { handleMetadataRoute } from './handlers'
 
 describe('Worker Routing', () => {
   let worker: WorkerModule
@@ -39,44 +26,22 @@ describe('Worker Routing', () => {
     vi.clearAllMocks()
   })
 
-  it('should route /api/og to handleApiOg', async () => {
-    const request = new Request('http://localhost:8787/api/og')
-    const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
-
-    expect(handleApiOg).toHaveBeenCalled()
-    expect(response.status).toBe(200)
-    expect(await response.text()).toBe('API OG')
-  })
-
-  it('should route / to handleHome', async () => {
+  it('should route / path to fetch (passthrough)', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('Index', { status: 200 }))
     const request = new Request('http://localhost:8787/')
-    const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+    const response = await worker.fetch(request, {}, {} as ExecutionContext)
 
-    expect(handleHome).toHaveBeenCalled()
+    expect(fetchMock).toHaveBeenCalled()
     expect(response.status).toBe(200)
-    expect(await response.text()).toBe('Home')
+    expect(await response.text()).toBe('Index')
   })
 
   it('should route /Title/Snippet to handleMetadataRoute', async () => {
     const request = new Request('http://localhost:8787/My-Title/My-Snippet')
-    const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
+    const response = await worker.fetch(request, {}, {} as ExecutionContext)
 
     expect(handleMetadataRoute).toHaveBeenCalled()
     expect(response.status).toBe(200)
     expect(await response.text()).toBe('Metadata')
-  })
-
-  it('should passthrough static assets', async () => {
-    fetchMock.mockResolvedValueOnce(new Response('Static Asset', { status: 200 }))
-    const request = new Request('http://localhost:8787/style.css')
-    const response = await worker.fetch(request, MOCK_ENV, {} as ExecutionContext)
-
-    expect(fetchMock).toHaveBeenCalled()
-    expect(response.status).toBe(200)
-    expect(await response.text()).toBe('Static Asset')
-
-    expect(handleApiOg).not.toHaveBeenCalled()
-    expect(handleHome).not.toHaveBeenCalled()
-    expect(handleMetadataRoute).not.toHaveBeenCalled()
   })
 })
