@@ -1,10 +1,10 @@
 # Poe Editor Proxy
 
-A Cloudflare Worker that generates social media previews when Poe documents are shared. Handles dynamic Open Graph meta tags, preview image generation, and root-level URL routing.
+A Cloudflare Worker that handles dynamic Open Graph meta tags and root-level URL routing for shared documents.
 
 ## Overview
 
-When a Poe document is shared on social media, this worker intercepts the request and generates an Open Graph preview. It dynamically injects Open Graph meta tags and renders preview images on-the-fly using Satori and WASM-based rasterization.
+When a Poe document is shared on social media, this worker intercepts the request. It dynamically injects Open Graph meta tags pointing to pre-generated static images hosted by the app.
 
 ### URL Structure
 
@@ -16,14 +16,9 @@ https://poemd.dev/:title/:snippet#<content-hash>
 
 Example: `https://poemd.dev/The-Raven/Once-upon-a-midnight-dreary#abc123...`
 
-### Open Graph Image Endpoint
-
-`/api/og?title=XXX&snippet=YYY` generates 1200x630 PNG preview images with a minimalist dark theme.
-
 ## Features
 
 - Dynamic Open Graph meta tag injection via HTMLRewriter for SEO and social sharing.
-- On-the-fly preview image generation with a minimalist dark theme.
 - Root-level URL routing for clean, shareable links without query parameters.
 - Built-in XSS prevention through HTML escaping of all path parameters.
 

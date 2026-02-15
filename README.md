@@ -32,7 +32,9 @@ The editor includes 25+ text operations that can be chained into reusable pipeli
 - Dark and light themes with system detection.
 - Mobile-optimised tab interface.
 - Zero (editor) backend; all processing occurs in browser.
-- Open Graph preview generation backend via Cloudflare Workers.
+- Markdown table formatting and manipulation tools.
+- Static Open Graph image generation via `@packages/og-generator`.
+- Cloudflare Workers proxy for meta tag injection.
 
 ## Use Cases
 
