@@ -1,4 +1,4 @@
-import type { EditorPaneHandle } from '@/components/EditorPane'
+import type { EditorPaneHandle } from '@/components/editor'
 
 interface LineFormattingOptions {
   editor: EditorPaneHandle

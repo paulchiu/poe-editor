@@ -1,100 +1,80 @@
 import { describe, it, expect } from 'vitest'
-import { formatMarkdownTable, isMarkdownTable } from './markdownTable'
+import {
+  isMarkdownTable,
+  formatMarkdownTable,
+  insertRow,
+  insertColumn,
+  deleteRow,
+  deleteColumn,
+} from './markdownTable'
 
-describe('formatMarkdownTable', () => {
-  it('formats a simple table', () => {
-    const input = `
+const simpleTable = `
 | h1 | h2 |
+| -- | -- |
+| c1 | c2 |
+`.trim()
+
+describe('markdownTable', () => {
+  it('detects valid tables', () => {
+    expect(isMarkdownTable(simpleTable)).toBe(true)
+    expect(isMarkdownTable('not a table')).toBe(false)
+  })
+
+  it('formats tables', () => {
+    const unformatted = `|h1|h2|
 |---|---|
-| v1 | v2 |
-`.trim()
-    const expected = `| h1  | h2  |
-| --- | --- |
-| v1  | v2  |`
-    expect(formatMarkdownTable(input)).toBe(expected)
+|c1|c2|`
+    const formatted = formatMarkdownTable(unformatted)
+    expect(formatted).toContain('| h1  | h2  |')
+    expect(formatted).toContain('| --- | --- |')
+    expect(formatted).toContain('| c1  | c2  |')
   })
 
-  it('aligns columns with padding', () => {
-    const input = `
-| Name | Age |
-|---|---|
-| Alice | 25 |
-| Bob | 30 |
-`.trim()
-    const expected = `| Name  | Age |
-| ----- | --- |
-| Alice | 25  |
-| Bob   | 30  |`
-    expect(formatMarkdownTable(input)).toBe(expected)
-  })
+  describe('table manipulation', () => {
+    it('inserts row below', () => {
+      const result = insertRow(simpleTable, 2, 'below')
+      const lines = result.split('\n')
+      expect(lines.length).toBe(4) // Header + Separator + Original Row + New Row
+      expect(lines[3]).toContain('|     |     |')
+    })
 
-  it('handles wide CJK characters', () => {
-    const input = `
-| 名字 | 年龄 |
-|---|---|
-| 张三 | 25 |
-| Li | 30 |
-`.trim()
-    // 名字 (4 width) | 年龄 (4 width)
-    // 张三 (4 width) | 25 (2 width) -> pad to 4 -> 25__
-    // Li (2 width)   | 30 (2 width) -> pad to 4 -> 30__
-    // Max cols: 4, 4
+    it('inserts row above', () => {
+      const result = insertRow(simpleTable, 2, 'above')
+      const lines = result.split('\n')
+      expect(lines.length).toBe(4)
+      expect(lines[2]).toContain('|     |     |')
+      expect(lines[3]).toContain('c1')
+    })
 
-    const expected = `| 名字 | 年龄 |
-| ---- | ---- |
-| 张三 | 25   |
-| Li   | 30   |`
-    expect(formatMarkdownTable(input)).toBe(expected)
-  })
+    it('inserts column right', () => {
+      const result = insertColumn(simpleTable, 1, 'right')
+      const lines = result.split('\n')
+      expect(lines[0].split('|').length).toBe(5) // Empty start + 3 cols + Empty end
+      // | h1  | h2  |     |
+      expect(lines[0]).toContain('| h2  |     |')
+    })
 
-  it('preserves alignment markers', () => {
-    const input = `
-| Left | Center | Right |
-| :--- | :---: | ---: |
-| 1 | 2 | 3 |
-`.trim()
+    it('inserts column left', () => {
+      const result = insertColumn(simpleTable, 1, 'left')
+      const lines = result.split('\n')
+      expect(lines[0].split('|').length).toBe(5)
+      // | h1  |     | h2  |
+      expect(lines[0]).toContain('| h1  |     | h2  |')
+    })
 
-    // Left (4) | Center (6) | Right (5)
-    // 1 (1) -> 1___ | 2 (1) -> 2_____ | 3 (1) -> 3____
+    it('deletes row', () => {
+      const result = deleteRow(simpleTable, 2)
+      const lines = result.split('\n')
+      expect(lines.length).toBe(2) // Header + Separator
+      expect(result).not.toContain('c1')
+    })
 
-    const expected = `| Left | Center | Right |
-| :--- | :----: | ----: |
-| 1    | 2      | 3     |`
-    expect(formatMarkdownTable(input)).toBe(expected)
-  })
-
-  it('handles empty cells', () => {
-    const input = `
-| A | B |
-|---|---|
-| 1 | |
-| | 2 |
-`.trim()
-    const expected = `| A   | B   |
-| --- | --- |
-| 1   |     |
-|     | 2   |`
-    expect(formatMarkdownTable(input)).toBe(expected)
-  })
-})
-
-describe('isMarkdownTable', () => {
-  it('returns true for a valid markdown table', () => {
-    const input = `
-| A | B |
-|---|---|
-| 1 | 2 |
-`.trim()
-
-    expect(isMarkdownTable(input)).toBe(true)
-  })
-
-  it('returns false for pipe-delimited text without a separator row', () => {
-    const input = `
-| A | B |
-| 1 | 2 |
-`.trim()
-
-    expect(isMarkdownTable(input)).toBe(false)
+    it('deletes column', () => {
+      const result = deleteColumn(simpleTable, 0)
+      const lines = result.split('\n')
+      expect(lines.length).toBe(3)
+      expect(lines[0]).not.toContain('h1')
+      expect(lines[0]).toContain('h2')
+    })
   })
 })

@@ -1,185 +1,36 @@
 import { useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
-import { initVimMode, VimMode, type VimMode as VimAdapter } from 'monaco-vim'
+import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
 import { Copy, Check, Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from '@/hooks/useToast'
 import { copyToClipboard } from '@/utils/clipboard'
 import { getAutoContinueEdit } from '@/utils/formatting'
-import { formatMarkdownTable, isMarkdownTable } from '@/utils/markdownTable'
+import {
+  formatMarkdownTable,
+  insertRow,
+  insertColumn,
+  deleteRow,
+  deleteRows,
+  deleteColumn,
+  deleteColumns,
+} from '@/utils/markdownTable'
 import { cn } from '@/utils/classnames'
 
-// Setup clipboard integration for monaco-vim
-// This needs to run only once to register the operators and actions globally
-let vimClipboardSetup = false
-
-interface VimRegisterController {
-  pushText: (
-    register: string,
-    type: string,
-    text: string,
-    linewise: boolean,
-    blockwise: boolean
-  ) => void
-}
-
-interface VimState {
-  vim: {
-    visualBlock: boolean
-  }
-}
-
-interface CodeMirrorAdapter {
-  getSelection: () => string
-  state: VimState
-  readonly editor: editor.IStandaloneCodeEditor
-}
-
-interface VimOperatorArgs {
-  registerName: string
-  linewise: boolean
-  after?: boolean
-}
-
-interface VimAPI {
-  defineOperator: (
-    name: string,
-    fn: (
-      cm: CodeMirrorAdapter,
-      args: VimOperatorArgs,
-      ranges: unknown,
-      oldAnchor: unknown
-    ) => unknown
-  ) => void
-  defineAction: (
-    name: string,
-    fn: (cm: CodeMirrorAdapter, args: VimOperatorArgs) => Promise<void> | void
-  ) => void
-  getRegisterController: () => VimRegisterController
-  handleKey: (cm: CodeMirrorAdapter, key: string) => void
-  mapCommand: (
-    command: string,
-    type: 'action' | 'operator',
-    name: string,
-    args?: Record<string, unknown>,
-    extra?: Record<string, unknown>
-  ) => void
-}
-
-interface VimModeModule {
-  Vim: VimAPI
-}
-
-/**
- * Initializes Vim mode for Monaco editor including custom operators and actions
- */
-function setupVim() {
-  if (vimClipboardSetup || !VimMode) {
-    return
-  }
-  vimClipboardSetup = true
-
-  // VimMode is the CMAdapter class, and 'Vim' API is attached to it at runtime
-  const { Vim } = VimMode as unknown as VimModeModule
-
-  if (!Vim) {
-    return
-  }
-
-  // Define yank to system clipboard operator
-  Vim.defineOperator(
-    'yankSystem',
-    (cm: CodeMirrorAdapter, args: VimOperatorArgs, _ranges: unknown, oldAnchor: unknown) => {
-      const text = cm.getSelection()
-      if (text) {
-        navigator.clipboard.writeText(text).catch(() => {
-          toast({
-            description: 'Failed to write to system clipboard',
-            variant: 'destructive',
-          })
-        })
-
-        // Update internal register for consistency so 'p' works internally
-        Vim.getRegisterController().pushText(
-          args.registerName,
-          'yank',
-          text,
-          args.linewise,
-          cm.state.vim.visualBlock
-        )
-      }
-      return oldAnchor
-    }
-  )
-
-  // Define paste from system clipboard action
-  Vim.defineAction('pasteSystem', async (cm: CodeMirrorAdapter, args: VimOperatorArgs) => {
-    try {
-      const text = await navigator.clipboard.readText()
-      if (text) {
-        const linewise = text.indexOf('\n') !== -1 && (text.endsWith('\n') || text.endsWith('\r\n'))
-
-        // Push to " register
-        Vim.getRegisterController().pushText('"', 'yank', text, linewise, false)
-
-        // Trigger the internal paste action using a mapped key
-        if (args.after) {
-          Vim.handleKey(cm, '<PasteTrigger>')
-        } else {
-          Vim.handleKey(cm, '<PasteTriggerBefore>')
-        }
-      }
-    } catch {
-      toast({
-        description: 'Failed to read from system clipboard',
-        variant: 'destructive',
-      })
-    }
-  })
-
-  // Define visual line movement actions
-  Vim.defineAction('moveDownDisplay', (cm: CodeMirrorAdapter) => {
-    cm.editor.trigger('vim', 'cursorDown', {})
-  })
-
-  Vim.defineAction('moveUpDisplay', (cm: CodeMirrorAdapter) => {
-    cm.editor.trigger('vim', 'cursorUp', {})
-  })
-
-  // Register the internal paste command to a custom key
-  Vim.mapCommand('<PasteTrigger>', 'action', 'paste', { after: true, isEdit: true })
-  Vim.mapCommand('<PasteTriggerBefore>', 'action', 'paste', { after: false, isEdit: true })
-
-  // Remap y to yankSystem operator
-  Vim.mapCommand('y', 'operator', 'yankSystem')
-  // Remap Y to yankSystem (linewise)
-  Vim.mapCommand(
-    'Y',
-    'operator',
-    'yankSystem',
-    { linewise: true },
-    { type: 'operatorMotion', motion: 'expandToLine', motionArgs: { linewise: true } }
-  )
-
-  // Explicitly map p/P back to default 'paste' to ensure no stale 'pasteSystem' mapping remains
-  // This fixes the popup issue by avoiding navigator.clipboard.readText() on 'p'
-  Vim.mapCommand('p', 'action', 'paste', { after: true, isEdit: true })
-  Vim.mapCommand('P', 'action', 'paste', { after: false, isEdit: true })
-
-  // Map gj/gk to visual line movement
-  Vim.mapCommand('gj', 'action', 'moveDownDisplay', {})
-  Vim.mapCommand('gk', 'action', 'moveUpDisplay', {})
-}
-
-// Run setup immediately
-setupVim()
+import { setupVim } from './vim'
+import {
+  getTableAtCursor,
+  handleTableNavigation,
+  getTableSelection,
+  type TableScope,
+} from './table'
 
 interface EditorPaneProps {
   value: string
   onChange: (value: string) => void
-  onCursorChange?: (position: { lineNumber: number; column: number }) => void
+  onCursorChange?: (position: { lineNumber: number; column: number; isInTable: boolean }) => void
   theme?: 'light' | 'dark'
   onFormat?: (type: 'bold' | 'italic' | 'link' | 'code') => void
   onCodeBlock?: () => void
@@ -189,6 +40,16 @@ interface EditorPaneProps {
   viewMode?: 'editor' | 'preview' | 'split'
   onToggleLayout?: () => void
 }
+
+export type TableAction =
+  | 'insert-table'
+  | 'insert-row-above'
+  | 'insert-row-below'
+  | 'insert-col-left'
+  | 'insert-col-right'
+  | 'delete-row'
+  | 'delete-col'
+  | 'format-table'
 
 /**
  * Handle interface for controlling the editor imperatively
@@ -230,6 +91,8 @@ export interface EditorPaneHandle {
   formatTable: () => void
   /** Focus the editor */
   focus: () => void
+  /** Perform a table action */
+  performTableAction: (action: TableAction) => void
 }
 
 /**
@@ -264,6 +127,21 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     >([])
     const [copied, setCopied] = useState(false)
 
+    // Helper to check if a line is part of a table
+    const isTableLine = (lineContent: string) => lineContent.includes('|')
+
+    const checkIsInTable = (model: editor.ITextModel, lineNumber: number) => {
+      // Simple check: line contains pipe.
+      // More robust: check if it's part of a block with separator.
+      // For responsiveness, simple check might be enough, but let's try to be accurate.
+      const lineContent = model.getLineContent(lineNumber)
+      if (!isTableLine(lineContent)) return false
+
+      // Use helper to detect table
+      const position = { lineNumber, column: 1 }
+      return !!getTableAtCursor(model, position)
+    }
+
     const handleEditorDidMount: OnMount = (editor, monaco): void => {
       editorRef.current = editor
 
@@ -276,15 +154,26 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
       // Initialize vim mode immediately after editor mounts if vimMode is enabled
       if (vimMode) {
+        setupVim()
         vimInstanceRef.current = initVimMode(editor, statusBarRef.current)
       }
+
+      // Initialize context key for table detection
+      const isInTableContext = editor.createContextKey<boolean>('isInTable', false)
 
       // Listen for cursor position changes
       if (onCursorChange) {
         editor.onDidChangeCursorPosition((e) => {
+          const model = editor.getModel()
+          const isInTable = model ? checkIsInTable(model, e.position.lineNumber) : false
+
+          // Update context key
+          isInTableContext.set(isInTable)
+
           onCursorChange({
             lineNumber: e.position.lineNumber,
             column: e.position.column,
+            isInTable,
           })
         })
       }
@@ -311,6 +200,24 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
           onFormat('code')
         })
       }
+
+      // Register Tab navigation for tables
+      editor.addCommand(
+        monaco.KeyCode.Tab,
+        () => {
+          // This will only fire if 'isInTable' context is true
+          handleTableNavigation(editor, 1)
+        },
+        'isInTable && !suggestWidgetVisible'
+      ) // explicit context check
+
+      editor.addCommand(
+        monaco.KeyMod.Shift | monaco.KeyCode.Tab,
+        () => {
+          handleTableNavigation(editor, -1)
+        },
+        'isInTable && !suggestWidgetVisible'
+      )
 
       if (onCodeBlock) {
         // Cmd+Shift+K for code block (override Monaco's delete line)
@@ -549,61 +456,150 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         const model = editor.getModel()
         if (!model) return
 
-        const currentLine = position.lineNumber
-        const isTableLine = (lineContent: string) => lineContent.includes('|')
-        const noTableMessage = "Couldn't find a table at cursor"
-        const showNoTableToast = () => {
-          toast({
-            description: noTableMessage,
-          })
-        }
-
-        // Check if we are on a table line
-        if (!isTableLine(model.getLineContent(currentLine))) {
-          showNoTableToast()
+        const tableData = getTableAtCursor(model, position)
+        if (!tableData) {
+          toast({ description: "Couldn't find a table at cursor" })
           return
         }
 
-        // Find start of table
-        let startLine = currentLine
-        while (startLine > 1 && isTableLine(model.getLineContent(startLine - 1))) {
-          startLine--
-        }
+        const { range, text } = tableData
+        const formatted = formatMarkdownTable(text)
 
-        // Find end of table
-        let endLine = currentLine
-        while (endLine < model.getLineCount() && isTableLine(model.getLineContent(endLine + 1))) {
-          endLine++
-        }
-
-        // Select and format
-        // Use monaco.Range directly or via reference if imported.
-        // Since we don't import monaco object here directly except via type, we can use the instance or import * as monaco.
-        // Or simpler: construct range object literal which Monaco accepts.
-        const range = {
-          startLineNumber: startLine,
-          startColumn: 1,
-          endLineNumber: endLine,
-          endColumn: model.getLineMaxColumn(endLine),
-        }
-
-        const tableText = model.getValueInRange(range)
-        if (!isMarkdownTable(tableText)) {
-          showNoTableToast()
-          return
-        }
-
-        const formatted = formatMarkdownTable(tableText)
-
-        if (formatted !== tableText) {
-          editor.executeEdits('format-table', [
+        if (formatted !== text && editorRef.current) {
+          editorRef.current.executeEdits('format-table', [
             {
               range,
               text: formatted,
               forceMoveMarkers: true,
             },
           ])
-          // Restore cursor position roughly? Or focus.
+        }
+      },
+
+      performTableAction: (action: TableAction) => {
+        const editor = editorRef.current
+        if (!editor) return
+
+        if (action === 'insert-table') {
+          // 2x2 (includes header) default table
+          const table = `
+|     |     |
+| --- | --- |
+|     |     |
+`.trim()
+
+          const position = editor.getPosition()
+          if (!position) return
+
+          const model = editor.getModel()
+          if (!model) return
+
+          // Check current line content
+          const lineContent = model.getLineContent(position.lineNumber)
+          if (lineContent.trim() !== '') {
+            // Insert on new line
+            const insertText = '\n\n' + table
+            editor.executeEdits('insert-table', [
+              {
+                range: {
+                  startLineNumber: position.lineNumber,
+                  startColumn: lineContent.length + 1,
+                  endLineNumber: position.lineNumber,
+                  endColumn: lineContent.length + 1,
+                },
+                text: insertText,
+                forceMoveMarkers: true,
+              },
+            ])
+          } else {
+            // Insert on current line
+            editor.executeEdits('insert-table', [
+              {
+                range: {
+                  startLineNumber: position.lineNumber,
+                  startColumn: 1,
+                  endLineNumber: position.lineNumber,
+                  endColumn: lineContent.length + 1,
+                },
+                text: table,
+                forceMoveMarkers: true,
+              },
+            ])
+          }
+          editor.focus()
+          return
+        }
+
+        const model = editor.getModel()
+        if (!model) return
+
+        const selection = editor.getSelection()
+        if (!selection) return
+
+        // Try to get selection-based table scope first to handle multi-select
+        const tableSelection = getTableSelection(model, selection)
+
+        let tableData: TableScope | null = null
+        if (tableSelection) {
+          tableData = tableSelection.tableScope
+        } else {
+          // Fallback to cursor position
+          const position = editor.getPosition()
+          if (!position) return
+          tableData = getTableAtCursor(model, position)
+        }
+
+        if (!tableData) {
+          toast({ description: 'Not inside a table' })
+          return
+        }
+
+        const { range, text, rowIndex, colIndex } = tableData
+        let newText = text
+
+        switch (action) {
+          case 'insert-row-above':
+            newText = insertRow(text, rowIndex, 'above')
+            break
+          case 'insert-row-below':
+            newText = insertRow(text, rowIndex, 'below')
+            break
+          case 'insert-col-left':
+            newText = insertColumn(text, colIndex, 'left')
+            break
+          case 'insert-col-right':
+            newText = insertColumn(text, colIndex, 'right')
+            break
+          case 'delete-row':
+            if (tableSelection && tableSelection.selectedRowIndices.length > 0) {
+              newText = deleteRows(text, tableSelection.selectedRowIndices)
+            } else {
+              newText = deleteRow(text, rowIndex)
+            }
+            break
+          case 'delete-col':
+            if (tableSelection && tableSelection.selectedColIndices.length > 0) {
+              newText = deleteColumns(text, tableSelection.selectedColIndices)
+            } else {
+              newText = deleteColumn(text, colIndex)
+            }
+            break
+          case 'format-table':
+            newText = formatMarkdownTable(text)
+            break
+        }
+
+        if (newText !== text) {
+          editor.executeEdits('table-action', [
+            {
+              range,
+              text: newText,
+              forceMoveMarkers: true,
+            },
+          ])
+
+          // Restore focus/cursor if possible?
+          // For now ensuring focus is good enough.
           editor.focus()
         }
       },

@@ -83,7 +83,7 @@
 
 - **Install:** `npm install`
 - **Dev:** `npm run dev`
-- **Test:** `npm test` (Unit), `npm test:e2e` (E2E)
+- **Test:** `npm test` (Unit), `npm test:e2e` (E2E) - Both must pass before completing.
 - **Type Check:** `npm run tsc` (Must pass with zero errors).
 - **Lint:** `npm run lint` (Zero warnings tolerance).
 - **Build:** `npm run build` (Must complete successfully).
@@ -105,7 +105,7 @@
 2. **DO NOT** use `console.log` in final code.
 3. **DO NOT** import React namespace (e.g., `import React from 'react'` or `import * as React from 'react'`). JSX Transform is enabled; import only what you need.
 4. **DO NOT** force "Strict TDD" (write test first) unless helpful; allow pragmatic development but ensure tests exist before completion.
-5. **DO NOT** leave the codebase in a broken state. Ensure all linting errors and unit tests pass before considering a task complete.
+5. **DO NOT** leave the codebase in a broken state. Ensure all linting errors, unit tests, build, and E2E tests pass before considering a task complete.
 6. **DO NOT** ignore warnings. All warnings must be addressed before completing a task. This includes:
    - ESLint warnings
    - TypeScript warnings
