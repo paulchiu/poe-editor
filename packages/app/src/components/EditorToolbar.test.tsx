@@ -30,7 +30,9 @@ describe('EditorToolbar', () => {
     onFormatBulletList: vi.fn(),
     onFormatNumberedList: vi.fn(),
     onFormatCodeBlock: vi.fn(),
-    onFormatTable: vi.fn(),
+
+    onTableAction: vi.fn(),
+    isInTable: false,
     toggleVimMode: vi.fn(),
     toggleTheme: vi.fn(),
     setShowShortcuts: vi.fn(),

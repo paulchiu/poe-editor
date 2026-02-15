@@ -37,6 +37,7 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps): ReactElem
               <li>URL-based document persistence</li>
               <li>Custom text transformers</li>
               <li>Transformers import/export</li>
+              <li>Markdown table tools</li>
             </ul>
           </div>
           <div className="text-xs text-muted-foreground border-t border-border pt-4">

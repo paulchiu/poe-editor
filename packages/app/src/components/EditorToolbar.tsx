@@ -88,11 +88,16 @@ import {
   WholeWord,
   Hash,
   Table,
+  Plus,
+  AlignLeft,
+  Columns,
+  Rows,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/transformer/constants'
 import { cn } from '@/utils/classnames'
 import type { ReactElement } from 'react'
 import type { TransformationPipeline } from '@/components/transformer/types'
+import type { TableAction } from '@/components/editor'
 
 /**
  * Props for the ToolbarButton component
@@ -266,7 +271,8 @@ interface EditorToolbarProps {
   onFormatBulletList: () => void
   onFormatNumberedList: () => void
   onFormatCodeBlock: () => void
-  onFormatTable: () => void
+  onTableAction: (action: TableAction) => void
+  isInTable: boolean
   toggleVimMode: () => void
   toggleTheme: () => void
   setShowShortcuts: (show: boolean) => void
@@ -316,7 +322,8 @@ export function EditorToolbar({
   onFormatBulletList,
   onFormatNumberedList,
   onFormatCodeBlock,
-  onFormatTable,
+  onTableAction,
+  isInTable,
   toggleVimMode,
   toggleTheme,
   setShowShortcuts,
@@ -521,7 +528,76 @@ export function EditorToolbar({
         <ToolbarButton icon={List} label="Bullet List" onClick={onFormatBulletList} />
         <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={onFormatNumberedList} />
         <ToolbarButton icon={CodeSquare} label="Code Block" onClick={onFormatCodeBlock} />
-        <ToolbarButton icon={Table} label="Format Table" onClick={onFormatTable} />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className={cn(
+                'text-muted-foreground hover:text-foreground',
+                isInTable && 'bg-accent text-foreground'
+              )}
+            >
+              <Table className="size-4" />
+              <span className="sr-only">Table Operations</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {!isInTable ? (
+              <DropdownMenuItem onClick={() => onTableAction('insert-table')}>
+                <Plus className="size-4" />
+                Insert Table
+              </DropdownMenuItem>
+            ) : (
+              <>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Rows className="size-4" /> Rows
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => onTableAction('insert-row-above')}>
+                      <Plus className="size-4" /> Add Row Above
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onTableAction('insert-row-below')}>
+                      <Plus className="size-4" /> Add Row Below
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onTableAction('delete-row')}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="size-4" /> Delete Row
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Columns className="size-4" /> Columns
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => onTableAction('insert-col-left')}>
+                      <Plus className="size-4" /> Add Column Left
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onTableAction('insert-col-right')}>
+                      <Plus className="size-4" /> Add Column Right
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onTableAction('delete-col')}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="size-4" /> Delete Column
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onTableAction('format-table')}>
+                  <AlignLeft className="size-4" /> Format Table
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="w-px h-5 bg-border mx-1" />
 

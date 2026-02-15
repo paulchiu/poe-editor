@@ -13,7 +13,7 @@ import { useEditorPreferences } from '@/hooks/useEditorPreferences'
 import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
 import { applyPipeline } from '@/utils/transformer-engine'
-import { EditorPane, type EditorPaneHandle } from '@/components/EditorPane'
+import { EditorPane, type EditorPaneHandle, type TableAction } from '@/components/editor'
 import { PreviewPane } from '@/components/PreviewPane'
 import { SplashScreen } from '@/components/SplashScreen'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -65,6 +65,7 @@ An online, no-signup, writing tool with Vim support.
 - URL-based document persistence
 - Custom text transformers
 - Transformers import/export
+- Markdown table tools
 
 \`\`\`javascript
 const editor = "Poe";
@@ -102,6 +103,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     lineNumber: 1,
     column: 1,
   })
+  const [isInTable, setIsInTable] = useState(false)
   const documentMenuRef = useRef<HTMLButtonElement>(null)
 
   /* View mode management */
@@ -207,9 +209,17 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     formatNumberedList(sourceRef.current)
   }, [sourceRef])
 
+  // Deprecated usage from keyboard shortcut, can map to format-table
   const handleFormatTable = useCallback((): void => {
-    sourceRef.current?.formatTable()
+    sourceRef.current?.performTableAction('format-table')
   }, [sourceRef])
+
+  const handleTableAction = useCallback(
+    (action: TableAction) => {
+      sourceRef.current?.performTableAction(action)
+    },
+    [sourceRef]
+  )
 
   const handleApplyPipeline = useCallback(
     (pipeline: TransformationPipeline) => {
@@ -510,7 +520,8 @@ ${htmlContent}
           onFormatBulletList={handleFormatBulletList}
           onFormatNumberedList={handleFormatNumberedList}
           onFormatCodeBlock={handleFormatCodeBlock}
-          onFormatTable={handleFormatTable}
+          onTableAction={handleTableAction}
+          isInTable={isInTable}
           toggleVimMode={toggleVimMode}
           toggleTheme={toggleTheme}
           setShowShortcuts={setShowShortcuts}
@@ -578,7 +589,10 @@ ${htmlContent}
                           ref={sourceRef}
                           value={content}
                           onChange={setContent}
-                          onCursorChange={setCursorPosition}
+                          onCursorChange={(p) => {
+                            setCursorPosition(p)
+                            setIsInTable(p.isInTable ?? false)
+                          }}
                           theme={mounted && theme === 'dark' ? 'dark' : 'light'}
                           onFormat={handleFormat}
                           onCodeBlock={handleFormatCodeBlock}
@@ -641,7 +655,10 @@ ${htmlContent}
                   ref={sourceRef}
                   value={content}
                   onChange={setContent}
-                  onCursorChange={setCursorPosition}
+                  onCursorChange={(p) => {
+                    setCursorPosition(p)
+                    setIsInTable(p.isInTable ?? false)
+                  }}
                   theme={mounted && theme === 'dark' ? 'dark' : 'light'}
                   onFormat={handleFormat}
                   onCodeBlock={handleFormatCodeBlock}

@@ -10,7 +10,7 @@ import {
   formatBulletList,
   formatNumberedList,
 } from './formatting'
-import type { EditorPaneHandle } from '@/components/EditorPane'
+import type { EditorPaneHandle } from '@/components/editor'
 
 describe('formatting utils', () => {
   let mockEditor: EditorPaneHandle

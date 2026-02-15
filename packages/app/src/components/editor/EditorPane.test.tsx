@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { EditorPane } from './EditorPane'
+import { EditorPane } from './index'
 import { copyToClipboard } from '@/utils/clipboard'
 import { toast } from '@/hooks/useToast'
 import { initVimMode } from 'monaco-vim'
@@ -32,6 +32,11 @@ vi.mock('@monaco-editor/react', () => ({
         executeEdits: vi.fn(),
         setPosition: vi.fn(),
         focus: vi.fn(),
+        createContextKey: vi.fn().mockReturnValue({
+          set: vi.fn(),
+          get: vi.fn(),
+          reset: vi.fn(),
+        }),
       },
       {
         KeyMod: { CtrlCmd: 2048, Shift: 1024 },

@@ -34,7 +34,7 @@ function padToWidth(str: string, width: number, paddingChar = ' '): string {
  * @param text The markdown table text.
  * @returns The formatted markdown table.
  */
-function parseTableRows(text: string): string[][] {
+export function parseTableRows(text: string): string[][] {
   const lines = text.trim().split('\n')
   return lines.map((line) => {
     const cells = line.split('|').map((c) => c.trim())
@@ -124,6 +124,193 @@ export function formatMarkdownTable(text: string): string {
               content = '-'.repeat(width - 1) + ':'
             }
             return content
+          })
+          .join(' | ') +
+        ' |'
+      )
+    } else {
+      return (
+        '| ' +
+        columnWidths
+          .map((width, colIndex) => {
+            const cell = row[colIndex] || ''
+            return padToWidth(cell, width)
+          })
+          .join(' | ') +
+        ' |'
+      )
+    }
+  })
+
+  return formattedLines.join('\n')
+}
+
+/**
+ * Inserts a row into the markdown table.
+ */
+export function insertRow(
+  text: string,
+  referenceRowIndex: number,
+  where: 'above' | 'below'
+): string {
+  if (!isMarkdownTable(text)) return text
+  const rows = parseTableRows(text)
+  const columnCount = rows[0].length
+  const newRow = new Array(columnCount).fill('')
+
+  // Adjust index based on 'where'
+  // references are 0-indexed from the start of the table string rows
+  // If 'below', we insert at index + 1
+  // If 'above', we insert at index
+
+  // Note: rows includes header and separator.
+  // We generally don't want to insert above the header (index 0) or separator (index 1), logic should handle that caller side or just allow it.
+  // Assuming strict structure: row 0 is header, row 1 is separator.
+
+  let targetIndex = referenceRowIndex
+  if (where === 'below') targetIndex++
+
+  // Don't insert before header or separator if manageable, but pure function should just do it.
+
+  rows.splice(targetIndex, 0, newRow)
+
+  return formatTableFromRows(rows)
+}
+
+/**
+ * Inserts a column into the markdown table.
+ */
+export function insertColumn(
+  text: string,
+  referenceColIndex: number,
+  where: 'left' | 'right'
+): string {
+  if (!isMarkdownTable(text)) return text
+  let rows = parseTableRows(text)
+
+  let targetIndex = referenceColIndex
+  if (where === 'right') targetIndex++
+
+  rows = rows.map((row, rowIndex) => {
+    // For separator row, we need to respect alignment if possible, otherwise default string
+    if (rowIndex === 1 && row.every((c) => c.includes('-'))) {
+      const newRow = [...row]
+      newRow.splice(targetIndex, 0, '---')
+      return newRow
+    }
+    const newRow = [...row]
+    newRow.splice(targetIndex, 0, '')
+    return newRow
+  })
+
+  return formatTableFromRows(rows)
+}
+
+/**
+ * Deletes multiple rows from the markdown table.
+ */
+export function deleteRows(text: string, rowIndices: number[]): string {
+  if (!isMarkdownTable(text)) return text
+  const rows = parseTableRows(text)
+
+  // Sort indices in descending order to avoid shifting issues
+  const sortedIndices = [...rowIndices].sort((a, b) => b - a)
+
+  for (const rowIndex of sortedIndices) {
+    if (rowIndex >= 0 && rowIndex < rows.length) {
+      rows.splice(rowIndex, 1)
+    }
+  }
+
+  return formatTableFromRows(rows)
+}
+
+/**
+ * Deletes multiple columns from the markdown table.
+ */
+export function deleteColumns(text: string, colIndices: number[]): string {
+  if (!isMarkdownTable(text)) return text
+  let rows = parseTableRows(text)
+
+  if (rows.length === 0) return text
+
+  // Sort indices in descending order
+  const sortedIndices = [...colIndices].sort((a, b) => b - a)
+  const maxCol = rows[0].length
+
+  rows = rows.map((row) => {
+    const newRow = [...row]
+    for (const colIndex of sortedIndices) {
+      if (colIndex >= 0 && colIndex < maxCol) {
+        newRow.splice(colIndex, 1)
+      }
+    }
+    return newRow
+  })
+
+  if (rows[0].length === 0) return ''
+
+  return formatTableFromRows(rows)
+}
+
+/**
+ * Deletes a row from the markdown table.
+ */
+export function deleteRow(text: string, rowIndex: number): string {
+  return deleteRows(text, [rowIndex])
+}
+
+/**
+ * Deletes a column from the markdown table.
+ */
+export function deleteColumn(text: string, colIndex: number): string {
+  return deleteColumns(text, [colIndex])
+}
+
+function formatTableFromRows(rows: string[][]): string {
+  // Reuse the logic from formatMarkdownTable but starting from rows
+  if (rows.length === 0) return ''
+
+  // 1. Identify separator row
+  const separatorIndex = getSeparatorIndex(rows)
+  // If we manipulated it such that separator is gone, we might just format as text or try to infer.
+  // For now, assume structure is kept or we just format.
+
+  // 3. Normalize columns
+  const columnCount = rows.reduce((max, row) => Math.max(max, row.length), 0)
+
+  // 4. Calculate max width per column
+  const columnWidths = new Array(columnCount).fill(0)
+
+  rows.forEach((row, rowIndex) => {
+    if (rowIndex === separatorIndex) return
+
+    for (let i = 0; i < columnCount; i++) {
+      const cell = row[i] || ''
+      columnWidths[i] = Math.max(columnWidths[i], getDisplayWidth(cell))
+    }
+  })
+
+  // Ensure minimum width
+  for (let i = 0; i < columnCount; i++) {
+    columnWidths[i] = Math.max(columnWidths[i], 3)
+  }
+
+  // 5. Reconstruct
+  const formattedLines = rows.map((row, rowIndex) => {
+    if (rowIndex === separatorIndex) {
+      return (
+        '| ' +
+        columnWidths
+          .map((width, colIndex) => {
+            const original = row[colIndex] || ''
+            const firstChar = original.startsWith(':')
+            const lastChar = original.endsWith(':')
+
+            if (firstChar && lastChar) return ':' + '-'.repeat(width - 2) + ':'
+            if (firstChar) return ':' + '-'.repeat(width - 1)
+            if (lastChar) return '-'.repeat(width - 1) + ':'
+            return '-'.repeat(width)
           })
           .join(' | ') +
         ' |'
