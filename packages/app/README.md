@@ -11,6 +11,7 @@ This is the main application package containing the React frontend for the Poe M
 - Live preview with synchronised scrolling.
 - Vim mode via Monaco Editor.
 - 25+ text transformers with custom pipelines.
+- Markdown table formatting and manipulation.
 - URL-based document persistence (compressed).
 - Dark and light themes.
 - Mobile-optimised interface.
