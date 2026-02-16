@@ -26,7 +26,7 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
         await copyToClipboard(plainText, htmlContent)
 
         setCopied(true)
-        toast({ description: 'Rich text copied to clipboard!' })
+        toast({ description: 'Rich text copied to clipboard' })
         setTimeout(() => setCopied(false), 2000)
       } catch {
         toast({

@@ -73,7 +73,7 @@ describe('EditorPane', () => {
 
     await waitFor(() => {
       expect(copyToClipboard).toHaveBeenCalledWith(value)
-      expect(toast).toHaveBeenCalledWith({ description: 'Markdown copied to clipboard!' })
+      expect(toast).toHaveBeenCalledWith({ description: 'Markdown copied to clipboard' })
     })
   })
 

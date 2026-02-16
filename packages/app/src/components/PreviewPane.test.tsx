@@ -34,7 +34,7 @@ describe('PreviewPane', () => {
 
     await waitFor(() => {
       expect(copyToClipboard).toHaveBeenCalledWith('Test content', htmlContent)
-      expect(toast).toHaveBeenCalledWith({ description: 'Rich text copied to clipboard!' })
+      expect(toast).toHaveBeenCalledWith({ description: 'Rich text copied to clipboard' })
     })
   })
 

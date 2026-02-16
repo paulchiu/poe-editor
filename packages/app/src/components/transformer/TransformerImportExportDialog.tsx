@@ -46,7 +46,7 @@ export function TransformerImportExportDialog({
     try {
       await navigator.clipboard.writeText(jsonText)
       toast({
-        description: 'Configuration copied to clipboard!',
+        description: 'Configuration copied to clipboard',
       })
     } catch {
       toast({
@@ -63,14 +63,14 @@ export function TransformerImportExportDialog({
       onImport(importedPipelines)
       onOpenChange(false)
       toast({
-        description: 'Configuration updated successfully!',
+        description: 'Configuration updated successfully',
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error occurred')
       toast({
         variant: 'destructive',
         title: 'Import Failed',
-        description: 'Please check the configuration format.',
+        description: 'Please check the configuration format',
       })
     }
   }, [jsonText, onImport, onOpenChange, toast])

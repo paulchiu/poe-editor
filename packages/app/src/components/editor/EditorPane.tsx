@@ -315,7 +315,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       try {
         await copyToClipboard(value)
         setCopied(true)
-        toast({ description: 'Markdown copied to clipboard!' })
+        toast({ description: 'Markdown copied to clipboard' })
         setTimeout(() => setCopied(false), 2000)
       } catch {
         toast({
