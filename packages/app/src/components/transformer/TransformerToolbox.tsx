@@ -135,7 +135,7 @@ export function TransformerToolbox({
     if (value === '/add-all') {
       OPERATIONS.forEach((op) => onAddStep(op))
       toast({
-        description: 'All available operations have been added to the workbench.',
+        description: 'All available operations have been added to the workbench',
       })
       setSearchQuery('')
       return

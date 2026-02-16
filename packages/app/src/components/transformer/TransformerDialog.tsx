@@ -201,14 +201,14 @@ export function TransformerDialog({
   const handleSave = () => {
     if (!pipelineName.trim()) {
       toast({
-        description: 'Please enter a name for your pipeline.',
+        description: 'Please enter a name for your pipeline',
       })
       return
     }
 
     if (steps.length === 0) {
       toast({
-        description: 'Add at least one step to the pipeline before saving.',
+        description: 'Add at least one step to the pipeline before saving',
       })
       return
     }
@@ -232,7 +232,7 @@ export function TransformerDialog({
   const handleApply = () => {
     if (steps.length === 0) {
       toast({
-        description: 'Add at least one step to the pipeline before applying.',
+        description: 'Add at least one step to the pipeline before applying',
       })
       return
     }
@@ -246,14 +246,14 @@ export function TransformerDialog({
   const handleSaveAndApply = () => {
     if (!pipelineName.trim()) {
       toast({
-        description: 'Please enter a name for your pipeline.',
+        description: 'Please enter a name for your pipeline',
       })
       return
     }
 
     if (steps.length === 0) {
       toast({
-        description: 'Add at least one step to the pipeline before saving and applying.',
+        description: 'Add at least one step to the pipeline before saving and applying',
       })
       return
     }
@@ -307,7 +307,7 @@ export function TransformerDialog({
               if (!hasShownEscapeToastRef.current) {
                 hasShownEscapeToastRef.current = true
                 toast({
-                  description: 'Escape disabled in editor, exit editor mode to close.',
+                  description: 'Escape disabled in editor, exit editor mode to close',
                 })
               }
             }

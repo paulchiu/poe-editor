@@ -243,11 +243,11 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     (pipeline: TransformationPipeline) => {
       if (editingPipeline) {
         updatePipeline(pipeline)
-        toast({ description: 'Pipeline updated!' })
+        toast({ description: 'Pipeline updated' })
         setEditingPipeline(null)
       } else {
         addPipeline(pipeline)
-        toast({ description: 'Pipeline saved!' })
+        toast({ description: 'Pipeline saved' })
       }
     },
     [addPipeline, updatePipeline, editingPipeline, toast]
@@ -357,7 +357,7 @@ ${htmlContent}
 
   const handleSave = useCallback((): void => {
     // Save is automatic via URL state, just show confirmation
-    toast({ description: 'Document auto-saved to URL!' })
+    toast({ description: 'Document saved to URL' })
   }, [toast])
 
   // Layout toggles for desktop
