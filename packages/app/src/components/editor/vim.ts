@@ -57,6 +57,14 @@ interface VimAPI {
     args?: Record<string, unknown>,
     extra?: Record<string, unknown>
   ) => void
+  defineMotion: (
+    name: string,
+    fn: (
+      cm: CodeMirrorAdapter,
+      head: { line: number; ch: number },
+      motionArgs: { repeat?: number; forward?: boolean }
+    ) => { line: number; ch: number } | void
+  ) => void
 }
 
 interface VimModeModule {
@@ -139,6 +147,7 @@ export function setupVim() {
     cm.editor.trigger('vim', 'cursorUp', {})
   })
 
+
   // Register the internal paste command to a custom key
   Vim.mapCommand('<PasteTrigger>', 'action', 'paste', { after: true, isEdit: true })
   Vim.mapCommand('<PasteTriggerBefore>', 'action', 'paste', { after: false, isEdit: true })
@@ -159,7 +168,25 @@ export function setupVim() {
   Vim.mapCommand('p', 'action', 'paste', { after: true, isEdit: true })
   Vim.mapCommand('P', 'action', 'paste', { after: false, isEdit: true })
 
-  // Map gj/gk to visual line movement
-  Vim.mapCommand('gj', 'action', 'moveDownDisplay', {})
-  Vim.mapCommand('gk', 'action', 'moveUpDisplay', {})
+  // Override default moveByDisplayLines to use Monaco's native cursor movement
+  // which correctly handles wrapped lines. This fixes gj/gk in both Normal and Visual modes.
+  Vim.defineMotion('moveByDisplayLines', (cm, head, motionArgs) => {
+    // Ensure the editor cursor is at the 'head' position before moving
+    // Line/ch are 0-indexed in CM, 1-indexed in Monaco
+    const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
+    cm.editor.setPosition(startPos)
+
+    const repeat = motionArgs.repeat || 1
+    const command = motionArgs.forward ? 'cursorDown' : 'cursorUp'
+
+    for (let i = 0; i < repeat; i++) {
+        cm.editor.trigger('vim', command, {})
+    }
+
+    const newPos = cm.editor.getPosition()
+    if (!newPos) return { line: head.line, ch: head.ch }
+    
+    return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+  })
+
 }
