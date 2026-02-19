@@ -68,7 +68,7 @@ export const moveToMatchingBracketMotion = (
  * Uses Monaco's native cursorHome command which respects line wrapping.
  * @param cm - The CodeMirror adapter wrapping the Monaco editor
  * @param head - The 0-indexed cursor position
- * @returns The 0-indexed target position
+ * @returns { { line: number; ch: number } } The 0-indexed target position
  */
 export const moveToStartOfDisplayLineMotion = (
   cm: CodeMirrorAdapter,
@@ -92,7 +92,7 @@ export const moveToStartOfDisplayLineMotion = (
  * Uses Monaco's native cursorEnd command which respects line wrapping.
  * @param cm - The CodeMirror adapter wrapping the Monaco editor
  * @param head - The 0-indexed cursor position
- * @returns The 0-indexed target position
+ * @returns { { line: number; ch: number } } The 0-indexed target position
  */
 export const moveToEndOfDisplayLineMotion = (
   cm: CodeMirrorAdapter,
