@@ -255,6 +255,58 @@ export function setupVim() {
       }
     }
 
+    // Check for quotes
+    const char = lineContent[head.ch]
+    const simpleQuotes = ["'", '"', '`']
+    const smartQuotes = {
+      '“': '”',
+      '”': '“',
+      '‘': '’',
+      '’': '‘',
+    } as const
+
+    if (simpleQuotes.includes(char)) {
+      // Find all occurrences of this quote char on the line
+      const positions: number[] = []
+      for (let i = 0; i < lineContent.length; i++) {
+        // Handle escaped quotes if not backtick
+        if (lineContent[i] === char) {
+            if (char !== '`' && i > 0 && lineContent[i - 1] === '\\') {
+                continue
+            }
+            positions.push(i)
+        }
+      }
+
+      const currentIndex = positions.indexOf(head.ch)
+      if (currentIndex !== -1) {
+        // If even index (0, 2, ..) -> Start quote -> Jump forward
+        // If odd index (1, 3, ..) -> End quote -> Jump backward
+        // This assumes balanced quotes on the line, which is standard vim behavior for % on quotes
+        const targetIndex = currentIndex % 2 === 0 ? currentIndex + 1 : currentIndex - 1
+        
+        if (targetIndex >= 0 && targetIndex < positions.length) {
+             return { line: head.line, ch: positions[targetIndex] }
+        }
+      }
+    } else if (char in smartQuotes) {
+        const targetChar = smartQuotes[char as keyof typeof smartQuotes]
+        const isStart = ['“', '‘'].includes(char)
+        
+        let targetCol = -1
+        if (isStart) {
+            // Search forward
+             targetCol = lineContent.indexOf(targetChar, head.ch + 1)
+        } else {
+            // Search backward
+            targetCol = lineContent.lastIndexOf(targetChar, head.ch - 1)
+        }
+
+        if (targetCol !== -1) {
+            return { line: head.line, ch: targetCol }
+        }
+    }
+
     // Fallback to standard bracket jumping for non-fence lines
     cm.editor.setPosition(position)
     cm.editor.trigger('vim', 'editor.action.jumpToBracket', {})
