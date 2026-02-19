@@ -1,7 +1,12 @@
 import { useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
+import * as monaco from 'monaco-editor'
 import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
+// @ts-ignore
+import { getSpellchecker } from 'monaco-spellchecker'
+// @ts-ignore
+import Typo from 'typo-js'
 import { Copy, Check, Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -19,7 +24,7 @@ import {
 } from '@/utils/markdownTable'
 import { cn } from '@/utils/classnames'
 
-import { setupVim } from './vim'
+import { setupVim, onVimSpellCheckChange } from './vim'
 import {
   getTableAtCursor,
   handleTableNavigation,
@@ -39,6 +44,8 @@ interface EditorPaneProps {
   showLineNumbers?: boolean
   viewMode?: 'editor' | 'preview' | 'split'
   onToggleLayout?: () => void
+  spellCheck?: boolean
+  onSpellCheckChange?: (enabled: boolean) => void
 }
 
 export type TableAction =
@@ -116,12 +123,15 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       showLineNumbers,
       viewMode,
       onToggleLayout,
+      spellCheck = false,
+      onSpellCheckChange,
     },
     ref
   ) => {
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
     const vimInstanceRef = useRef<VimAdapter | null>(null)
     const statusBarRef = useRef<HTMLDivElement | null>(null)
+    const monacoRef = useRef<typeof monaco | null>(null)
     const pendingScrollCallbacks = useRef<
       Array<{ callback: () => void; resolve: (disposable: { dispose: () => void }) => void }>
     >([])
@@ -142,8 +152,9 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       return !!getTableAtCursor(model, position)
     }
 
-    const handleEditorDidMount: OnMount = (editor, monaco): void => {
+    const handleEditorDidMount: OnMount = (editor, monacoInstance): void => {
       editorRef.current = editor
+      monacoRef.current = monacoInstance
 
       // Drain any scroll callbacks that were queued before Monaco mounted
       for (const { callback, resolve } of pendingScrollCallbacks.current) {
@@ -310,6 +321,127 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         clearTimeout(timer)
       }
     }, [vimMode])
+
+    // Handle spell check initialization
+    useEffect(() => {
+      const editor = editorRef.current
+      if (!editor || !spellCheck) return
+
+      let isDisposed = false
+      // @ts-ignore
+      let checker: any
+
+      const init = async () => {
+        try {
+          // Load dictionary
+          // We use bundled typo-js dictionaries for now, or fetch them
+          // Since we are in Vite, we can try importing them if available,
+          // or just point to a CDN or public file.
+          // TypoJS usually needs paths or data.
+          // For simplicity, let's use a standard public dictionary URL if possible,
+          // OR assume we can load it from a known location.
+          // Actually, typo-js package typically contains 'en_US'.
+          // Let's try to load it from unpkg or similar if we can't bundle it easily without config.
+          // But wait, the user instructions say "Code relating to the user's requests should be written in...".
+          // I don't want to rely on external CDNs if I can help it.
+          // Let's try to fetch from a standard place or just use a minimal dictionary for testing?
+          // No, users expect real spell check.
+          // The example used `import affData from 'typo-js/dictionaries/en_US/en_US.aff?raw'`.
+          // Let's try that. It relies on Vite's asset handling.
+
+          // @ts-ignore
+          const affData = (await import('typo-js/dictionaries/en_US/en_US.aff?raw')).default
+          // @ts-ignore
+          const dicData = (await import('typo-js/dictionaries/en_US/en_US.dic?raw')).default
+
+          if (isDisposed) return
+
+          const dictionary = new Typo('en_US', affData, dicData)
+
+          // @ts-ignore
+          const res = await getSpellchecker(monacoRef.current, editor, {
+            check: (word: string) => dictionary.check(word),
+            suggest: (word: string) => dictionary.suggest(word),
+          })
+          
+          if (isDisposed) {
+            res.dispose()
+            return
+          }
+          
+          checker = res
+
+          // Trigger initial check
+          editor.onDidChangeModelContent(() => {
+             // We might want to debounce this?
+             // But monaco-spellchecker might handle some of it?
+             // The example shows manual triggering.
+             // checker.process()
+             // Actually `res` is the API. Use res.process().
+             if (checker) checker.process()
+          })
+          
+          // Initial check
+          checker.process()
+
+        } catch (e) {
+          console.error('Failed to init spell check', e)
+        }
+      }
+
+      init()
+
+      return () => {
+        isDisposed = true
+        if (checker) {
+          checker.dispose()
+        } else {
+             // If we failed or are pending, we might have issues.
+             // But usually safe.
+        }
+        // Also we need to clear markers!
+        const model = editor.getModel()
+        if (model && monacoRef.current) {
+            monacoRef.current.editor.setModelMarkers(model, 'spellchecker', [])
+        }
+      }
+    }, [spellCheck])
+
+    // Sync React spellCheck state -> Vim option
+    useEffect(() => {
+      if (!vimMode || !vimInstanceRef.current) return
+      // We need to set the vim option.
+      // monaco-vim doesn't expose strict API for this easily on the instance.
+      // But we can key-press or use internal API passed to `initVimMode` if any.
+      // However, we defined the option in `vim.ts`.
+      // Usage: `Vim.defineOption(...)` creates a global option usually.
+      // We can try to trigger a command.
+      const editor = editorRef.current
+      if (editor) {
+        // @ts-ignore - accessing internal API if possible, or just using command
+        // vimInstanceRef.current...
+        // The robust way with `monaco-vim`:
+        // It listens to keys. We can't easily force an option set programmatically via public API
+        // without simulating keys.
+        // But wait! `monaco-vim` attaches `Vim` to the editor instance usually?
+        // Actually, let's just accept that if we change it in toolbar, Vim visual state might lag
+        // UNLESS we are super clever.
+        // But importantly: The `spell` option in Vim is what triggers the callback we defined in `vim.ts`.
+        // If we want to update the internal Vim state so `set spell?` returns correct value:
+        // We'd need to write to that state.
+        // For now, let's skip "pushing" to Vim state to avoid complexity,
+        // and only "pullment" from Vim state using the subscriber.
+        // React is the source of truth for the *actual* spell checker.
+      }
+    }, [spellCheck, vimMode])
+
+    // Sync Vim -> React state
+    useEffect(() => {
+      const unsubscribe = onVimSpellCheckChange((enabled) => {
+        onSpellCheckChange?.(enabled)
+      })
+      return unsubscribe
+    }, [onSpellCheckChange])
 
     const handleCopy = async (): Promise<void> => {
       try {

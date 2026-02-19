@@ -92,6 +92,8 @@ import {
   AlignLeft,
   Columns,
   Rows,
+  Check,
+  SpellCheck,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/transformer/constants'
 import { cn } from '@/utils/classnames'
@@ -294,6 +296,8 @@ interface EditorToolbarProps {
   startEmpty?: boolean
   toggleStartEmpty?: () => void
   documentMenuRef?: RefObject<HTMLButtonElement | null>
+  spellCheck?: boolean
+  toggleSpellCheck?: () => void
 }
 
 /**
@@ -344,6 +348,8 @@ export function EditorToolbar({
   startEmpty,
   toggleStartEmpty,
   documentMenuRef,
+  spellCheck,
+  toggleSpellCheck,
 }: EditorToolbarProps): ReactElement {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
   const [pipelineToDelete, setPipelineToDelete] = useState<TransformationPipeline | null>(null)
@@ -739,6 +745,10 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={toggleWordCount}>
               <WholeWord className="size-4" />
               {showWordCount ? 'Hide Word Count' : 'Show Word Count'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleSpellCheck}>
+              <SpellCheck className="size-4" />
+              {spellCheck ? 'Disable Spell Check' : 'Enable Spell Check'}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={toggleLineNumbers}>
               <Hash className="size-4" />

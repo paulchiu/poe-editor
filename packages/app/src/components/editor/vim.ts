@@ -92,7 +92,35 @@ export function setupVim(): void {
   Vim.mapCommand('g$', 'motion', 'moveToEndOfDisplayLine')
 
   // Override default g^/g0 to use Monaco's native cursorHome (start of display line)
-  Vim.defineMotion('moveToStartOfDisplayLine', moveToStartOfDisplayLineMotion)
   Vim.mapCommand('g^', 'motion', 'moveToStartOfDisplayLine')
   Vim.mapCommand('g0', 'motion', 'moveToStartOfDisplayLine')
+
+  // Register spell check option
+  // We use a custom event to notify React when Vim changes this option
+  Vim.defineOption(
+    'spell',
+    false,
+    'boolean',
+    [],
+    (value: string | number | boolean | undefined, cm: CodeMirrorAdapter) => {
+      // Notify subscribers
+      if (typeof value === 'boolean') {
+        spellCheckSubscribers.forEach((cb) => cb(value))
+      }
+    }
+  )
+}
+
+// Subscription mechanism for spell check changes from Vim
+type SpellCheckCallback = (enabled: boolean) => void
+const spellCheckSubscribers: SpellCheckCallback[] = []
+
+export function onVimSpellCheckChange(callback: SpellCheckCallback): () => void {
+  spellCheckSubscribers.push(callback)
+  return () => {
+    const index = spellCheckSubscribers.indexOf(callback)
+    if (index > -1) {
+      spellCheckSubscribers.splice(index, 1)
+    }
+  }
 }

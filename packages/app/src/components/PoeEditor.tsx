@@ -161,6 +161,10 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const { pipelines, addPipeline, updatePipeline, removePipeline, replacePipelines } =
     useTransformers()
 
+  // Spell check state
+  const [spellCheck, setSpellCheck] = useState(false)
+  const toggleSpellCheck = useCallback(() => setSpellCheck((prev) => !prev), [])
+
   // Scroll synchronization
   const { sourceRef, targetRef } = useSyncScroll<EditorPaneHandle, HTMLDivElement>({
     enabled: !isMobile,
@@ -551,6 +555,8 @@ ${htmlContent}
           startEmpty={startEmpty}
           toggleStartEmpty={toggleStartEmpty}
           documentMenuRef={documentMenuRef}
+          spellCheck={spellCheck}
+          toggleSpellCheck={toggleSpellCheck}
         />
 
         <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
@@ -606,6 +612,8 @@ ${htmlContent}
                           showLineNumbers={showLineNumbers}
                           viewMode={viewMode}
                           onToggleLayout={handleToggleEditor}
+                          spellCheck={spellCheck}
+                          onSpellCheckChange={setSpellCheck}
                         />
                       </div>
                     </ResizablePanel>
@@ -671,6 +679,8 @@ ${htmlContent}
                   showWordCount={showWordCount}
                   showLineNumbers={showLineNumbers}
                   viewMode={activeTab === 'editor' ? 'editor' : 'preview'}
+                  spellCheck={spellCheck}
+                  onSpellCheckChange={setSpellCheck}
                 />
               </div>
 
