@@ -60,6 +60,15 @@ export function setupVim(): void {
     { type: 'operatorMotion', motion: 'expandToLine', motionArgs: { linewise: true } }
   )
 
+  // Handle :set wrap and :set nowrap
+  Vim.defineOption('wrap', true, 'boolean', [], (value, cm) => {
+    if (cm && cm.editor) {
+      cm.editor.updateOptions({
+        wordWrap: value ? 'on' : 'off',
+      })
+    }
+  })
+
   // Explicitly map p/P back to default 'paste' to ensure no stale 'pasteSystem' mapping remains
   // This fixes the popup issue by avoiding navigator.clipboard.readText() on 'p'
   Vim.mapCommand('p', 'action', 'paste', { after: true, isEdit: true })
