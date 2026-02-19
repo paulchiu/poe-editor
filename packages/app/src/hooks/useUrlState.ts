@@ -25,17 +25,37 @@ interface UseUrlStateReturn {
   isOverLimit: boolean
 }
 
+interface FaviconState {
+  element: HTMLLinkElement
+  href: string
+  type: string
+  sizes: string
+}
+
 /**
  * Updates the favicon based on the provided emoji.
  * If an emoji is provided, it creates an SVG data URI.
  * If null, it reverts to the default favicon.
  *
  * @param emoji - The emoji to use as favicon, or null to reset
+ * @param originalFaviconsRef - Ref to store/retrieve original favicon states
  * @returns void
  */
-function updateFavicon(emoji: string | null): void {
-  const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement
-  if (!link) return
+function updateFavicon(
+  emoji: string | null,
+  originalFaviconsRef: React.MutableRefObject<FaviconState[] | null>
+): void {
+  const links = document.querySelectorAll<HTMLLinkElement>("link[rel*='icon']")
+
+  // Store original state if not already stored
+  if (!originalFaviconsRef.current && links.length > 0) {
+    originalFaviconsRef.current = Array.from(links).map((link) => ({
+      element: link,
+      href: link.href,
+      type: link.type,
+      sizes: link.sizes.value,
+    }))
+  }
 
   if (emoji) {
     const svg = `
@@ -43,15 +63,34 @@ function updateFavicon(emoji: string | null): void {
         <text y=".9em" font-size="90">${emoji}</text>
       </svg>
     `.trim()
-    link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`
+    const dataUri = `data:image/svg+xml,${encodeURIComponent(svg)}`
+
+    links.forEach((link) => {
+      link.href = dataUri
+      link.type = 'image/svg+xml'
+      // Remove sizes as SVG is vector and valid for all sizes
+      link.removeAttribute('sizes')
+    })
   } else {
-    // Revert to default
-    // We assume the default is /favicon.svg as per index.html
-    // If the current href is NOT a data URI, we might assume it's already default or another static asset.
-    // However, to be safe, we explicitly set it back to /favicon.svg if we are clearing the emoji.
-    // Optimization: Check if currently showing a data URI to avoid unnecessary network requests or DOM updates if already default.
-    if (link.href.startsWith('data:')) {
-      link.href = '/favicon.svg'
+    // Revert to default using stored state
+    if (originalFaviconsRef.current) {
+      originalFaviconsRef.current.forEach(({ element, href, type, sizes }) => {
+        element.href = href
+        element.type = type
+        if (sizes) {
+          element.setAttribute('sizes', sizes)
+        } else {
+          element.removeAttribute('sizes')
+        }
+      })
+    } else {
+      // Fallback if no state stored (e.g. no links found initially, or this is first run with null)
+      // This part is less critical if we assume links exist, but good for safety
+      links.forEach((link) => {
+        if (link.href.startsWith('data:')) {
+          link.href = '/favicon.svg'
+        }
+      })
     }
   }
 }
@@ -115,6 +154,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
   // Use refs to track the latest values to avoid stale closures
   const contentRef = useRef(content)
   const documentNameRef = useRef(documentName)
+  const originalFaviconsRef = useRef<FaviconState[] | null>(null)
 
   // Initialize title and favicon on mount
   const initializedRef = useRef(false)
@@ -124,7 +164,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
 
       if (heading) {
         const emoji = extractFirstEmoji(heading)
-        updateFavicon(emoji)
+        updateFavicon(emoji, originalFaviconsRef)
 
         const title = emoji ? heading.replace(emoji, '').trim() : heading
         document.title = title || documentName
@@ -136,7 +176,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
         } else {
           document.title = documentName
         }
-        updateFavicon(null)
+        updateFavicon(null, originalFaviconsRef)
       }
 
       initializedRef.current = true
@@ -168,7 +208,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       const firstHeading = getFirstHeading(contentRef.current)
 
       const emoji = firstHeading ? extractFirstEmoji(firstHeading) : null
-      updateFavicon(emoji)
+      updateFavicon(emoji, originalFaviconsRef)
 
       // If we found an emoji, remove it from the title to avoid duplication/clutter
       // We only remove the *exact* extracted emoji string once.
@@ -233,7 +273,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
         const heading = getFirstHeading(newContent)
 
         const emoji = heading ? extractFirstEmoji(heading) : null
-        updateFavicon(emoji)
+        updateFavicon(emoji, originalFaviconsRef)
 
         // First try to use heading from content
         let title = heading ? (emoji ? heading.replace(emoji, '').trim() : heading) : null
