@@ -107,17 +107,33 @@ describe('useUrlState', () => {
     vi.useRealTimers()
   })
 
-  it('should update favicon when an emoji is in the heading', () => {
+  it('should update all favicon links when an emoji is in the heading', () => {
     vi.useFakeTimers()
 
-    // Mock the link element
-    const mockLink = {
-      href: '/favicon.svg',
-      rel: 'icon',
-    } as unknown as HTMLLinkElement
+    // Mock multiple link elements
+    const mockLinks = [
+      {
+        href: '/favicon-32x32.png',
+        rel: 'icon',
+        type: 'image/png',
+        sizes: { value: '32x32' },
+        setAttribute: vi.fn(),
+        removeAttribute: vi.fn(),
+      },
+      {
+        href: '/favicon.ico',
+        rel: 'icon',
+        type: 'image/x-icon',
+        sizes: { value: '' },
+        setAttribute: vi.fn(),
+        removeAttribute: vi.fn(),
+      },
+    ] as unknown as HTMLLinkElement[]
 
-    // Mock querySelector to return our mock link
-    const querySelectorSpy = vi.spyOn(document, 'querySelector').mockReturnValue(mockLink)
+    // Mock querySelectorAll to return our mock links
+    const querySelectorAllSpy = vi
+      .spyOn(document, 'querySelectorAll')
+      .mockReturnValue(mockLinks as unknown as NodeListOf<HTMLLinkElement>)
 
     const { result } = renderHook(() => useUrlState())
     vi.mocked(compression.compressDocumentToHash).mockReturnValue('hash')
@@ -131,9 +147,13 @@ describe('useUrlState', () => {
       vi.advanceTimersByTime(500)
     })
 
-    // Check if href was updated to a data URI
-    expect(mockLink.href).toMatch(/^data:image\/svg\+xml/)
-    expect(decodeURIComponent(mockLink.href)).toContain('🚀')
+    // Check if both links were updated
+    mockLinks.forEach((link) => {
+      expect(link.href).toMatch(/^data:image\/svg\+xml/)
+      expect(decodeURIComponent(link.href)).toContain('🚀')
+      expect(link.type).toBe('image/svg+xml')
+      expect(link.removeAttribute).toHaveBeenCalledWith('sizes')
+    })
 
     // Check if title has emoji stripped
     expect(document.title).toBe('Blast Off')
@@ -147,11 +167,20 @@ describe('useUrlState', () => {
       vi.advanceTimersByTime(500)
     })
 
-    // Should revert to default
-    expect(mockLink.href).toBe('/favicon.svg')
+    // Should revert to original state
+    expect(mockLinks[0].href).toBe('/favicon-32x32.png')
+    expect(mockLinks[0].type).toBe('image/png')
+    expect(mockLinks[0].setAttribute).toHaveBeenCalledWith('sizes', '32x32')
+
+    expect(mockLinks[1].href).toBe('/favicon.ico')
+    expect(mockLinks[1].type).toBe('image/x-icon')
+    // empty sizes might be removed or set to empty, implementation detail:
+    // originalFavicons stores sizes: ''
+    // if (sizes) check fails for empty string, so removeAttribute called
+    expect(mockLinks[1].removeAttribute).toHaveBeenCalledWith('sizes')
 
     vi.useRealTimers()
-    querySelectorSpy.mockRestore()
+    querySelectorAllSpy.mockRestore()
   })
   it('should preserve query parameters when updating URL', () => {
     vi.useFakeTimers()
