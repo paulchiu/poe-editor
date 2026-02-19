@@ -2,13 +2,15 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { AboutDialog } from './AboutDialog'
 
+import { version } from '../../package.json'
+
 describe('AboutDialog', () => {
   it('renders content when open', () => {
     render(<AboutDialog open={true} onOpenChange={() => {}} />)
 
     expect(screen.getByText('About Poe')).toBeInTheDocument()
     expect(screen.getByText('Modal editing for Markdown')).toBeInTheDocument()
-    expect(screen.getByText('Version 1.0.0')).toBeInTheDocument()
+    expect(screen.getByText(`Version ${version}`)).toBeInTheDocument()
   })
 
   it('does not render content when closed', () => {
