@@ -5,6 +5,7 @@ import {
   moveByDisplayLinesMotion,
   moveToMatchingBracketMotion,
   moveToEndOfDisplayLineMotion,
+  moveToStartOfDisplayLineMotion,
 } from './vimMotions'
 
 // Setup clipboard integration for monaco-vim
@@ -80,4 +81,9 @@ export function setupVim(): void {
   // Override default g$ to use Monaco's native cursorEnd (end of display line)
   Vim.defineMotion('moveToEndOfDisplayLine', moveToEndOfDisplayLineMotion)
   Vim.mapCommand('g$', 'motion', 'moveToEndOfDisplayLine')
+
+  // Override default g^/g0 to use Monaco's native cursorHome (start of display line)
+  Vim.defineMotion('moveToStartOfDisplayLine', moveToStartOfDisplayLineMotion)
+  Vim.mapCommand('g^', 'motion', 'moveToStartOfDisplayLine')
+  Vim.mapCommand('g0', 'motion', 'moveToStartOfDisplayLine')
 }

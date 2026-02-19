@@ -64,6 +64,30 @@ export const moveToMatchingBracketMotion = (
 }
 
 /**
+ * Vim motion that moves the cursor to the start of the display (wrapped) line.
+ * Uses Monaco's native cursorHome command which respects line wrapping.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @returns The 0-indexed target position
+ */
+export const moveToStartOfDisplayLineMotion = (
+  cm: CodeMirrorAdapter,
+  head: { line: number; ch: number }
+): { line: number; ch: number } => {
+  // Sync Monaco position
+  const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
+  cm.editor.setPosition(startPos)
+
+  // Trigger 'cursorHome' which usually handles display lines
+  cm.editor.trigger('vim', 'cursorHome', {})
+
+  // Return new position
+  const newPos = cm.editor.getPosition()
+  if (!newPos) return { line: head.line, ch: head.ch }
+  return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+}
+
+/**
  * Vim motion that moves the cursor to the end of the display (wrapped) line.
  * Uses Monaco's native cursorEnd command which respects line wrapping.
  * @param cm - The CodeMirror adapter wrapping the Monaco editor
