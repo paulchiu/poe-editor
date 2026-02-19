@@ -54,7 +54,7 @@ test.describe('Transformer Dialog', () => {
 
       // Verify toast notification (use first() to avoid strict mode violation)
       await expect(
-        page.locator('ol > li').filter({ hasText: 'Pipeline saved!' }).first()
+        page.locator('ol > li').filter({ hasText: 'Pipeline saved' }).first()
       ).toBeVisible()
 
       // Dialog should close
@@ -73,10 +73,7 @@ test.describe('Transformer Dialog', () => {
 
       // Should show error toast
       await expect(
-        page
-          .locator('ol > li')
-          .filter({ hasText: 'Please enter a name for your pipeline.' })
-          .first()
+        page.locator('ol > li').filter({ hasText: 'Please enter a name for your pipeline' }).first()
       ).toBeVisible()
 
       // Dialog should remain open
@@ -97,7 +94,7 @@ test.describe('Transformer Dialog', () => {
       await expect(
         page
           .locator('ol > li')
-          .filter({ hasText: 'Add at least one step to the pipeline before saving.' })
+          .filter({ hasText: 'Add at least one step to the pipeline before saving' })
           .first()
       ).toBeVisible()
 
