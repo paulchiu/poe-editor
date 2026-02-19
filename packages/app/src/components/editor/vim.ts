@@ -1,7 +1,12 @@
 import { VimMode } from 'monaco-vim'
 import type { CodeMirrorAdapter, VimModeModule } from './vimTypes'
 import { createYankSystemOperator, createPasteSystemAction } from './vimClipboard'
-import { moveByDisplayLinesMotion, moveToMatchingBracketMotion } from './vimMotions'
+import {
+  moveByDisplayLinesMotion,
+  moveToMatchingBracketMotion,
+  moveToEndOfDisplayLineMotion,
+  moveToStartOfDisplayLineMotion,
+} from './vimMotions'
 
 // Setup clipboard integration for monaco-vim
 // This needs to run only once to register the operators and actions globally
@@ -55,6 +60,15 @@ export function setupVim(): void {
     { type: 'operatorMotion', motion: 'expandToLine', motionArgs: { linewise: true } }
   )
 
+  // Handle :set wrap and :set nowrap
+  Vim.defineOption('wrap', true, 'boolean', [], (value, cm) => {
+    if (cm && cm.editor) {
+      cm.editor.updateOptions({
+        wordWrap: value ? 'on' : 'off',
+      })
+    }
+  })
+
   // Explicitly map p/P back to default 'paste' to ensure no stale 'pasteSystem' mapping remains
   // This fixes the popup issue by avoiding navigator.clipboard.readText() on 'p'
   Vim.mapCommand('p', 'action', 'paste', { after: true, isEdit: true })
@@ -68,4 +82,17 @@ export function setupVim(): void {
   Vim.defineMotion('moveToMatchingBracket', moveToMatchingBracketMotion)
 
   Vim.mapCommand('%', 'motion', 'moveToMatchingBracket')
+
+  // Remap j/k to move by display lines (gj/gk) to handle wrapped lines intuitively
+  Vim.mapCommand('j', 'motion', 'moveByDisplayLines', { forward: true })
+  Vim.mapCommand('k', 'motion', 'moveByDisplayLines', { forward: false })
+
+  // Override default g$ to use Monaco's native cursorEnd (end of display line)
+  Vim.defineMotion('moveToEndOfDisplayLine', moveToEndOfDisplayLineMotion)
+  Vim.mapCommand('g$', 'motion', 'moveToEndOfDisplayLine')
+
+  // Override default g^/g0 to use Monaco's native cursorHome (start of display line)
+  Vim.defineMotion('moveToStartOfDisplayLine', moveToStartOfDisplayLineMotion)
+  Vim.mapCommand('g^', 'motion', 'moveToStartOfDisplayLine')
+  Vim.mapCommand('g0', 'motion', 'moveToStartOfDisplayLine')
 }

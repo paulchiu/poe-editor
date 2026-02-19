@@ -59,6 +59,13 @@ export interface VimAPI {
       motionArgs: { repeat?: number; forward?: boolean }
     ) => { line: number; ch: number } | void
   ) => void
+  defineOption: (
+    name: string,
+    defaultValue: string | number | boolean | undefined,
+    type: string,
+    aliases?: string[],
+    callback?: (value: string | number | boolean | undefined, cm: CodeMirrorAdapter) => void
+  ) => void
 }
 
 export interface VimModeModule {
