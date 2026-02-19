@@ -254,9 +254,11 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   )
 
   const handleEditPipeline = useCallback((pipeline: TransformationPipeline) => {
+    const selection = sourceRef.current?.getSelection()
+    setSelectedText(selection || undefined)
     setEditingPipeline(pipeline)
     setShowTransformer(true)
-  }, [])
+  }, [sourceRef])
 
   const handleDeletePipeline = useCallback(
     (id: string) => {
