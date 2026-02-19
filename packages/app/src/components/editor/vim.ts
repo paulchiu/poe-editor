@@ -52,7 +52,7 @@ interface VimAPI {
   handleKey: (cm: CodeMirrorAdapter, key: string) => void
   mapCommand: (
     command: string,
-    type: 'action' | 'operator',
+    type: 'action' | 'operator' | 'motion',
     name: string,
     args?: Record<string, unknown>,
     extra?: Record<string, unknown>
@@ -189,4 +189,15 @@ export function setupVim() {
     return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
   })
 
+  // Override default % motion to use Monaco's native jumpToBracket
+  Vim.defineMotion('moveToMatchingBracket', (cm, head) => {
+    const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
+    cm.editor.setPosition(startPos)
+    cm.editor.trigger('vim', 'editor.action.jumpToBracket', {})
+    const newPos = cm.editor.getPosition()
+    if (!newPos) return { line: head.line, ch: head.ch }
+    return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+  })
+
+  Vim.mapCommand('%', 'motion', 'moveToMatchingBracket')
 }
