@@ -68,4 +68,8 @@ export function setupVim(): void {
   Vim.defineMotion('moveToMatchingBracket', moveToMatchingBracketMotion)
 
   Vim.mapCommand('%', 'motion', 'moveToMatchingBracket')
+
+  // Remap j/k to move by display lines (gj/gk) to handle wrapped lines intuitively
+  Vim.mapCommand('j', 'motion', 'moveByDisplayLines', { forward: true })
+  Vim.mapCommand('k', 'motion', 'moveByDisplayLines', { forward: false })
 }
