@@ -62,3 +62,36 @@ export const moveToMatchingBracketMotion = (
   // 3. Fallback to standard bracket jumping
   return findStandardBracketTarget(cm, position, head)
 }
+
+/**
+ * Vim motion that moves the cursor to the end of the display (wrapped) line.
+ * Uses Monaco's native cursorEnd command which respects line wrapping.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @returns The 0-indexed target position
+ */
+export const moveToEndOfDisplayLineMotion = (
+  cm: CodeMirrorAdapter,
+  head: { line: number; ch: number }
+): { line: number; ch: number } => {
+  // Sync Monaco position
+  const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
+  cm.editor.setPosition(startPos)
+
+  // Trigger 'cursorEnd' which usually handles display lines
+  cm.editor.trigger('vim', 'cursorEnd', {})
+
+  // cursorEnd moves to the position *after* the last character of the visual line.
+  // In Vim, $ (and g$) usually places the cursor *on* the last character.
+  // If we don't move left, the selection includes the character after the line end
+  // (which might be the start of the next visual line or the newline).
+  const endPos = cm.editor.getPosition()
+  if (endPos && endPos.column > 1) {
+    cm.editor.trigger('vim', 'cursorLeft', {})
+  }
+
+  // Return new position
+  const newPos = cm.editor.getPosition()
+  if (!newPos) return { line: head.line, ch: head.ch }
+  return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+}

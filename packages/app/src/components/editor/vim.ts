@@ -1,7 +1,11 @@
 import { VimMode } from 'monaco-vim'
 import type { CodeMirrorAdapter, VimModeModule } from './vimTypes'
 import { createYankSystemOperator, createPasteSystemAction } from './vimClipboard'
-import { moveByDisplayLinesMotion, moveToMatchingBracketMotion } from './vimMotions'
+import {
+  moveByDisplayLinesMotion,
+  moveToMatchingBracketMotion,
+  moveToEndOfDisplayLineMotion,
+} from './vimMotions'
 
 // Setup clipboard integration for monaco-vim
 // This needs to run only once to register the operators and actions globally
@@ -72,4 +76,8 @@ export function setupVim(): void {
   // Remap j/k to move by display lines (gj/gk) to handle wrapped lines intuitively
   Vim.mapCommand('j', 'motion', 'moveByDisplayLines', { forward: true })
   Vim.mapCommand('k', 'motion', 'moveByDisplayLines', { forward: false })
+
+  // Override default g$ to use Monaco's native cursorEnd (end of display line)
+  Vim.defineMotion('moveToEndOfDisplayLine', moveToEndOfDisplayLineMotion)
+  Vim.mapCommand('g$', 'motion', 'moveToEndOfDisplayLine')
 }
