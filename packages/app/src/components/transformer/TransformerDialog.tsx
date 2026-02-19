@@ -324,32 +324,63 @@ export function TransformerDialog({
 
             <div className="flex items-center gap-2 ml-auto sm:ml-0 order-2 sm:order-3">
               {initialPreviewText ? (
-                <div className="flex items-center -space-x-px">
-                  <Button
-                    variant="ghost"
-                    onClick={handleApply}
-                    className="h-10 rounded-r-none border-r"
-                  >
-                    Apply
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-10 px-2 rounded-l-none">
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={handleSave}>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleSaveAndApply}>
-                        <Save className="w-4 h-4 mr-2" />
-                        Save &amp; Apply
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                editPipeline ? (
+                  // Editing with selection: Default to Save & Apply
+                  <div className="flex items-center -space-x-px">
+                    <Button
+                      variant="ghost"
+                      onClick={handleSaveAndApply}
+                      className="h-10 rounded-r-none border-r"
+                    >
+                      Save & Apply
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-10 px-2 rounded-l-none">
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleSave}>
+                          <Save className="w-4 h-4 mr-2" />
+                          Save
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleApply}>
+                          <Wand2 className="w-4 h-4 mr-2" />
+                          Apply
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ) : (
+                  // transforming selection: Default to Apply
+                  <div className="flex items-center -space-x-px">
+                    <Button
+                      variant="ghost"
+                      onClick={handleApply}
+                      className="h-10 rounded-r-none border-r"
+                    >
+                      Apply
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-10 px-2 rounded-l-none">
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={handleSave}>
+                          <Save className="w-4 h-4 mr-2" />
+                          Save
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleSaveAndApply}>
+                          <Save className="w-4 h-4 mr-2" />
+                          Save &amp; Apply
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )
               ) : (
                 <Button variant="ghost" onClick={handleSave} className="h-10">
                   <Save className="w-4 h-4 mr-2" />
