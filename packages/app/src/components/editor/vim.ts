@@ -72,9 +72,11 @@ interface VimModeModule {
 }
 
 /**
- * Initializes Vim mode for Monaco editor including custom operators and actions
+ * Initializes Vim mode for Monaco editor including custom operators and actions.
+ * Registers clipboard operators, visual line movement, and bracket matching motions.
+ * @returns {void}
  */
-export function setupVim() {
+export function setupVim(): void {
   if (vimClipboardSetup || !VimMode) {
     return
   }
@@ -206,10 +208,7 @@ const moveByDisplayLinesMotion = (
   return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
 }
 
-const moveToMatchingBracketMotion = (
-  cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-) => {
+const moveToMatchingBracketMotion = (cm: CodeMirrorAdapter, head: { line: number; ch: number }) => {
   const model = cm.editor.getModel()
   if (!model) return { line: head.line, ch: head.ch }
 
@@ -275,11 +274,7 @@ const countFencesUpToLine = (
   return fenceCount
 }
 
-const findNextFence = (
-  model: editor.ITextModel,
-  startLine: number,
-  fenceRegex: RegExp
-): number => {
+const findNextFence = (model: editor.ITextModel, startLine: number, fenceRegex: RegExp): number => {
   for (let i = startLine; i <= model.getLineCount(); i++) {
     const line = model.getLineContent(i)
     if (line.match(fenceRegex)) {
