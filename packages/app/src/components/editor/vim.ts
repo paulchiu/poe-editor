@@ -191,8 +191,72 @@ export function setupVim() {
 
   // Override default % motion to use Monaco's native jumpToBracket
   Vim.defineMotion('moveToMatchingBracket', (cm, head) => {
-    const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
-    cm.editor.setPosition(startPos)
+    const model = cm.editor.getModel()
+    if (!model) return { line: head.line, ch: head.ch }
+
+    const position = { lineNumber: head.line + 1, column: head.ch + 1 }
+    const lineContent = model.getLineContent(position.lineNumber)
+
+    // Check if the current line is a markdown code block fence
+    // Matches ``` or ~~~ at the start of the line (allowing indentation)
+    // We only trigger if the cursor is on the fence line
+    const fenceRegex = /^\s*(`{3,}|~{3,})/
+    const match = lineContent.match(fenceRegex)
+
+    if (match) {
+      const fence = match[1]
+      const currentLine = position.lineNumber
+
+      // Determine if this is a start or end fence
+      // We do this by counting fences from the beginning of the file
+      // If count (including current) is odd -> Start
+      // If count (including current) is even -> End
+      let fenceCount = 0
+      for (let i = 1; i <= currentLine; i++) {
+        const line = model.getLineContent(i)
+        // We must match the exact same fence type (backticks vs tildes) logic
+        // But simplified: any fence counts + we only care about parity
+        // A robust parser would check nesting, but for markdown blocks usually top-level or consistently structured
+        if (line.match(fenceRegex)) {
+          fenceCount++
+        }
+      }
+
+      const isStartFence = fenceCount % 2 !== 0
+      let targetLine = -1
+
+      if (isStartFence) {
+        // Search downwards for the next matching fence
+         for (let i = currentLine + 1; i <= model.getLineCount(); i++) {
+            const line = model.getLineContent(i)
+            // Ideally we match the exact fence length/char, but standard markdown parsers
+            // usually just look for another fence. Let's look for any fence for simplicity
+            // or we could be strict: line.startsWith(match[0])
+            if (line.match(fenceRegex)) {
+                targetLine = i
+                break
+            }
+         }
+      } else {
+        // Search upwards for the previous matching fence
+        for (let i = currentLine - 1; i >= 1; i--) {
+            const line = model.getLineContent(i)
+            if (line.match(fenceRegex)) {
+                targetLine = i
+                break
+            }
+        }
+      }
+
+      if (targetLine !== -1) {
+        cm.editor.setPosition({ lineNumber: targetLine, column: 1 })
+        // Return 0-indexed position for Vim
+        return { line: targetLine - 1, ch: 0 }
+      }
+    }
+
+    // Fallback to standard bracket jumping for non-fence lines
+    cm.editor.setPosition(position)
     cm.editor.trigger('vim', 'editor.action.jumpToBracket', {})
     const newPos = cm.editor.getPosition()
     if (!newPos) return { line: head.line, ch: head.ch }
