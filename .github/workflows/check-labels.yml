@@ -1,0 +1,26 @@
+name: Check Version Labels
+
+on:
+  pull_request:
+    types: [opened, labeled, unlabeled, synchronize, reopened]
+
+jobs:
+  check-labels:
+    name: Enforce Semantic Versioning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for version labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = context.payload.pull_request.labels.map(l => l.name);
+            const versionLabels = ['major', 'minor', 'patch', 'norelease'];
+            const presentLabels = labels.filter(l => versionLabels.includes(l));
+
+            if (presentLabels.length === 0) {
+              core.setFailed('PR must have at least one of the following labels: ' + versionLabels.join(', '));
+            }
+
+            if (presentLabels.length > 1) {
+              core.setFailed('PR must have EXACTLY one version label, found: ' + presentLabels.join(', '));
+            }

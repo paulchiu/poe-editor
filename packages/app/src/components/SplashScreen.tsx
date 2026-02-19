@@ -115,7 +115,7 @@ export function SplashScreen({
           <p className="mt-2 text-2xl font-light text-muted-foreground">Markdown Editor</p>
 
           <div className="mt-8 space-y-2">
-            <p className="text-sm text-muted-foreground">Version 1.0.0</p>
+            <p className="text-sm text-muted-foreground">Version {__APP_VERSION__}</p>
             <p className="text-sm text-muted-foreground">{tagline}</p>
           </div>
 
