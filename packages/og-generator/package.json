@@ -1,6 +1,6 @@
 {
   "name": "og-generator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Static OG image generator for Poe Editor",
   "main": "src/index.tsx",
   "type": "module",

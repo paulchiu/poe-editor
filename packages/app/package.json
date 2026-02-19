@@ -1,6 +1,6 @@
 {
   "name": "@poe-editor/app",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Poe Markdown Editor - A React SPA with live preview and Vim mode",
   "type": "module",
   "private": true,
