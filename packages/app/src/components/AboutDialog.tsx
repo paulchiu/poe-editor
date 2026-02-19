@@ -41,7 +41,7 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps): ReactElem
             </ul>
           </div>
           <div className="text-xs text-muted-foreground border-t border-border pt-4">
-            <p className="font-semibold mb-2">Version 1.0.0</p>
+            <p className="font-semibold mb-2">Version {__APP_VERSION__}</p>
             <div className="flex gap-4 items-start">
               <div className="flex-1">
                 <p className="mb-1">
