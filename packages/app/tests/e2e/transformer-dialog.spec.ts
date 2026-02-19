@@ -73,10 +73,7 @@ test.describe('Transformer Dialog', () => {
 
       // Should show error toast
       await expect(
-        page
-          .locator('ol > li')
-          .filter({ hasText: 'Please enter a name for your pipeline' })
-          .first()
+        page.locator('ol > li').filter({ hasText: 'Please enter a name for your pipeline' }).first()
       ).toBeVisible()
 
       // Dialog should remain open

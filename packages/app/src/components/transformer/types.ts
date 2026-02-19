@@ -55,3 +55,8 @@ export interface TransformationPipeline {
   icon: string // Emoji or Lucide icon name
   steps: PipelineStep[]
 }
+
+export interface DragData {
+  sortable?: { index: number }
+  operation?: TransformerOperation
+}
