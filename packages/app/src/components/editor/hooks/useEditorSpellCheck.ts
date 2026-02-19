@@ -15,6 +15,7 @@ interface UseEditorSpellCheckParams {
   spellCheck: boolean
   vimMode?: boolean
   onSpellCheckChange?: (enabled: boolean) => void
+  editorInstance?: editor.IStandaloneCodeEditor | null
 }
 
 /**
@@ -31,10 +32,11 @@ export function useEditorSpellCheck({
   spellCheck,
   vimMode,
   onSpellCheckChange,
+  editorInstance,
 }: UseEditorSpellCheckParams): void {
   // Handle spell check initialization
   useEffect(() => {
-    const editor = editorRef.current
+    const editor = editorInstance || editorRef.current
     const monacoInstance = monacoRef.current
     if (!editor || !monacoInstance || !spellCheck) return
 
@@ -88,7 +90,7 @@ export function useEditorSpellCheck({
         monacoInstance.editor.setModelMarkers(model, 'spellchecker', [])
       }
     }
-  }, [spellCheck, editorRef, monacoRef])
+  }, [spellCheck, editorInstance, monacoRef])
 
   // Sync React spellCheck state -> Vim option
   useEffect(() => {

@@ -116,6 +116,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     },
     ref
   ) => {
+    const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
     const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
     const vimInstanceRef = useRef<VimAdapter | null>(null)
     const statusBarRef = useRef<HTMLDivElement | null>(null)
@@ -133,6 +134,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
 
     const handleEditorDidMount: OnMount = (editor, monacoInstance): void => {
       editorRef.current = editor
+      setEditorInstance(editor)
       monacoRef.current = monacoInstance
 
       // Drain any scroll callbacks that were queued before Monaco mounted
@@ -202,7 +204,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     }
 
     useEditorVim({ editorRef, vimInstanceRef, statusBarRef, vimMode })
-    useEditorSpellCheck({ editorRef, monacoRef, spellCheck, vimMode, onSpellCheckChange })
+    useEditorSpellCheck({ editorRef, monacoRef, spellCheck, vimMode, onSpellCheckChange, editorInstance })
     useEditorHandle({ ref, editorRef, pendingScrollCallbacks })
 
     const handleCopy = async (): Promise<void> => {
