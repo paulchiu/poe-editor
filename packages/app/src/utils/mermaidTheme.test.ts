@@ -33,8 +33,10 @@ describe('mermaidTheme', () => {
   it('serializes initialize and run script for exports', () => {
     const script = getMermaidInitScript('dark')
 
+    expect(script).toContain('document.readyState')
+    expect(script).toContain("document.addEventListener('DOMContentLoaded'")
     expect(script).toContain('mermaid.initialize(')
     expect(script).toContain('"primaryBorderColor":"#4493f8"')
-    expect(script).toContain("mermaid.run({querySelector: '.language-mermaid'});")
+    expect(script).toContain("mermaid.run({ querySelector: '.language-mermaid' })")
   })
 })

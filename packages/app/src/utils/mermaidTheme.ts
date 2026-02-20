@@ -88,5 +88,17 @@ export function getMermaidInitializeOptions(colorMode: MermaidColorMode): Mermai
  */
 export function getMermaidInitScript(colorMode: MermaidColorMode): string {
   const options = getMermaidInitializeOptions(colorMode)
-  return `mermaid.initialize(${JSON.stringify(options)}); mermaid.run({querySelector: '.language-mermaid'});`
+  return `(() => {
+  const runMermaid = () => {
+    if (typeof mermaid === 'undefined') return
+    mermaid.initialize(${JSON.stringify(options)})
+    mermaid.run({ querySelector: '.language-mermaid' })
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', runMermaid, { once: true })
+  } else {
+    runMermaid()
+  }
+})()`
 }
