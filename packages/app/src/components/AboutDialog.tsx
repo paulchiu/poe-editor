@@ -38,6 +38,7 @@ export function AboutDialog({ open, onOpenChange }: AboutDialogProps): ReactElem
               <li>Custom text transformers</li>
               <li>Transformers import/export</li>
               <li>Markdown table tools</li>
+              <li>Mermaid diagram support</li>
             </ul>
           </div>
           <div className="text-xs text-muted-foreground border-t border-border pt-4">

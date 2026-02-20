@@ -67,6 +67,7 @@ An online, no-signup, writing tool with Vim support.
 - Custom text transformers
 - Transformers import/export
 - Markdown table tools
+- Mermaid diagram support
 
 \`\`\`javascript
 const editor = "Poe";

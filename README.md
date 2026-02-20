@@ -33,6 +33,7 @@ The editor includes 25+ text operations that can be chained into reusable pipeli
 - Mobile-optimised tab interface.
 - Zero (editor) backend; all processing occurs in browser.
 - Markdown table formatting and manipulation tools.
+- Mermaid diagram support.
 - Static Open Graph image generation via `@packages/og-generator`.
 - Cloudflare Workers proxy for meta tag injection.
 
