@@ -1,10 +1,12 @@
 import 'github-markdown-css/github-markdown.css'
-import { useState, type ReactElement, forwardRef } from 'react'
+import { useState, useMemo, type ReactElement, forwardRef } from 'react'
 import { Copy, Check, Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from '@/hooks/useToast'
 import { copyToClipboard, stripHtml } from '@/utils/clipboard'
+import { splitHtmlAtMermaid } from '@/utils/splitHtmlAtMermaid'
+import { MermaidDiagram } from '@/components/MermaidDiagram'
 
 interface PreviewPaneProps {
   htmlContent: string
@@ -19,6 +21,8 @@ interface PreviewPaneProps {
 export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
   ({ htmlContent, viewMode, onToggleLayout }, ref): ReactElement => {
     const [copied, setCopied] = useState(false)
+
+    const segments = useMemo(() => splitHtmlAtMermaid(htmlContent), [htmlContent])
 
     const handleCopy = async (): Promise<void> => {
       try {
@@ -85,7 +89,13 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
             </Tooltip>
           </div>
 
-          <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+          {segments.map((segment, i) =>
+            segment.type === 'html' ? (
+              <div key={i} dangerouslySetInnerHTML={{ __html: segment.content }} />
+            ) : (
+              <MermaidDiagram key={i} code={segment.code} />
+            )
+          )}
         </div>
       </div>
     )
