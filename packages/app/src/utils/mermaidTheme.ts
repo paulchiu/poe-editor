@@ -40,7 +40,7 @@ const MERMAID_THEME_OPTIONS: Record<MermaidColorMode, MermaidInitializeOptions> 
       clusterBkg: '#f0efeb',
       clusterBorder: '#e5e3df',
       edgeLabelBackground: '#faf9f7',
-      fontFamily: 'Inter, Inter Fallback, sans-serif',
+      fontFamily: 'Crimson Text, serif',
     },
   },
   dark: {
@@ -60,7 +60,7 @@ const MERMAID_THEME_OPTIONS: Record<MermaidColorMode, MermaidInitializeOptions> 
       clusterBkg: '#151b23',
       clusterBorder: '#3d444d',
       edgeLabelBackground: '#151b23',
-      fontFamily: 'Inter, Inter Fallback, sans-serif',
+      fontFamily: 'Crimson Text, serif',
     },
   },
 }
