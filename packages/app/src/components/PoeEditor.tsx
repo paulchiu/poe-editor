@@ -10,6 +10,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSyncScroll } from '@/hooks/useSyncScroll'
 import { useTransformers } from '@/hooks/useTransformers'
 import { useEditorPreferences } from '@/hooks/useEditorPreferences'
+import { useSpellCheck } from '@/hooks/useSpellCheck'
 import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
 import { applyPipeline } from '@/utils/transformer-engine'
@@ -160,6 +161,9 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   // Transformers management
   const { pipelines, addPipeline, updatePipeline, removePipeline, replacePipelines } =
     useTransformers()
+
+  // Spell check state
+  const { spellCheck, setSpellCheck, toggleSpellCheck } = useSpellCheck()
 
   // Scroll synchronization
   const { sourceRef, targetRef } = useSyncScroll<EditorPaneHandle, HTMLDivElement>({
@@ -551,6 +555,8 @@ ${htmlContent}
           startEmpty={startEmpty}
           toggleStartEmpty={toggleStartEmpty}
           documentMenuRef={documentMenuRef}
+          spellCheck={spellCheck}
+          toggleSpellCheck={toggleSpellCheck}
         />
 
         <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
@@ -606,6 +612,8 @@ ${htmlContent}
                           showLineNumbers={showLineNumbers}
                           viewMode={viewMode}
                           onToggleLayout={handleToggleEditor}
+                          spellCheck={spellCheck}
+                          onSpellCheckChange={setSpellCheck}
                         />
                       </div>
                     </ResizablePanel>
@@ -671,6 +679,8 @@ ${htmlContent}
                   showWordCount={showWordCount}
                   showLineNumbers={showLineNumbers}
                   viewMode={activeTab === 'editor' ? 'editor' : 'preview'}
+                  spellCheck={spellCheck}
+                  onSpellCheckChange={setSpellCheck}
                 />
               </div>
 
