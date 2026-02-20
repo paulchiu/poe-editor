@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, type ReactElement } from 'react'
+import { getMermaidInitializeOptions, type MermaidColorMode } from '@/utils/mermaidTheme'
 
 interface MermaidDiagramProps {
   code: string
+  colorMode?: MermaidColorMode
 }
 
-let mermaidInitialized = false
+let initializedColorMode: MermaidColorMode | null = null
 let renderCounter = 0
 
 /**
@@ -13,9 +15,10 @@ let renderCounter = 0
  * a styled code block on syntax errors (e.g., mid-keystroke).
  * @param props - Component props
  * @param props.code - The Mermaid diagram source code
+ * @param props.colorMode - Active app color mode
  * @returns A rendered SVG diagram or a fallback code block
  */
-export function MermaidDiagram({ code }: MermaidDiagramProps): ReactElement {
+export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProps): ReactElement {
   const [svg, setSvg] = useState<string | null>(null)
   const [error, setError] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -27,9 +30,9 @@ export function MermaidDiagram({ code }: MermaidDiagramProps): ReactElement {
       try {
         const mermaid = (await import('mermaid')).default
 
-        if (!mermaidInitialized) {
-          mermaid.initialize({ startOnLoad: false, theme: 'default' })
-          mermaidInitialized = true
+        if (initializedColorMode !== colorMode) {
+          mermaid.initialize(getMermaidInitializeOptions(colorMode))
+          initializedColorMode = colorMode
         }
 
         const id = `mermaid-diagram-${++renderCounter}`
@@ -51,7 +54,7 @@ export function MermaidDiagram({ code }: MermaidDiagramProps): ReactElement {
     return () => {
       cancelled = true
     }
-  }, [code])
+  }, [code, colorMode])
 
   if (svg && !error) {
     return (
