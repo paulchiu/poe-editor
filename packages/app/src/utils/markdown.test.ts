@@ -18,6 +18,13 @@ describe('renderMarkdown', () => {
     expect(html).toContain('log')
   })
 
+  it('should render mermaid code blocks as standard code blocks', () => {
+    const markdown = '```mermaid\ngraph TD;\n    A-->B;\n```'
+    const html = renderMarkdown(markdown)
+    expect(html).toContain('<pre><code class="hljs language-mermaid">')
+    expect(html).toContain('graph TD;')
+  })
+
   it('should handle empty input', () => {
     expect(renderMarkdown('')).toBe('')
   })

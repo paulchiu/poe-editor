@@ -318,13 +318,18 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   }, [documentName, content, toast])
 
   const handleDownloadHTML = useCallback((): void => {
+    const hasMermaid = htmlContent.includes('language-mermaid')
+    const mermaidScripts = hasMermaid
+      ? `\n  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js"></script>\n  <script>mermaid.initialize({startOnLoad:false}); mermaid.run({querySelector: '.language-mermaid'});</script>`
+      : ''
+
     const htmlDoc = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${documentName}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css">${mermaidScripts}
   <style>
     .markdown-body { box-sizing: border-box; min-width: 200px; max-width: 980px; margin: 0 auto; padding: 45px; }
     @media (max-width: 767px) { .markdown-body { padding: 15px; } }
