@@ -1,6 +1,6 @@
 {
   "name": "poe-editor-proxy",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "Cloudflare Worker for dynamic Open Graph previews and root-level routing",
   "main": "dist/worker.js",
   "type": "module",
