@@ -40,6 +40,7 @@ import { TransformerImportExportDialog } from '@/components/transformer/Transfor
 import type { TransformationPipeline } from '@/components/transformer/types'
 import { useToast } from '@/hooks/useToast'
 import { generateShareableUrl } from '@/utils/urlShare'
+import { getMermaidInitScript, type MermaidColorMode } from '@/utils/mermaidTheme'
 
 import {
   formatBold,
@@ -173,6 +174,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Rendered HTML for preview
   const htmlContent = useMemo(() => renderMarkdown(content), [content])
+  const colorMode: MermaidColorMode = mounted && theme === 'dark' ? 'dark' : 'light'
 
   // Formatting functions
   const handleFormatBold = useCallback((): void => {
@@ -320,8 +322,9 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   const handleDownloadHTML = useCallback((): void => {
     const hasMermaid = htmlContent.includes('language-mermaid')
+    const mermaidInitScript = getMermaidInitScript(colorMode)
     const mermaidScripts = hasMermaid
-      ? `\n  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js"></script>\n  <script>mermaid.initialize({startOnLoad:false}); mermaid.run({querySelector: '.language-mermaid'});</script>`
+      ? `\n  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js"></script>\n  <script>${mermaidInitScript}</script>`
       : ''
 
     const htmlDoc = `<!DOCTYPE html>
@@ -343,7 +346,7 @@ ${htmlContent}
     const htmlFileName = documentName.replace(/\.md$/, '.html')
     downloadFile(htmlFileName, htmlDoc, 'text/html')
     toast({ description: 'Downloaded as HTML' })
-  }, [documentName, htmlContent, toast])
+  }, [documentName, htmlContent, toast, colorMode])
 
   const handleCopyLink = useCallback(async (): Promise<void> => {
     try {
@@ -635,6 +638,7 @@ ${htmlContent}
                         htmlContent={htmlContent}
                         viewMode={viewMode}
                         onToggleLayout={handleTogglePreview}
+                        colorMode={colorMode}
                       />
                     </div>
                   </ResizablePanel>
@@ -694,7 +698,7 @@ ${htmlContent}
               <div
                 className={cn('flex-1 p-4 mt-0 overflow-auto', activeTab !== 'preview' && 'hidden')}
               >
-                <PreviewPane ref={targetRef} htmlContent={htmlContent} />
+                <PreviewPane ref={targetRef} htmlContent={htmlContent} colorMode={colorMode} />
               </div>
             </div>
           )}

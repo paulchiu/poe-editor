@@ -7,11 +7,13 @@ import { toast } from '@/hooks/useToast'
 import { copyToClipboard, stripHtml } from '@/utils/clipboard'
 import { splitHtmlAtMermaid } from '@/utils/splitHtmlAtMermaid'
 import { MermaidDiagram } from '@/components/MermaidDiagram'
+import type { MermaidColorMode } from '@/utils/mermaidTheme'
 
 interface PreviewPaneProps {
   htmlContent: string
   viewMode?: 'editor' | 'preview' | 'split'
   onToggleLayout?: () => void
+  colorMode?: MermaidColorMode
 }
 
 /**
@@ -19,7 +21,7 @@ interface PreviewPaneProps {
  * Displays styled HTML with GitHub markdown styles and copy-to-clipboard functionality.
  */
 export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
-  ({ htmlContent, viewMode, onToggleLayout }, ref): ReactElement => {
+  ({ htmlContent, viewMode, onToggleLayout, colorMode = 'light' }, ref): ReactElement => {
     const [copied, setCopied] = useState(false)
 
     const segments = useMemo(() => splitHtmlAtMermaid(htmlContent), [htmlContent])
@@ -93,7 +95,7 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
             segment.type === 'html' ? (
               <div key={i} dangerouslySetInnerHTML={{ __html: segment.content }} />
             ) : (
-              <MermaidDiagram key={i} code={segment.code} />
+              <MermaidDiagram key={i} code={segment.code} colorMode={colorMode} />
             )
           )}
         </div>
