@@ -1,4 +1,5 @@
-import React, { useImperativeHandle } from 'react'
+import type React from 'react'
+import { useImperativeHandle } from 'react'
 import type { editor } from 'monaco-editor'
 import { toast } from '@/hooks/useToast'
 import {

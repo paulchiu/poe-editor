@@ -204,7 +204,14 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
     }
 
     useEditorVim({ editorRef, vimInstanceRef, statusBarRef, vimMode })
-    useEditorSpellCheck({ editorRef, monacoRef, spellCheck, vimMode, onSpellCheckChange, editorInstance })
+    useEditorSpellCheck({
+      editorRef,
+      monacoRef,
+      spellCheck,
+      vimMode,
+      onSpellCheckChange,
+      editorInstance,
+    })
     useEditorHandle({ ref, editorRef, pendingScrollCallbacks })
 
     const handleCopy = async (): Promise<void> => {

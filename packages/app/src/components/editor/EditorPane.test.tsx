@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { EditorPane } from './index'
@@ -35,9 +36,12 @@ vi.mock('monaco-editor', () => ({
 
 // Mock Monaco Editor
 vi.mock('@monaco-editor/react', () => {
-  const { useEffect } = require('react')
   return {
-    default: ({ onMount }: { onMount: (editor: unknown, monaco: unknown) => void }) => {
+    default: function MonacoEditorMock({
+      onMount,
+    }: {
+      onMount: (editor: unknown, monaco: unknown) => void
+    }) {
       useEffect(() => {
         // Simulate mount asynchronously to avoid React state updates during render
         onMount(
@@ -67,7 +71,7 @@ vi.mock('@monaco-editor/react', () => {
             KeyCode: { KeyB: 32, KeyI: 39, KeyK: 41, KeyE: 35, Enter: 13 },
             editor: {
               setModelMarkers: vi.fn(),
-            }
+            },
           }
         )
         // eslint-disable-next-line react-hooks/exhaustive-deps
