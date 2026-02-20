@@ -90,7 +90,7 @@ export function useEditorSpellCheck({
         monacoInstance.editor.setModelMarkers(model, 'spellchecker', [])
       }
     }
-  }, [spellCheck, editorInstance, monacoRef])
+  }, [spellCheck, editorInstance, monacoRef, editorRef])
 
   // Sync React spellCheck state -> Vim option
   useEffect(() => {

@@ -5,7 +5,6 @@ import {
   moveByDisplayLinesMotion,
   moveToMatchingBracketMotion,
   moveToEndOfDisplayLineMotion,
-  moveToStartOfDisplayLineMotion,
 } from './vimMotions'
 
 // Setup clipboard integration for monaco-vim
@@ -102,7 +101,7 @@ export function setupVim(): void {
     false,
     'boolean',
     [],
-    (value: string | number | boolean | undefined, cm: CodeMirrorAdapter) => {
+    (value: string | number | boolean | undefined) => {
       // Notify subscribers
       if (typeof value === 'boolean') {
         spellCheckSubscribers.forEach((cb) => cb(value))

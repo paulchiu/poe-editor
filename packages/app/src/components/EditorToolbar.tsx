@@ -92,7 +92,6 @@ import {
   AlignLeft,
   Columns,
   Rows,
-  Check,
   SpellCheck,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/transformer/constants'

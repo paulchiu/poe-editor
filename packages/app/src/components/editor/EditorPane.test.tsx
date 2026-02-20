@@ -14,6 +14,25 @@ vi.mock('@/hooks/useToast', () => ({
   toast: vi.fn(),
 }))
 
+// Mock monaco-editor to obtain KeyMod/KeyCode without side effects
+vi.mock('monaco-editor', () => ({
+  KeyMod: { CtrlCmd: 2048, Shift: 1024 },
+  KeyCode: { KeyB: 32, KeyI: 39, KeyK: 41, KeyE: 35, Enter: 13 },
+  Range: vi.fn(),
+  editor: {
+    setTheme: vi.fn(),
+    defineTheme: vi.fn(),
+  },
+  languages: {
+    register: vi.fn(),
+    setMonarchTokensProvider: vi.fn(),
+    registerCompletionItemProvider: vi.fn(),
+  },
+  Uri: {
+    parse: vi.fn(),
+  },
+}))
+
 // Mock Monaco Editor
 vi.mock('@monaco-editor/react', () => ({
   default: ({ onMount }: { onMount: (editor: unknown, monaco: unknown) => void }) => {
