@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { toast } from '@/hooks/useToast'
 
 const STORAGE_KEY = 'poe-editor-spell-check'
 
@@ -18,7 +19,7 @@ function getInitialSpellCheck(): boolean {
       return stored === 'true'
     }
   } catch {
-    // localStorage not available
+    // localStorage not available initially, don't spam toast on load
   }
   return false
 }
@@ -44,7 +45,10 @@ export function useSpellCheck(): UseSpellCheckReturn {
     try {
       localStorage.setItem(STORAGE_KEY, String(spellCheck))
     } catch {
-      // Silently fail if localStorage is not available
+      toast({
+        description: 'Failed to save spell check preference to local storage',
+        variant: 'destructive',
+      })
     }
   }, [spellCheck])
 

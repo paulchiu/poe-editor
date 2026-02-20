@@ -34,37 +34,48 @@ vi.mock('monaco-editor', () => ({
 }))
 
 // Mock Monaco Editor
-vi.mock('@monaco-editor/react', () => ({
-  default: ({ onMount }: { onMount: (editor: unknown, monaco: unknown) => void }) => {
-    // Simulate mount immediately
-    onMount(
-      {
-        getDomNode: () => document.createElement('div'),
-        getScrollTop: () => 0,
-        getScrollHeight: () => 100,
-        getLayoutInfo: () => ({ height: 500 }),
-        onDidScrollChange: vi.fn(),
-        onDidChangeCursorPosition: vi.fn(),
-        addCommand: vi.fn(),
-        onKeyDown: vi.fn(),
-        getPosition: vi.fn(),
-        executeEdits: vi.fn(),
-        setPosition: vi.fn(),
-        focus: vi.fn(),
-        createContextKey: vi.fn().mockReturnValue({
-          set: vi.fn(),
-          get: vi.fn(),
-          reset: vi.fn(),
-        }),
-      },
-      {
-        KeyMod: { CtrlCmd: 2048, Shift: 1024 },
-        KeyCode: { KeyB: 32, KeyI: 39, KeyK: 41, KeyE: 35, Enter: 13 },
-      }
-    )
-    return <div data-testid="monaco-editor" />
-  },
-}))
+vi.mock('@monaco-editor/react', () => {
+  const { useEffect } = require('react')
+  return {
+    default: ({ onMount }: { onMount: (editor: unknown, monaco: unknown) => void }) => {
+      useEffect(() => {
+        // Simulate mount asynchronously to avoid React state updates during render
+        onMount(
+          {
+            getDomNode: () => document.createElement('div'),
+            getScrollTop: () => 0,
+            getScrollHeight: () => 100,
+            getLayoutInfo: () => ({ height: 500 }),
+            onDidScrollChange: vi.fn(),
+            onDidChangeCursorPosition: vi.fn(),
+            addCommand: vi.fn(),
+            onKeyDown: vi.fn(),
+            getPosition: vi.fn(),
+            executeEdits: vi.fn(),
+            setPosition: vi.fn(),
+            focus: vi.fn(),
+            createContextKey: vi.fn().mockReturnValue({
+              set: vi.fn(),
+              get: vi.fn(),
+              reset: vi.fn(),
+            }),
+            getModel: vi.fn(),
+            onDidChangeModelContent: vi.fn(),
+          },
+          {
+            KeyMod: { CtrlCmd: 2048, Shift: 1024 },
+            KeyCode: { KeyB: 32, KeyI: 39, KeyK: 41, KeyE: 35, Enter: 13 },
+            editor: {
+              setModelMarkers: vi.fn(),
+            }
+          }
+        )
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [])
+      return <div data-testid="monaco-editor" />
+    },
+  }
+})
 
 // Mock monaco-vim
 vi.mock('monaco-vim', () => ({
