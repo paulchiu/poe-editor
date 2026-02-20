@@ -1,11 +1,4 @@
-import {
-  type ElementType,
-  forwardRef,
-  useState,
-  useRef,
-  type MouseEvent,
-  type RefObject,
-} from 'react'
+import { type ElementType, forwardRef, useState, useRef, type RefObject } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -356,7 +349,7 @@ export function EditorToolbar({
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
   const headingActionRef = useRef(false)
 
-  const handleClearClick = (e: MouseEvent) => {
+  const handleClearSelect = (e: Event) => {
     if (!isConfirmingClear) {
       e.preventDefault()
       setIsConfirmingClear(true)
@@ -458,7 +451,7 @@ export function EditorToolbar({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={handleClearClick}
+              onSelect={handleClearSelect}
               className={cn(
                 isConfirmingClear &&
                   'text-destructive bg-destructive/10 focus:bg-destructive/10 focus:text-destructive'
