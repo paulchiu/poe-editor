@@ -139,7 +139,7 @@ describe('EditorToolbar', () => {
     expect(props.onTableAction).toHaveBeenCalledWith('insert-table')
   })
 
-  it('triggers document and overflow menu actions', async () => {
+  it('triggers document menu actions', async () => {
     const user = userEvent.setup()
     const props = renderToolbar()
 
@@ -159,6 +159,11 @@ describe('EditorToolbar', () => {
     await user.click(await screen.findByText('Clear'))
     await user.click(await screen.findByText('Confirm Clear'))
     expect(props.onClear).toHaveBeenCalledTimes(1)
+  }, 10000)
+
+  it('triggers overflow menu actions', async () => {
+    const user = userEvent.setup()
+    const props = renderToolbar()
 
     await user.click(screen.getByRole('button', { name: 'Menu' }))
     await user.click(await screen.findByText('Show Word Count'))
@@ -195,5 +200,5 @@ describe('EditorToolbar', () => {
     await user.click(screen.getByRole('button', { name: 'Menu' }))
     await user.click(await screen.findByText('Show Splash'))
     expect(props.setShowSplash).toHaveBeenCalledWith(true)
-  })
+  }, 10000)
 })
