@@ -25,6 +25,9 @@ The editor includes 25+ text operations that can be chained into reusable pipeli
 
 ## Features
 
+For a full feature matrix (including notable capabilities), see
+[FEATURES.md](FEATURES.md).
+
 - Live preview with synchronised scrolling.
 - Vim mode via Monaco Editor and `monaco-vim`.
 - 25+ text transformers with custom pipeline support.
@@ -56,7 +59,7 @@ The editor includes 25+ text operations that can be chained into reusable pipeli
 
 ## Monorepo Structure
 
-```
+```text
 poe-editor/
 ├── packages/
 │   ├── app/           # React SPA (main editor)
@@ -109,27 +112,29 @@ npm run deploy:proxy
 
 Automated releases are handled via GitHub Actions when a Pull Request is merged into `main`. The workflow
 
-1.  Checks PR labels for `major`, `minor`, or `patch`.
-2.  Bumps the version in `package.json` for all workspaces.
-3.  Commits the version bump.
-4.  Creates and pushes a new git tag (e.g., `v1.1.0`).
+1. Checks PR labels for `major`, `minor`, or `patch`.
+2. Bumps the version in `package.json` for all workspaces.
+3. Commits the version bump.
+4. Creates and pushes a new git tag (e.g., `v1.1.0`).
 
 ### Requirements
 
 To enable the release workflow to push changes back to the repository, a Deploy Key is required.
 
-1.  Generate an SSH Key
+1. Generate an SSH Key
+
     ```bash
     ssh-keygen -t ed25519 -C "github-actions[bot]" -f gh-deploy-key -N ""
     ```
-2.  Add Public Key: Go to Repository Settings > Deploy Keys > Add deploy key.
+
+2. Add Public Key: Go to Repository Settings > Deploy Keys > Add deploy key.
     - Title: `Release Action`.
     - Key: Paste contents of `gh-deploy-key.pub`.
     - Check "Allow write access" (Critical!).
-3.  Add Private Key: Go to Repository Settings > Secrets and variables > Actions > New repository secret.
+3. Add Private Key: Go to Repository Settings > Secrets and variables > Actions > New repository secret.
     - Name: `DEPLOY_KEY`.
     - Secret: Paste contents of `gh-deploy-key`.
-4.  Branch Protection: If the `main` branch has protection rules (e.g., requiring Pull Requests), you must allow the Deploy Key to bypass them.
+4. Branch Protection: If the `main` branch has protection rules (e.g., requiring Pull Requests), you must allow the Deploy Key to bypass them.
     - In Branch Protection settings for `main`, check "Allow specified actors to bypass required pull requests".
     - Search for and add the Deploy Key (named `Release Action` above). .
 
