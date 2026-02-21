@@ -62,6 +62,9 @@
   - Required for all public/exported functions and hooks.
   - Must specify `@param` and `@returns`.
   - Keep comments minimal; prefer self-documenting code.
+- **Feature Documentation (`FEATURES.md`):**
+  - Update `/FEATURES.md` when user-facing features are added, removed, or behavior changes.
+  - Do not update `/FEATURES.md` for internal refactors, dependency bumps, or non-user-facing maintenance.
 - **Error Handling:**
   - **Recoverable Errors:** Return `null` (e.g., decompression failure).
   - **User Feedback:** Use callbacks (`onError`) or toast messages. Never swallow errors silently.
