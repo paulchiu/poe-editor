@@ -21,7 +21,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 | ------------------------------------------ | ------------------------------------------------------------------------------------ |
 | URL-based document persistence             | Content is compressed into the URL hash; no login or backend storage required.       |
 | Share links with readable metadata         | Shared URLs include a title/snippet path plus compressed hash payload.               |
-| Dynamic title + emoji favicon from content | First Markdown heading drives page title; first emoji can become favicon.            |
+| Dynamic title + emoji favicon from content | First heading drives page title; fallback prefers file name, then shared URL title.  |
 | URL length safety + testing override       | Over-limit warnings are surfaced; `?limit=<n>` can override max length for testing.  |
 | Persisted editor preferences               | Vim mode, line numbers, word count, spell check, and start-empty preference persist. |
 | App reset                                  | Reset app state is available (saved transformers are intentionally preserved).       |
