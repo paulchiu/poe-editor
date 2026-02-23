@@ -56,6 +56,32 @@ describe('splitHtmlAtMermaid', () => {
     expect(result).toEqual([{ type: 'mermaid', code: 'A & B <-- C > D "E" \'F\'' }])
   })
 
+  it('extracts wrapped mermaid code blocks with language hints', () => {
+    const html =
+      '<p>Before</p><div class="code-block-with-language" data-language="mermaid"><div class="code-block-language-hint">Mermaid</div><pre><code class="hljs language-mermaid">graph TD;\nA--&gt;B;</code></pre></div><p>After</p>'
+    const result = splitHtmlAtMermaid(html)
+    expect(result).toEqual([
+      { type: 'html', content: '<p>Before</p>' },
+      { type: 'mermaid', code: 'graph TD;\nA-->B;' },
+      { type: 'html', content: '<p>After</p>' },
+    ])
+  })
+
+  it('keeps non-mermaid wrapped code blocks when mermaid exists in the same html', () => {
+    const html =
+      '<p>Intro</p><div class="code-block-with-language" data-language="ts"><div class="code-block-language-hint">TypeScript</div><pre><code class="hljs language-ts">const value = 1</code></pre></div><p>Middle</p><div class="code-block-with-language" data-language="mermaid"><div class="code-block-language-hint">Mermaid</div><pre><code class="hljs language-mermaid">graph TD;\nA--&gt;B;</code></pre></div><p>End</p>'
+    const result = splitHtmlAtMermaid(html)
+    expect(result).toEqual([
+      {
+        type: 'html',
+        content:
+          '<p>Intro</p><div class="code-block-with-language" data-language="ts"><div class="code-block-language-hint">TypeScript</div><pre><code class="hljs language-ts">const value = 1</code></pre></div><p>Middle</p>',
+      },
+      { type: 'mermaid', code: 'graph TD;\nA-->B;' },
+      { type: 'html', content: '<p>End</p>' },
+    ])
+  })
+
   it('returns empty array for empty input', () => {
     expect(splitHtmlAtMermaid('')).toEqual([])
   })
