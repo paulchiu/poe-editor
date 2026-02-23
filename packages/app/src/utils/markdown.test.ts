@@ -13,16 +13,33 @@ describe('renderMarkdown', () => {
   it('should render code blocks with highlighting classes', () => {
     const markdown = '```js\nconsole.log("hi")\n```'
     const html = renderMarkdown(markdown)
+    expect(html).toContain('<div class="code-block-with-language" data-language="js">')
+    expect(html).toContain('<div class="code-block-language-hint">JavaScript</div>')
     expect(html).toContain('<pre><code class="hljs language-js">')
     expect(html).toContain('console')
     expect(html).toContain('log')
   })
 
+  it('should map ts shorthand to a TypeScript label', () => {
+    const markdown = '```ts\nconst value: string = "x"\n```'
+    const html = renderMarkdown(markdown)
+    expect(html).toContain('<div class="code-block-language-hint">TypeScript</div>')
+    expect(html).toContain('class="hljs language-ts"')
+  })
+
   it('should render mermaid code blocks as standard code blocks', () => {
     const markdown = '```mermaid\ngraph TD;\n    A-->B;\n```'
     const html = renderMarkdown(markdown)
+    expect(html).toContain('<div class="code-block-language-hint">Mermaid</div>')
     expect(html).toContain('<pre><code class="hljs language-mermaid">')
     expect(html).toContain('graph TD;')
+  })
+
+  it('should not render language hint when code block has no language', () => {
+    const markdown = '```\nplain text\n```'
+    const html = renderMarkdown(markdown)
+    expect(html).toContain('<pre><code class="hljs">')
+    expect(html).not.toContain('code-block-language-hint')
   })
 
   it('should handle empty input', () => {

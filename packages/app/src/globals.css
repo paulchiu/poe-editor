@@ -226,6 +226,12 @@ html:not(.dark) .markdown-body {
   --color-prettylights-syntax-markup-ignored-bg: #0550ae;
   --color-prettylights-syntax-meta-diff-range: #8250df;
   --color-prettylights-syntax-sublimelinter-gutter-mark: #818b98;
+  --code-syntax-keyword: #a626a4;
+  --code-syntax-string: #50a14f;
+  --code-syntax-variable: #986801;
+  --code-syntax-number: #986801;
+  --code-syntax-entity: #005cc5;
+  --code-syntax-comment: #6a737d;
   /* Ensure list styles are visible */
   ul {
     list-style-type: disc;
@@ -292,6 +298,12 @@ html:not(.dark) .markdown-body {
   --color-prettylights-syntax-markup-ignored-bg: #1158c7;
   --color-prettylights-syntax-meta-diff-range: #d2a8ff;
   --color-prettylights-syntax-sublimelinter-gutter-mark: #3d444d;
+  --code-syntax-keyword: var(--color-prettylights-syntax-keyword);
+  --code-syntax-string: var(--color-prettylights-syntax-string);
+  --code-syntax-variable: var(--color-prettylights-syntax-variable);
+  --code-syntax-number: var(--color-prettylights-syntax-variable);
+  --code-syntax-entity: var(--color-prettylights-syntax-entity);
+  --code-syntax-comment: var(--color-prettylights-syntax-comment);
   /* Ensure list styles are visible */
   ul {
     list-style-type: disc;
@@ -301,4 +313,75 @@ html:not(.dark) .markdown-body {
     list-style-type: decimal;
     padding-left: 1.5em;
   }
+}
+
+.markdown-body .code-block-with-language {
+  margin: 1rem 0;
+  overflow: hidden;
+  border: 1px solid var(--borderColor-muted);
+  border-radius: 12px;
+  background: var(--bgColor-muted);
+}
+
+.markdown-body .code-block-language-hint {
+  display: flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.8rem;
+  border-bottom: 1px solid var(--borderColor-muted);
+  color: var(--fgColor-muted);
+  font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.markdown-body .code-block-with-language pre {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+}
+
+.markdown-body .code-block-with-language pre code.hljs {
+  display: block;
+  padding: 0;
+  background: transparent;
+}
+
+.markdown-body .hljs {
+  color: var(--fgColor-default);
+}
+
+.markdown-body .hljs-keyword,
+.markdown-body .hljs-selector-tag,
+.markdown-body .hljs-literal,
+.markdown-body .hljs-doctag,
+.markdown-body .hljs-operator {
+  color: var(--code-syntax-keyword);
+}
+
+.markdown-body .hljs-string,
+.markdown-body .hljs-meta .hljs-string,
+.markdown-body .hljs-attribute,
+.markdown-body .hljs-regexp {
+  color: var(--code-syntax-string);
+}
+
+.markdown-body .hljs-number,
+.markdown-body .hljs-symbol,
+.markdown-body .hljs-variable,
+.markdown-body .hljs-template-variable {
+  color: var(--code-syntax-number);
+}
+
+.markdown-body .hljs-title,
+.markdown-body .hljs-title.class_,
+.markdown-body .hljs-title.function_ {
+  color: var(--code-syntax-entity);
+}
+
+.markdown-body .hljs-comment,
+.markdown-body .hljs-quote {
+  color: var(--code-syntax-comment);
 }
