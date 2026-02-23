@@ -107,6 +107,32 @@ describe('useUrlState', () => {
     vi.useRealTimers()
   })
 
+  it('should prefer document name fallback over path metadata after rename', () => {
+    vi.useFakeTimers()
+    window.history.replaceState(null, '', '/shared-title/shared-snippet')
+
+    const { result } = renderHook(() => useUrlState())
+    vi.mocked(compression.compressDocumentToHash).mockReturnValue('hash')
+
+    act(() => {
+      result.current.setDocumentName('notes.md')
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+
+    expect(document.title).toBe('notes.md')
+    vi.useRealTimers()
+  })
+
+  it('should use path metadata when document name is still default and no heading exists', () => {
+    window.history.replaceState(null, '', '/shared-title/shared-snippet')
+    renderHook(() => useUrlState({ defaultName: 'untitled.md' }))
+
+    expect(document.title).toBe('shared title')
+  })
+
   it('should update all favicon links when an emoji is in the heading', () => {
     vi.useFakeTimers()
 

@@ -32,6 +32,11 @@ interface FaviconState {
   sizes: string
 }
 
+interface ResolvedTitleState {
+  title: string
+  emoji: string | null
+}
+
 /**
  * Updates the favicon based on the provided emoji.
  * If an emoji is provided, it creates an SVG data URI.
@@ -93,6 +98,48 @@ function updateFavicon(
       })
     }
   }
+}
+
+function resolveDocumentTitle(
+  content: string,
+  documentName: string,
+  defaultName: string,
+  pathname: string
+): ResolvedTitleState {
+  const heading = getFirstHeading(content)
+
+  if (heading) {
+    const emoji = extractFirstEmoji(heading)
+    const headingTitle = emoji ? heading.replace(emoji, '').trim() : heading
+
+    if (headingTitle) {
+      return { title: headingTitle, emoji }
+    }
+
+    return {
+      title: resolveFallbackTitle(documentName, defaultName, pathname),
+      emoji,
+    }
+  }
+
+  return {
+    title: resolveFallbackTitle(documentName, defaultName, pathname),
+    emoji: null,
+  }
+}
+
+function resolveFallbackTitle(documentName: string, defaultName: string, pathname: string): string {
+  const normalizedDocumentName = documentName.trim()
+  if (normalizedDocumentName && normalizedDocumentName !== defaultName) {
+    return normalizedDocumentName
+  }
+
+  const pathMetadata = parsePathMetadata(pathname)
+  if (pathMetadata?.title) {
+    return pathMetadata.title
+  }
+
+  return normalizedDocumentName || defaultName
 }
 
 /**
@@ -160,28 +207,19 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
   const initializedRef = useRef(false)
   useEffect(() => {
     if (!initializedRef.current) {
-      const heading = getFirstHeading(content)
+      const { title, emoji } = resolveDocumentTitle(
+        content,
+        documentName,
+        defaultName,
+        window.location.pathname
+      )
 
-      if (heading) {
-        const emoji = extractFirstEmoji(heading)
-        updateFavicon(emoji, originalFaviconsRef)
-
-        const title = emoji ? heading.replace(emoji, '').trim() : heading
-        document.title = title || documentName
-      } else {
-        // Check for metadata in URL path (for shared links)
-        const pathMetadata = parsePathMetadata(window.location.pathname)
-        if (pathMetadata) {
-          document.title = pathMetadata.title
-        } else {
-          document.title = documentName
-        }
-        updateFavicon(null, originalFaviconsRef)
-      }
+      updateFavicon(emoji, originalFaviconsRef)
+      document.title = title
 
       initializedRef.current = true
     }
-  }, [content, documentName])
+  }, [content, defaultName, documentName])
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -205,28 +243,14 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       }
 
       // Update document title and favicon from first heading
-      const firstHeading = getFirstHeading(contentRef.current)
-
-      const emoji = firstHeading ? extractFirstEmoji(firstHeading) : null
+      const { title, emoji } = resolveDocumentTitle(
+        contentRef.current,
+        documentNameRef.current,
+        defaultName,
+        window.location.pathname
+      )
       updateFavicon(emoji, originalFaviconsRef)
-
-      // If we found an emoji, remove it from the title to avoid duplication/clutter
-      // We only remove the *exact* extracted emoji string once.
-      let title = firstHeading
-        ? emoji
-          ? firstHeading.replace(emoji, '').trim()
-          : firstHeading
-        : null
-
-      // If no heading, check for metadata in URL path (for shared links)
-      if (!title) {
-        const pathMetadata = parsePathMetadata(window.location.pathname)
-        if (pathMetadata) {
-          title = pathMetadata.title
-        }
-      }
-
-      document.title = title || documentNameRef.current
+      document.title = title
 
       const compressed = compressDocumentToHash(docData)
       const overLimit = compressed.length > maxLength
@@ -260,7 +284,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       // We use replaceState to update the URL without adding a new history entry for every keystroke
       window.history.replaceState(null, '', newUrl.toString())
     }, debounceMs)
-  }, [debounceMs, maxLength, onLengthWarning])
+  }, [debounceMs, defaultName, maxLength, onLengthWarning])
 
   // Handle external hash changes (e.g., back/forward navigation)
   useEffect(() => {
@@ -270,23 +294,14 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       const updateStateAndTitle = (newContent: string, newName: string) => {
         setContentState(newContent)
         setDocumentNameState(newName)
-        const heading = getFirstHeading(newContent)
-
-        const emoji = heading ? extractFirstEmoji(heading) : null
+        const { title, emoji } = resolveDocumentTitle(
+          newContent,
+          newName,
+          defaultName,
+          window.location.pathname
+        )
         updateFavicon(emoji, originalFaviconsRef)
-
-        // First try to use heading from content
-        let title = heading ? (emoji ? heading.replace(emoji, '').trim() : heading) : null
-
-        // If no heading, check for metadata in URL path (for shared links)
-        if (!title) {
-          const pathMetadata = parsePathMetadata(window.location.pathname)
-          if (pathMetadata) {
-            title = pathMetadata.title
-          }
-        }
-
-        document.title = title || newName
+        document.title = title
       }
 
       if (!hash) {
