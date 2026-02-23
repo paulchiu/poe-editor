@@ -226,6 +226,12 @@ html:not(.dark) .markdown-body {
   --color-prettylights-syntax-markup-ignored-bg: #0550ae;
   --color-prettylights-syntax-meta-diff-range: #8250df;
   --color-prettylights-syntax-sublimelinter-gutter-mark: #818b98;
+  --code-syntax-keyword: #a626a4;
+  --code-syntax-string: #50a14f;
+  --code-syntax-variable: #986801;
+  --code-syntax-number: #986801;
+  --code-syntax-entity: #005cc5;
+  --code-syntax-comment: #6a737d;
   /* Ensure list styles are visible */
   ul {
     list-style-type: disc;
@@ -292,6 +298,12 @@ html:not(.dark) .markdown-body {
   --color-prettylights-syntax-markup-ignored-bg: #1158c7;
   --color-prettylights-syntax-meta-diff-range: #d2a8ff;
   --color-prettylights-syntax-sublimelinter-gutter-mark: #3d444d;
+  --code-syntax-keyword: var(--color-prettylights-syntax-keyword);
+  --code-syntax-string: var(--color-prettylights-syntax-string);
+  --code-syntax-variable: var(--color-prettylights-syntax-variable);
+  --code-syntax-number: var(--color-prettylights-syntax-variable);
+  --code-syntax-entity: var(--color-prettylights-syntax-entity);
+  --code-syntax-comment: var(--color-prettylights-syntax-comment);
   /* Ensure list styles are visible */
   ul {
     list-style-type: disc;
@@ -346,30 +358,30 @@ html:not(.dark) .markdown-body {
 .markdown-body .hljs-literal,
 .markdown-body .hljs-doctag,
 .markdown-body .hljs-operator {
-  color: var(--color-prettylights-syntax-keyword);
+  color: var(--code-syntax-keyword);
 }
 
 .markdown-body .hljs-string,
 .markdown-body .hljs-meta .hljs-string,
 .markdown-body .hljs-attribute,
 .markdown-body .hljs-regexp {
-  color: var(--color-prettylights-syntax-string);
+  color: var(--code-syntax-string);
 }
 
 .markdown-body .hljs-number,
 .markdown-body .hljs-symbol,
 .markdown-body .hljs-variable,
 .markdown-body .hljs-template-variable {
-  color: var(--color-prettylights-syntax-variable);
+  color: var(--code-syntax-number);
 }
 
 .markdown-body .hljs-title,
 .markdown-body .hljs-title.class_,
 .markdown-body .hljs-title.function_ {
-  color: var(--color-prettylights-syntax-entity);
+  color: var(--code-syntax-entity);
 }
 
 .markdown-body .hljs-comment,
 .markdown-body .hljs-quote {
-  color: var(--color-prettylights-syntax-comment);
+  color: var(--code-syntax-comment);
 }

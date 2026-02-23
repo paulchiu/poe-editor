@@ -334,6 +334,24 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
       border-radius: 12px;
       background: var(--bgColor-muted);
     }
+    .markdown-body {
+      --code-syntax-keyword: #a626a4;
+      --code-syntax-string: #50a14f;
+      --code-syntax-variable: #986801;
+      --code-syntax-number: #986801;
+      --code-syntax-entity: #005cc5;
+      --code-syntax-comment: #6a737d;
+    }
+    @media (prefers-color-scheme: dark) {
+      .markdown-body {
+        --code-syntax-keyword: var(--color-prettylights-syntax-keyword);
+        --code-syntax-string: var(--color-prettylights-syntax-string);
+        --code-syntax-variable: var(--color-prettylights-syntax-variable);
+        --code-syntax-number: var(--color-prettylights-syntax-variable);
+        --code-syntax-entity: var(--color-prettylights-syntax-entity);
+        --code-syntax-comment: var(--color-prettylights-syntax-comment);
+      }
+    }
     .markdown-body .code-block-language-hint {
       display: flex;
       align-items: center;
@@ -365,28 +383,28 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     .markdown-body .hljs-literal,
     .markdown-body .hljs-doctag,
     .markdown-body .hljs-operator {
-      color: var(--color-prettylights-syntax-keyword);
+      color: var(--code-syntax-keyword);
     }
     .markdown-body .hljs-string,
     .markdown-body .hljs-meta .hljs-string,
     .markdown-body .hljs-attribute,
     .markdown-body .hljs-regexp {
-      color: var(--color-prettylights-syntax-string);
+      color: var(--code-syntax-string);
     }
     .markdown-body .hljs-number,
     .markdown-body .hljs-symbol,
     .markdown-body .hljs-variable,
     .markdown-body .hljs-template-variable {
-      color: var(--color-prettylights-syntax-variable);
+      color: var(--code-syntax-number);
     }
     .markdown-body .hljs-title,
     .markdown-body .hljs-title.class_,
     .markdown-body .hljs-title.function_ {
-      color: var(--color-prettylights-syntax-entity);
+      color: var(--code-syntax-entity);
     }
     .markdown-body .hljs-comment,
     .markdown-body .hljs-quote {
-      color: var(--color-prettylights-syntax-comment);
+      color: var(--code-syntax-comment);
     }`
 
     const htmlDoc = `<!DOCTYPE html>
