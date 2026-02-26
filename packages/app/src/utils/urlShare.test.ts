@@ -109,6 +109,33 @@ describe('generateShareableUrl', () => {
     expect(url).not.toContain('#')
     expect(url).toBe('https://poemd.dev/title/snippet')
   })
+
+  it('appends hero query param from first markdown image', () => {
+    const content = '# Title\n\n![hero](https://images.example.com/hero.png)\n\nBody text'
+    const url = generateShareableUrl(content, 'untitled.md', 'hash')
+
+    expect(url).toContain('?hero=https%3A%2F%2Fimages.example.com%2Fhero.png')
+    expect(url).toContain('#hash')
+  })
+
+  it('uses the first image when multiple images are referenced', () => {
+    const content = `# Title
+
+![first](https://images.example.com/first.png)
+![second](https://images.example.com/second.png)
+`
+    const url = generateShareableUrl(content, 'untitled.md', 'hash')
+
+    expect(url).toContain('?hero=https%3A%2F%2Fimages.example.com%2Ffirst.png')
+    expect(url).not.toContain('second.png')
+  })
+
+  it('appends hero query param from first html image', () => {
+    const content = '# Title\n\n<img src="https://images.example.com/html-hero.png" alt="hero" />'
+    const url = generateShareableUrl(content, 'untitled.md', 'hash')
+
+    expect(url).toContain('?hero=https%3A%2F%2Fimages.example.com%2Fhtml-hero.png')
+  })
 })
 
 describe('parsePathMetadata', () => {

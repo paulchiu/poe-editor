@@ -237,4 +237,31 @@ describe('useUrlState', () => {
 
     vi.useRealTimers()
   })
+
+  it('should not preserve existing hero query parameter', () => {
+    vi.useFakeTimers()
+
+    const baseUrl = 'http://localhost:3000/?foo=bar&hero=https%3A%2F%2Fold.example.com%2Fhero.png'
+    Object.defineProperty(window, 'location', {
+      value: new URL(baseUrl),
+      writable: true,
+    })
+
+    const { result } = renderHook(() => useUrlState())
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState')
+
+    act(() => {
+      result.current.setContent('New Content without image')
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+
+    const lastCall = replaceStateSpy.mock.calls[replaceStateSpy.mock.calls.length - 1]
+    expect(lastCall[2]).toContain('?foo=bar')
+    expect(lastCall[2]).not.toContain('hero=')
+
+    vi.useRealTimers()
+  })
 })

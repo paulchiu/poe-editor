@@ -40,8 +40,53 @@ describe('Worker Routing', () => {
     const request = new Request('http://localhost:8787/My-Title/My-Snippet')
     const response = await worker.fetch(request, {}, {} as ExecutionContext)
 
-    expect(handleMetadataRoute).toHaveBeenCalled()
+    expect(handleMetadataRoute).toHaveBeenCalledWith(
+      request,
+      {
+        title: 'My Title',
+        snippet: 'My Snippet',
+        heroImageUrl: undefined,
+      },
+      {}
+    )
+    expect(handleMetadataRoute).toHaveBeenCalledTimes(1)
     expect(response.status).toBe(200)
     expect(await response.text()).toBe('Metadata')
+  })
+
+  it('should pass hero query param to metadata handler', async () => {
+    const request = new Request(
+      'http://localhost:8787/My-Title/My-Snippet?hero=https%3A%2F%2Fcdn.example.com%2Fhero.png'
+    )
+
+    await worker.fetch(request, {}, {} as ExecutionContext)
+
+    expect(handleMetadataRoute).toHaveBeenCalledWith(
+      request,
+      {
+        title: 'My Title',
+        snippet: 'My Snippet',
+        heroImageUrl: 'https://cdn.example.com/hero.png',
+      },
+      {}
+    )
+  })
+
+  it('should ignore non-http hero query params', async () => {
+    const request = new Request(
+      'http://localhost:8787/My-Title/My-Snippet?hero=javascript%3Aalert%281%29'
+    )
+
+    await worker.fetch(request, {}, {} as ExecutionContext)
+
+    expect(handleMetadataRoute).toHaveBeenCalledWith(
+      request,
+      {
+        title: 'My Title',
+        snippet: 'My Snippet',
+        heroImageUrl: undefined,
+      },
+      {}
+    )
   })
 })
