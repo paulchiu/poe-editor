@@ -220,4 +220,44 @@ describe('Worker Rewriter Tests', () => {
     expect(text).not.toContain('<meta property="og:description" content="Old Desc" />')
     expect(text).not.toContain('<meta name="description" content="Old Desc" />')
   })
+
+  it('should replace existing OG/Twitter image tags when hero query param is provided', async () => {
+    const mockHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Default</title>
+  <meta property="og:title" content="Old Title" />
+  <meta property="og:image" content="https://example.com/existing-image.png" />
+  <meta name="twitter:image" content="https://example.com/existing-twitter-image.png" />
+</head>
+<body></body>
+</html>`
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(mockHtml, {
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+      })
+    )
+
+    const request = new Request(
+      'http://localhost:8787/My-Title/My-Snippet?hero=https%3A%2F%2Fcdn.example.com%2Fhero.png'
+    )
+    const response = await worker.fetch(request, {}, {} as ExecutionContext)
+    const text = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(text).toContain(
+      '<meta property="og:image" content="https://cdn.example.com/hero.png" />'
+    )
+    expect(text).toContain(
+      '<meta name="twitter:image" content="https://cdn.example.com/hero.png" />'
+    )
+    expect(text).not.toContain(
+      '<meta property="og:image" content="https://example.com/existing-image.png" />'
+    )
+    expect(text).not.toContain(
+      '<meta name="twitter:image" content="https://example.com/existing-twitter-image.png" />'
+    )
+  })
 })

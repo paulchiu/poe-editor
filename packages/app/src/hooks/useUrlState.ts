@@ -275,8 +275,8 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
 
       // Copy query params from current URL to new URL
       currentUrl.searchParams.forEach((value, key) => {
-        if (key !== 'limit') {
-          // Don't copy the limit param used for testing
+        if (key !== 'limit' && key !== 'hero') {
+          // Don't copy params managed by generation logic
           newUrl.searchParams.set(key, value)
         }
       })

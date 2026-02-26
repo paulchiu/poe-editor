@@ -22,23 +22,29 @@ export const removeElementHandler = {
  * Creates an HTMLRewriter handler for the <head> element to inject OG meta tags
  * @param title - The page title
  * @param snippet - The page snippet/description
- * @param ogImageUrl - The standard OG image URL
- * @param twitterOgImageUrl - The Twitter-specific OG image URL
  * @param url - The current page URL
+ * @param heroImageUrl - Optional image URL for OG/Twitter previews
  * @returns Element handler object for HTMLRewriter
  */
 export function createHeadHandler(
   title: string,
   snippet: string,
-  url: string
+  url: string,
+  heroImageUrl?: string
 ): ElementContentHandlers {
   const origin = new URL(url).origin
+  const imageMetaTags = heroImageUrl
+    ? `<meta property="og:image" content="${escapeHtml(heroImageUrl)}" />
+<meta name="twitter:image" content="${escapeHtml(heroImageUrl)}" />
+`
+    : ''
+
   return {
     element(element: Element): void {
       const metaTags = `
 <meta property="og:title" content="${escapeHtml(title)}" />
 <meta property="og:description" content="${escapeHtml(snippet)}" />
-<meta property="og:type" content="article" />
+${imageMetaTags}<meta property="og:type" content="article" />
 <meta property="og:url" content="${url}" />
 <meta property="og:site_name" content="Poe Markdown Editor" />
 <meta property="og:logo" content="${origin}/favicon.svg" />

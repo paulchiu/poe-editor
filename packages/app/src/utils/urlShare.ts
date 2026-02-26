@@ -2,6 +2,38 @@ import { getFirstHeading } from '@/utils/markdown'
 import { extractFirstEmoji } from '@/utils/emoji'
 
 /**
+ * Extracts the first image URL reference from markdown or HTML image syntax
+ * @param content - The markdown content
+ * @returns The first referenced image URL, or null if none found
+ */
+function extractFirstImageUrl(content: string): string | null {
+  const imagePattern = /!\[[^\]]*?\]\(([^)]+)\)|<img\b[^>]*?\bsrc=["']([^"']+)["'][^>]*?>/gi
+  const match = imagePattern.exec(content)
+
+  if (!match) {
+    return null
+  }
+
+  if (match[2]) {
+    return match[2].trim() || null
+  }
+
+  const markdownUrl = match[1]?.trim()
+  if (!markdownUrl) {
+    return null
+  }
+
+  if (markdownUrl.startsWith('<')) {
+    const closingIndex = markdownUrl.indexOf('>')
+    if (closingIndex > 1) {
+      return markdownUrl.slice(1, closingIndex)
+    }
+  }
+
+  return markdownUrl.split(/\s+/)[0] ?? null
+}
+
+/**
  * Extracts a snippet from content (first non-heading line, truncated)
  * @param content - The markdown content
  * @param maxLength - Maximum length of snippet (default: 80)
@@ -81,13 +113,21 @@ export function generateShareableUrl(content: string, documentName: string, hash
   // Encode path segments
   const encodedTitle = encodePathSegment(title)
   const encodedSnippet = encodePathSegment(snippet)
+  const heroImageUrl = extractFirstImageUrl(content)
 
   // Build the URL
   const baseUrl = window.location.origin
-  const path = `/${encodedTitle}/${encodedSnippet}`
-  const fullHash = hash ? `#${hash}` : ''
+  const shareableUrl = new URL(`/${encodedTitle}/${encodedSnippet}`, baseUrl)
 
-  return `${baseUrl}${path}${fullHash}`
+  if (heroImageUrl) {
+    shareableUrl.searchParams.set('hero', heroImageUrl)
+  }
+
+  if (hash) {
+    shareableUrl.hash = hash
+  }
+
+  return shareableUrl.toString()
 }
 
 /**

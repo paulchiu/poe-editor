@@ -19,6 +19,29 @@ function proxyToOrigin(request: Request, env: Env): Promise<Response> {
   return fetch(request)
 }
 
+/**
+ * Reads and normalizes the optional hero image URL from query params
+ * @param url - Incoming request URL
+ * @returns Absolute hero image URL, or undefined if missing/invalid
+ */
+function parseHeroImageUrl(url: URL): string | undefined {
+  const hero = url.searchParams.get('hero')
+  if (!hero) {
+    return undefined
+  }
+
+  try {
+    const parsedHeroUrl = new URL(hero, url.origin)
+    if (parsedHeroUrl.protocol !== 'http:' && parsedHeroUrl.protocol !== 'https:') {
+      return undefined
+    }
+
+    return parsedHeroUrl.toString()
+  } catch {
+    return undefined
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url)
@@ -26,7 +49,8 @@ export default {
 
     const metadata = parsePathMetadata(pathname)
     if (metadata) {
-      return handleMetadataRoute(request, metadata, env)
+      const heroImageUrl = parseHeroImageUrl(url)
+      return handleMetadataRoute(request, { ...metadata, heroImageUrl }, env)
     }
 
     return proxyToOrigin(request, env)

@@ -25,7 +25,7 @@ function fetchFromOrigin(url: string, env: Env): Promise<Response> {
  */
 export async function handleMetadataRoute(
   request: Request,
-  metadata: { title: string; snippet: string },
+  metadata: { title: string; snippet: string; heroImageUrl?: string },
   env: Env
 ): Promise<Response> {
   const url = new URL(request.url)
@@ -36,8 +36,11 @@ export async function handleMetadataRoute(
     return fetchFromOrigin(request.url, env)
   }
 
-  const rewriter = new HTMLRewriter()
-    .on('head', createHeadHandler(metadata.title, metadata.snippet, url.toString()))
+  let rewriter = new HTMLRewriter()
+    .on(
+      'head',
+      createHeadHandler(metadata.title, metadata.snippet, url.toString(), metadata.heroImageUrl)
+    )
     .on('title', createTitleHandler(metadata.title))
     .on('meta[property="og:title"]', removeElementHandler)
     .on('meta[property="og:description"]', removeElementHandler)
@@ -49,6 +52,12 @@ export async function handleMetadataRoute(
     .on('meta[name="twitter:description"]', removeElementHandler)
     .on('meta[name="twitter:url"]', removeElementHandler)
     .on('meta[name="description"]', removeElementHandler)
+
+  if (metadata.heroImageUrl) {
+    rewriter = rewriter
+      .on('meta[property="og:image"]', removeElementHandler)
+      .on('meta[name="twitter:image"]', removeElementHandler)
+  }
 
   return rewriter.transform(indexResponse)
 }
