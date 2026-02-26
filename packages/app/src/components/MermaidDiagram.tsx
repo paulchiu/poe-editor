@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef, type ReactElement } from 'react'
+import { Check, Copy } from 'lucide-react'
+import { toast } from '@/hooks/useToast'
+import { copyToClipboard } from '@/utils/clipboard'
 import { getMermaidInitializeOptions, type MermaidColorMode } from '@/utils/mermaidTheme'
 
 interface MermaidDiagramProps {
@@ -21,7 +24,9 @@ let renderCounter = 0
 export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProps): ReactElement {
   const [svg, setSvg] = useState<string | null>(null)
   const [error, setError] = useState(false)
+  const [copied, setCopied] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const copyResetTimeoutRef = useRef<number | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -56,20 +61,69 @@ export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProp
     }
   }, [code, colorMode])
 
+  useEffect(() => {
+    return () => {
+      if (copyResetTimeoutRef.current !== null) {
+        window.clearTimeout(copyResetTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const handleCopy = async (): Promise<void> => {
+    try {
+      await copyToClipboard(code)
+      setCopied(true)
+      toast({ description: 'Mermaid code copied to clipboard' })
+      if (copyResetTimeoutRef.current !== null) {
+        window.clearTimeout(copyResetTimeoutRef.current)
+      }
+      copyResetTimeoutRef.current = window.setTimeout(() => setCopied(false), 2000)
+    } catch {
+      toast({
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
+      })
+    }
+  }
+
   if (svg && !error) {
     return (
-      <div
-        ref={containerRef}
-        className="flex justify-center my-4"
-        dangerouslySetInnerHTML={{ __html: svg }}
-      />
+      <div className="preview-mermaid-block relative my-4">
+        <button
+          type="button"
+          className="preview-mermaid-copy-button"
+          aria-label="Copy Mermaid code"
+          data-copied={copied ? 'true' : undefined}
+          onClick={handleCopy}
+        >
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          <span>{copied ? 'Copied' : 'Copy'}</span>
+        </button>
+        <div
+          ref={containerRef}
+          className="flex justify-center"
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
+      </div>
     )
   }
 
   // Fallback: show the raw code in a styled pre/code block
   return (
-    <pre>
-      <code className="hljs language-mermaid">{code}</code>
-    </pre>
+    <div className="preview-mermaid-block relative my-4">
+      <button
+        type="button"
+        className="preview-mermaid-copy-button"
+        aria-label="Copy Mermaid code"
+        data-copied={copied ? 'true' : undefined}
+        onClick={handleCopy}
+      >
+        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+        <span>{copied ? 'Copied' : 'Copy'}</span>
+      </button>
+      <pre>
+        <code className="hljs language-mermaid">{code}</code>
+      </pre>
+    </div>
   )
 }

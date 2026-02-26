@@ -1,11 +1,19 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('mermaid', () => ({
   default: {
     initialize: vi.fn(),
     render: vi.fn(),
   },
+}))
+
+vi.mock('@/utils/clipboard', () => ({
+  copyToClipboard: vi.fn(),
+}))
+
+vi.mock('@/hooks/useToast', () => ({
+  toast: vi.fn(),
 }))
 
 interface MermaidMock {
@@ -17,15 +25,23 @@ const loadModule = async () => {
   vi.resetModules()
 
   const mermaidModule = await import('mermaid')
+  const clipboardModule = await import('@/utils/clipboard')
+  const toastModule = await import('@/hooks/useToast')
   const componentModule = await import('./MermaidDiagram')
 
   return {
     MermaidDiagram: componentModule.MermaidDiagram,
     mermaid: mermaidModule.default as unknown as MermaidMock,
+    copyToClipboard: clipboardModule.copyToClipboard as ReturnType<typeof vi.fn>,
+    toast: toastModule.toast as ReturnType<typeof vi.fn>,
   }
 }
 
 describe('MermaidDiagram', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('renders svg output when mermaid rendering succeeds', async () => {
     const { MermaidDiagram, mermaid } = await loadModule()
     mermaid.render.mockResolvedValue({
@@ -80,6 +96,43 @@ describe('MermaidDiagram', () => {
 
     await waitFor(() => {
       expect(mermaid.initialize.mock.calls.length).toBeGreaterThan(initialInitializeCalls)
+    })
+  })
+
+  it('copies mermaid source from copy button', async () => {
+    const { MermaidDiagram, mermaid, copyToClipboard, toast } = await loadModule()
+    mermaid.render.mockResolvedValue({
+      svg: '<svg><text>diagram</text></svg>',
+    })
+
+    render(<MermaidDiagram code="graph TD;A-->B" colorMode="light" />)
+
+    const copyButton = screen.getByRole('button', { name: 'Copy Mermaid code' })
+    fireEvent.click(copyButton)
+
+    await waitFor(() => {
+      expect(copyToClipboard).toHaveBeenCalledWith('graph TD;A-->B')
+      expect(toast).toHaveBeenCalledWith({ description: 'Mermaid code copied to clipboard' })
+    })
+  })
+
+  it('shows error toast when mermaid copy fails', async () => {
+    const { MermaidDiagram, mermaid, copyToClipboard, toast } = await loadModule()
+    mermaid.render.mockResolvedValue({
+      svg: '<svg><text>diagram</text></svg>',
+    })
+    copyToClipboard.mockRejectedValueOnce(new Error('copy failed'))
+
+    render(<MermaidDiagram code="graph TD;A-->B" colorMode="light" />)
+
+    const copyButton = screen.getByRole('button', { name: 'Copy Mermaid code' })
+    fireEvent.click(copyButton)
+
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith({
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
+      })
     })
   })
 })

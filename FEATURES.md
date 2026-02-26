@@ -41,6 +41,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 | GitHub callout rendering           | GitHub alert syntax blockquotes (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) render with `markdown-alert` styling in preview and HTML export. |
 | Synchronized editor/preview scroll | Scroll sync uses ratio-based matching between Monaco and preview.                                                                                                  |
 | Preview rich-text copy             | Copy supports both HTML and plain text where browser APIs allow.                                                                                                   |
+| Preview code-block quick-copy      | Fenced code blocks in preview include one-click source copy controls, including Mermaid source copy while diagrams are rendered.                                  |
 | Editor markdown quick-copy         | Editor pane includes one-click Markdown copy action.                                                                                                               |
 
 ### Editing and Input

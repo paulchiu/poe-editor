@@ -347,6 +347,77 @@ html:not(.dark) .markdown-body {
   letter-spacing: 0.03em;
 }
 
+.markdown-body .preview-code-copy-host,
+.markdown-body .preview-mermaid-block {
+  position: relative;
+}
+
+.markdown-body .preview-code-copy-button,
+.markdown-body .preview-mermaid-copy-button {
+  position: absolute;
+  top: 0.22rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.5rem;
+  padding: 0 0.55rem;
+  border: 1px solid var(--borderColor-muted);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bgColor-default) 70%, var(--bgColor-muted));
+  color: var(--fgColor-muted);
+  font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.markdown-body .preview-code-copy-button .preview-code-copy-icon {
+  width: 0.78rem;
+  height: 0.78rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.markdown-body pre.preview-code-copy-host > .preview-code-copy-button,
+.markdown-body .preview-mermaid-copy-button {
+  top: 0.55rem;
+}
+
+.markdown-body .preview-code-copy-host:hover > .preview-code-copy-button,
+.markdown-body .preview-code-copy-button:focus-visible,
+.markdown-body .preview-code-copy-button[data-copied='true'],
+.markdown-body .preview-mermaid-block:hover > .preview-mermaid-copy-button,
+.markdown-body .preview-mermaid-copy-button:focus-visible,
+.markdown-body .preview-mermaid-copy-button[data-copied='true'] {
+  opacity: 1;
+}
+
+.markdown-body .preview-code-copy-button:hover,
+.markdown-body .preview-mermaid-copy-button:hover {
+  color: var(--fgColor-default);
+  border-color: var(--borderColor-default);
+  background: color-mix(in srgb, var(--bgColor-default) 85%, var(--bgColor-muted));
+}
+
+.markdown-body .preview-code-copy-button:focus-visible,
+.markdown-body .preview-mermaid-copy-button:focus-visible {
+  outline: 2px solid var(--focus-outlineColor);
+  outline-offset: 1px;
+}
+
 .markdown-body .code-block-with-language pre {
   margin: 0;
   border: 0;
