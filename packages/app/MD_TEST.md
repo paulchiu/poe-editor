@@ -11,6 +11,7 @@ Use this document to quickly verify that Markdown rendering, syntax highlighting
 - Export as HTML in dark mode, open file, confirm dark styling.
 - Copy preview as rich text and paste into a rich-text target (e.g., docs editor) to verify structure survives.
 - Copy editor markdown and confirm pasted text matches source.
+- Verify GitHub callouts (`NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`) render with alert styling.
 - Verify GitHub-safe HTML tags render correctly and unsafe HTML is sanitized.
 
 ---
@@ -81,7 +82,24 @@ Mixed content list:
 
 ---
 
-## 6) Tables (Including CJK/Emoji Width)
+## 6) GitHub Callouts (Alerts)
+
+> [!NOTE]
+> Useful information that users should know, even when skimming.
+
+> [!TIP]
+> Practical advice for completing a task more efficiently.
+
+> [!IMPORTANT]
+> Key details that can affect correctness or compatibility.
+
+> [!WARNING]
+> Risks that could cause incorrect results or data loss.
+
+> [!CAUTION]
+> Negative consequences to avoid during setup or editing.
+
+## 7) Tables (Including CJK/Emoji Width)
 
 | Column      | Value          | Notes                    |
 | ----------- | -------------- | ------------------------ |
@@ -97,7 +115,7 @@ Alignment table:
 | L1   |   C1   |    R1 |
 | L2   |   C2   |    R2 |
 
-## 7) GitHub-Safe HTML (Sanitized Rendering)
+## 8) GitHub-Safe HTML (Sanitized Rendering)
 
 These common GitHub-safe tags should render:
 
@@ -131,7 +149,7 @@ Unsafe content should be sanitized:
 <a href="javascript:alert('xss')">Unsafe javascript link</a>
 <img src="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==" onerror="alert('xss')" />
 
-## 8) Code Blocks (Language Labels + Highlighting)
+## 9) Code Blocks (Language Labels + Highlighting)
 
 No language fence (should render code block without language header):
 
@@ -201,7 +219,7 @@ Unknown language (header should still be humanized):
 render this with a generated language label
 ```
 
-## 9) Mermaid Diagrams
+## 10) Mermaid Diagrams
 
 Flowchart:
 
@@ -226,13 +244,13 @@ sequenceDiagram
   P-->>U: Live preview
 ```
 
-## 10) Markdown in Quotes and Escapes
+## 11) Markdown in Quotes and Escapes
 
 Escaped symbols: \*literal asterisks\*, \_literal underscore\_, \`literal backticks\`.
 
 Inline code with markdown syntax inside: `**not bold inside inline code**`.
 
-## 11) Large Section for Scroll Sync
+## 12) Large Section for Scroll Sync
 
 Paragraph 1: The quick brown fox jumps over the lazy dog.
 
@@ -264,7 +282,7 @@ Paragraph 14: The quick brown fox jumps over the lazy dog.
 
 Paragraph 15: The quick brown fox jumps over the lazy dog.
 
-## 12) Final Render Sanity
+## 13) Final Render Sanity
 
 If everything is working, you should see:
 

@@ -70,6 +70,36 @@ describe('renderMarkdown', () => {
     expect(html).toContain('<a>link</a>')
     expect(html).not.toContain('javascript:')
   })
+
+  it('should render NOTE blockquotes as GitHub callouts', () => {
+    const markdown = '> [!NOTE]\n> This is useful context.'
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<blockquote class="markdown-alert markdown-alert-note">')
+    expect(html).toContain('<p class="markdown-alert-title">Note</p>')
+    expect(html).toContain('<p>This is useful context.</p>')
+    expect(html).not.toContain('[!NOTE]')
+  })
+
+  it('should support all GitHub callout markers', () => {
+    const markdown =
+      '> [!TIP]\n> Tip body.\n\n> [!IMPORTANT]\n> Important body.\n\n> [!WARNING]\n> Warning body.\n\n> [!CAUTION]\n> Caution body.'
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('class="markdown-alert markdown-alert-tip"')
+    expect(html).toContain('class="markdown-alert markdown-alert-important"')
+    expect(html).toContain('class="markdown-alert markdown-alert-warning"')
+    expect(html).toContain('class="markdown-alert markdown-alert-caution"')
+  })
+
+  it('should keep unsupported callout markers as normal blockquotes', () => {
+    const markdown = '> [!INFO]\n> Informational body.'
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<blockquote>')
+    expect(html).not.toContain('markdown-alert')
+    expect(html).toContain('[!INFO]')
+  })
 })
 
 describe('getFirstHeading', () => {
