@@ -11,6 +11,12 @@ function getExportCopyScript(): string {
   const COPY_HOST_CLASS = 'preview-code-copy-host'
   const COPY_BUTTON_CLASS = 'preview-code-copy-button'
   const COPY_LABEL_CLASS = 'preview-code-copy-label'
+  const MERMAID_CONTROLS_CLASS = 'preview-mermaid-copy-controls'
+  const MERMAID_IMAGE_BUTTON_CLASS = 'preview-mermaid-copy-image-button'
+  const MERMAID_MENU_TOGGLE_CLASS = 'preview-mermaid-copy-menu-toggle'
+  const MERMAID_MENU_CLASS = 'preview-mermaid-copy-menu'
+  const MERMAID_CODE_BUTTON_CLASS = 'preview-mermaid-copy-code-button'
+  const MERMAID_HOST_SELECTOR = '.code-block-with-language[data-language="mermaid"]'
 
   const toCodeText = (value) => value.replace(/\\n$/, '')
 
@@ -50,9 +56,100 @@ function getExportCopyScript(): string {
     return button
   }
 
+  const createMermaidControls = () => {
+    const controls = document.createElement('div')
+    controls.className = MERMAID_CONTROLS_CLASS
+
+    const imageButton = document.createElement('button')
+    imageButton.type = 'button'
+    imageButton.className = MERMAID_IMAGE_BUTTON_CLASS
+    imageButton.setAttribute('aria-label', 'Copy Mermaid image')
+    imageButton.setAttribute('data-default-label', 'Copy image')
+
+    const imageIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    imageIcon.setAttribute('viewBox', '0 0 24 24')
+    imageIcon.setAttribute('aria-hidden', 'true')
+    imageIcon.classList.add('preview-code-copy-icon')
+
+    const imageRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    imageRect.setAttribute('x', '3')
+    imageRect.setAttribute('y', '5')
+    imageRect.setAttribute('width', '18')
+    imageRect.setAttribute('height', '14')
+    imageRect.setAttribute('rx', '2')
+    imageRect.setAttribute('ry', '2')
+
+    const imagePath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    imagePath.setAttribute('d', 'M3 15l5-5 4 4 4-4 5 5')
+    imageIcon.append(imageRect, imagePath)
+
+    const imageLabel = document.createElement('span')
+    imageLabel.className = COPY_LABEL_CLASS
+    imageLabel.textContent = 'Copy image'
+
+    imageButton.append(imageIcon, imageLabel)
+
+    const menuToggle = document.createElement('button')
+    menuToggle.type = 'button'
+    menuToggle.className = MERMAID_MENU_TOGGLE_CLASS
+    menuToggle.setAttribute('aria-label', 'Mermaid copy options')
+    menuToggle.setAttribute('aria-haspopup', 'menu')
+    menuToggle.setAttribute('aria-expanded', 'false')
+    menuToggle.textContent = '▾'
+
+    const menu = document.createElement('div')
+    menu.className = MERMAID_MENU_CLASS
+    menu.setAttribute('role', 'menu')
+    menu.setAttribute('aria-label', 'Mermaid copy options')
+
+    const copyCodeButton = document.createElement('button')
+    copyCodeButton.type = 'button'
+    copyCodeButton.className = MERMAID_CODE_BUTTON_CLASS
+    copyCodeButton.setAttribute('role', 'menuitem')
+    copyCodeButton.setAttribute('data-default-label', 'Copy code')
+
+    const codeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    codeIcon.setAttribute('viewBox', '0 0 24 24')
+    codeIcon.setAttribute('aria-hidden', 'true')
+    codeIcon.classList.add('preview-code-copy-icon')
+
+    const codeFrontSheet = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    codeFrontSheet.setAttribute('x', '9')
+    codeFrontSheet.setAttribute('y', '9')
+    codeFrontSheet.setAttribute('width', '11')
+    codeFrontSheet.setAttribute('height', '11')
+    codeFrontSheet.setAttribute('rx', '2')
+    codeFrontSheet.setAttribute('ry', '2')
+
+    const codeBackSheet = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    codeBackSheet.setAttribute('d', 'M6 15c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h9c1.1 0 2 .9 2 2')
+    codeIcon.append(codeFrontSheet, codeBackSheet)
+
+    const codeLabel = document.createElement('span')
+    codeLabel.className = COPY_LABEL_CLASS
+    codeLabel.textContent = 'Copy code'
+
+    copyCodeButton.append(codeIcon, codeLabel)
+    menu.append(copyCodeButton)
+    controls.append(imageButton, menuToggle, menu)
+
+    return controls
+  }
+
+  const closeMermaidMenus = (exceptControls) => {
+    const controlsList = Array.from(document.querySelectorAll('.' + MERMAID_CONTROLS_CLASS))
+    for (const controls of controlsList) {
+      if (exceptControls && controls === exceptControls) continue
+      controls.classList.remove('is-open')
+      const toggle = controls.querySelector('.' + MERMAID_MENU_TOGGLE_CLASS)
+      if (toggle) toggle.setAttribute('aria-expanded', 'false')
+    }
+  }
+
   const ensureButtons = () => {
     const codeElements = Array.from(document.querySelectorAll('pre > code'))
     const processedHosts = new Set()
+    const mermaidHosts = new Set()
 
     for (const codeElement of codeElements) {
       const preElement = codeElement.closest('pre')
@@ -64,7 +161,15 @@ function getExportCopyScript(): string {
       processedHosts.add(host)
 
       const codeText = toCodeText(codeElement.textContent || '')
-      if (codeText) host.setAttribute('data-raw-code', codeText)
+      const isMermaidHost =
+        codeElement.classList.contains('language-mermaid') ||
+        (host.matches && host.matches(MERMAID_HOST_SELECTOR))
+
+      if (isMermaidHost) {
+        if (codeText) host.setAttribute('data-raw-code', codeText)
+        mermaidHosts.add(host)
+        continue
+      }
 
       host.classList.add(COPY_HOST_CLASS)
 
@@ -76,9 +181,10 @@ function getExportCopyScript(): string {
       host.append(createButton())
     }
 
-    const mermaidHosts = Array.from(
-      document.querySelectorAll('.code-block-with-language[data-language="mermaid"]')
-    )
+    const explicitMermaidHosts = Array.from(document.querySelectorAll(MERMAID_HOST_SELECTOR))
+    for (const host of explicitMermaidHosts) {
+      mermaidHosts.add(host)
+    }
 
     for (const host of mermaidHosts) {
       host.classList.add(COPY_HOST_CLASS)
@@ -91,12 +197,12 @@ function getExportCopyScript(): string {
         }
       }
 
-      const hasButton = Array.from(host.children).some(
-        (child) => child.classList && child.classList.contains(COPY_BUTTON_CLASS)
+      const hasControls = Array.from(host.children).some(
+        (child) => child.classList && child.classList.contains(MERMAID_CONTROLS_CLASS)
       )
-      if (hasButton || !host.getAttribute('data-raw-code')) continue
+      if (hasControls || !host.getAttribute('data-raw-code')) continue
 
-      host.append(createButton())
+      host.append(createMermaidControls())
     }
   }
 
@@ -128,9 +234,98 @@ function getExportCopyScript(): string {
 
   const activeTimeouts = new Map()
 
+  const setCopiedState = (button, copiedLabel) => {
+    setButtonLabel(button, copiedLabel)
+    button.setAttribute('data-copied', 'true')
+
+    const previousTimeout = activeTimeouts.get(button)
+    if (previousTimeout !== undefined) window.clearTimeout(previousTimeout)
+
+    const timeoutId = window.setTimeout(() => {
+      if (!button.isConnected) return
+      const defaultLabel = button.getAttribute('data-default-label') || 'Copy'
+      setButtonLabel(button, defaultLabel)
+      button.removeAttribute('data-copied')
+      activeTimeouts.delete(button)
+    }, 2000)
+    activeTimeouts.set(button, timeoutId)
+  }
+
+  const copySvgAsImage = async (svgMarkup) => {
+    if (!svgMarkup || !navigator.clipboard || typeof navigator.clipboard.write !== 'function' || typeof ClipboardItem === 'undefined') {
+      return false
+    }
+
+    try {
+      const svgBlob = new Blob([svgMarkup], { type: 'image/svg+xml' })
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'image/svg+xml': svgBlob,
+        }),
+      ])
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const onClick = async (event) => {
     const target = event.target
     if (!(target instanceof Element)) return
+
+    const menuToggle = target.closest('.' + MERMAID_MENU_TOGGLE_CLASS)
+    if (menuToggle) {
+      event.preventDefault()
+      event.stopPropagation()
+
+      const controls = menuToggle.closest('.' + MERMAID_CONTROLS_CLASS)
+      if (!controls) return
+
+      const isOpen = controls.classList.toggle('is-open')
+      menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false')
+      if (isOpen) {
+        closeMermaidMenus(controls)
+      }
+      return
+    }
+
+    const imageButton = target.closest('.' + MERMAID_IMAGE_BUTTON_CLASS)
+    if (imageButton) {
+      event.preventDefault()
+      event.stopPropagation()
+
+      const host = imageButton.closest('.' + COPY_HOST_CLASS)
+      if (!(host instanceof HTMLElement)) return
+
+      const svgElement = host.querySelector('svg')
+      if (!svgElement) return
+      const svgMarkup = new XMLSerializer().serializeToString(svgElement)
+      const copied = await copySvgAsImage(svgMarkup)
+      if (!copied) return
+
+      setCopiedState(imageButton, 'Image copied')
+      closeMermaidMenus()
+      return
+    }
+
+    const mermaidCopyCodeButton = target.closest('.' + MERMAID_CODE_BUTTON_CLASS)
+    if (mermaidCopyCodeButton) {
+      event.preventDefault()
+      event.stopPropagation()
+
+      const host = mermaidCopyCodeButton.closest('.' + COPY_HOST_CLASS)
+      if (!(host instanceof HTMLElement)) return
+
+      const codeElement = host.querySelector('pre > code')
+      const fallbackCode = toCodeText((codeElement && codeElement.textContent) || '')
+      const code = host.getAttribute('data-raw-code') || fallbackCode
+      const copied = await copyWithFallback(code)
+      if (!copied) return
+
+      setCopiedState(mermaidCopyCodeButton, 'Code copied')
+      closeMermaidMenus()
+      return
+    }
 
     const button = target.closest('.' + COPY_BUTTON_CLASS)
     if (!button) return
@@ -147,19 +342,8 @@ function getExportCopyScript(): string {
     const copied = await copyWithFallback(code)
     if (!copied) return
 
-    setButtonLabel(button, 'Copied')
-    button.setAttribute('data-copied', 'true')
-
-    const previousTimeout = activeTimeouts.get(button)
-    if (previousTimeout !== undefined) window.clearTimeout(previousTimeout)
-
-    const timeoutId = window.setTimeout(() => {
-      if (!button.isConnected) return
-      setButtonLabel(button, 'Copy')
-      button.removeAttribute('data-copied')
-      activeTimeouts.delete(button)
-    }, 2000)
-    activeTimeouts.set(button, timeoutId)
+    setCopiedState(button, 'Copied')
+    closeMermaidMenus()
   }
 
   const init = () => {
@@ -167,6 +351,12 @@ function getExportCopyScript(): string {
     const observer = new MutationObserver(() => ensureButtons())
     observer.observe(document.body, { childList: true, subtree: true })
     document.addEventListener('click', onClick)
+    document.addEventListener('click', (event) => {
+      const target = event.target
+      if (!(target instanceof Element)) return
+      if (target.closest('.' + MERMAID_CONTROLS_CLASS)) return
+      closeMermaidMenus()
+    })
   }
 
   if (document.readyState === 'loading') {
@@ -331,15 +521,94 @@ ${codeSyntaxVariables}
       opacity: 0;
       transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
     }
+    .markdown-body .preview-mermaid-copy-controls {
+      position: absolute;
+      top: 0.3rem;
+      right: 0.5rem;
+      z-index: 3;
+      display: flex;
+      align-items: stretch;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .markdown-body .preview-mermaid-copy-image-button,
+    .markdown-body .preview-mermaid-copy-menu-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      height: 1.5rem;
+      border: 1px solid var(--code-block-header-border);
+      background: color-mix(in srgb, var(--code-block-header-background) 85%, var(--code-block-background));
+      color: var(--code-block-header-color);
+      font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    }
+    .markdown-body .preview-mermaid-copy-image-button {
+      padding: 0 0.55rem;
+      border-top-left-radius: 999px;
+      border-bottom-left-radius: 999px;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .markdown-body .preview-mermaid-copy-menu-toggle {
+      width: 1.8rem;
+      border-left: 0;
+      border-top-right-radius: 999px;
+      border-bottom-right-radius: 999px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      padding: 0;
+      line-height: 1;
+    }
+    .markdown-body .preview-mermaid-copy-menu {
+      position: absolute;
+      top: calc(100% + 0.35rem);
+      right: 0;
+      min-width: 8.25rem;
+      padding: 0.25rem;
+      border: 1px solid var(--code-block-header-border);
+      border-radius: 0.5rem;
+      background: color-mix(in srgb, var(--code-block-header-background) 92%, var(--code-block-background));
+      box-shadow: 0 10px 30px color-mix(in srgb, var(--code-block-foreground) 18%, transparent);
+      display: none;
+    }
+    .markdown-body .preview-mermaid-copy-controls.is-open .preview-mermaid-copy-menu {
+      display: block;
+    }
+    .markdown-body .preview-mermaid-copy-code-button {
+      display: inline-flex;
+      width: 100%;
+      align-items: center;
+      gap: 0.35rem;
+      height: 1.7rem;
+      border: 0;
+      border-radius: 0.35rem;
+      background: transparent;
+      color: var(--code-block-header-color);
+      font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+      font-size: 0.69rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0 0.45rem;
+    }
+    .markdown-body .preview-mermaid-copy-code-button:hover {
+      color: var(--code-block-foreground);
+      background: color-mix(in srgb, var(--code-block-background) 74%, transparent);
+    }
     .markdown-body pre.preview-code-copy-host > .preview-code-copy-button {
       top: 0.55rem;
     }
-    .markdown-body .code-block-with-language[data-language="mermaid"].preview-code-copy-host > .preview-code-copy-button {
-      top: 0.3rem;
-    }
     .markdown-body .preview-code-copy-host:hover > .preview-code-copy-button,
     .markdown-body .preview-code-copy-button:focus-visible,
-    .markdown-body .preview-code-copy-button[data-copied='true'] {
+    .markdown-body .preview-code-copy-button[data-copied='true'],
+    .markdown-body .preview-code-copy-host:hover > .preview-mermaid-copy-controls,
+    .markdown-body .preview-mermaid-copy-controls:focus-within,
+    .markdown-body .preview-mermaid-copy-controls.is-open {
       opacity: 1;
     }
     .markdown-body .preview-code-copy-button:hover {
@@ -347,7 +616,19 @@ ${codeSyntaxVariables}
       border-color: var(--code-block-border);
       background: color-mix(in srgb, var(--code-block-header-background) 95%, var(--code-block-background));
     }
+    .markdown-body .preview-mermaid-copy-image-button:hover,
+    .markdown-body .preview-mermaid-copy-menu-toggle:hover {
+      color: var(--code-block-foreground);
+      border-color: var(--code-block-border);
+      background: color-mix(in srgb, var(--code-block-header-background) 95%, var(--code-block-background));
+    }
     .markdown-body .preview-code-copy-button:focus-visible {
+      outline: 2px solid #1f6feb;
+      outline-offset: 1px;
+    }
+    .markdown-body .preview-mermaid-copy-image-button:focus-visible,
+    .markdown-body .preview-mermaid-copy-menu-toggle:focus-visible,
+    .markdown-body .preview-mermaid-copy-code-button:focus-visible {
       outline: 2px solid #1f6feb;
       outline-offset: 1px;
     }
@@ -364,6 +645,18 @@ ${codeSyntaxVariables}
     }
     .markdown-body .preview-code-copy-button .preview-code-copy-icon rect {
       fill: none;
+    }
+    .markdown-body .preview-mermaid-copy-image-button .preview-code-copy-icon,
+    .markdown-body .preview-mermaid-copy-code-button .preview-code-copy-icon {
+      width: 0.9rem;
+      height: 0.9rem;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+      display: block;
     }
     .markdown-body .code-block-with-language pre {
       margin: 0;

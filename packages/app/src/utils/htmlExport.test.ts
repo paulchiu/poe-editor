@@ -58,5 +58,8 @@ describe('htmlExport', () => {
     expect(withMermaid).toContain('.code-block-with-language[data-language="mermaid"]')
     expect(withMermaid).toContain('display: none;')
     expect(withMermaid).toContain('data-raw-code')
+    expect(withMermaid).toContain('preview-mermaid-copy-image-button')
+    expect(withMermaid).toContain('preview-mermaid-copy-code-button')
+    expect(withMermaid).not.toContain("'text/plain': textBlob")
   })
 })

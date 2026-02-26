@@ -35,7 +35,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 | Theme-aware Mermaid diagrams       | Mermaid output uses separate light/dark theme tokens.                                                                                                              |
 | Mermaid support in HTML export     | Exported HTML includes Mermaid runtime/init when diagrams exist.                                                                                                   |
 | Theme-aware HTML export            | Exported HTML now uses the active app theme (light or dark) at download time.                                                                                      |
-| HTML export code quick-copy        | Downloaded HTML includes copy controls for fenced code blocks and Mermaid source blocks.                                                                           |
+| HTML export code quick-copy        | Downloaded HTML includes copy controls for fenced code blocks; Mermaid blocks support copy-image (primary) and copy-code (menu).                                   |
 | HTML export preview-style fonts    | Exported HTML attempts to match preview typography (`Crimson Text` body + `JetBrains Mono` code) with graceful fallbacks.                                          |
 | Sepia code blocks in light export  | Light-mode HTML exports render fenced code blocks with sepia borders/backgrounds for better contrast.                                                              |
 | Code fence language headers        | Fenced code blocks with a language show a header label in preview and HTML export.                                                                                 |
@@ -43,7 +43,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 | GitHub callout rendering           | GitHub alert syntax blockquotes (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) render with `markdown-alert` styling in preview and HTML export. |
 | Synchronized editor/preview scroll | Scroll sync uses ratio-based matching between Monaco and preview.                                                                                                  |
 | Preview rich-text copy             | Copy supports both HTML and plain text where browser APIs allow.                                                                                                   |
-| Preview code-block quick-copy      | Fenced code blocks in preview include one-click source copy controls, including Mermaid source copy while diagrams are rendered.                                   |
+| Preview code-block quick-copy      | Fenced code blocks in preview include one-click source copy controls; Mermaid blocks provide split actions for image copy and source copy.                         |
 | Editor markdown quick-copy         | Editor pane includes one-click Markdown copy action.                                                                                                               |
 
 ### Editing and Input

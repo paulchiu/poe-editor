@@ -10,6 +10,7 @@ vi.mock('mermaid', () => ({
 
 vi.mock('@/utils/clipboard', () => ({
   copyToClipboard: vi.fn(),
+  copySvgImageToClipboard: vi.fn(),
 }))
 
 vi.mock('@/hooks/useToast', () => ({
@@ -33,6 +34,7 @@ const loadModule = async () => {
     MermaidDiagram: componentModule.MermaidDiagram,
     mermaid: mermaidModule.default as unknown as MermaidMock,
     copyToClipboard: clipboardModule.copyToClipboard as ReturnType<typeof vi.fn>,
+    copySvgImageToClipboard: clipboardModule.copySvgImageToClipboard as ReturnType<typeof vi.fn>,
     toast: toastModule.toast as ReturnType<typeof vi.fn>,
   }
 }
@@ -99,7 +101,24 @@ describe('MermaidDiagram', () => {
     })
   })
 
-  it('copies mermaid source from copy button', async () => {
+  it('copies rendered mermaid image from primary action', async () => {
+    const { MermaidDiagram, mermaid, copySvgImageToClipboard, toast } = await loadModule()
+    mermaid.render.mockResolvedValue({
+      svg: '<svg><text>diagram</text></svg>',
+    })
+
+    render(<MermaidDiagram code="graph TD;A-->B" colorMode="light" />)
+
+    const copyImageButton = await screen.findByRole('button', { name: 'Copy Mermaid image' })
+    fireEvent.click(copyImageButton)
+
+    await waitFor(() => {
+      expect(copySvgImageToClipboard).toHaveBeenCalledWith('<svg><text>diagram</text></svg>')
+      expect(toast).toHaveBeenCalledWith({ description: 'Mermaid image copied to clipboard' })
+    })
+  })
+
+  it('copies mermaid code from the copy options menu', async () => {
     const { MermaidDiagram, mermaid, copyToClipboard, toast } = await loadModule()
     mermaid.render.mockResolvedValue({
       svg: '<svg><text>diagram</text></svg>',
@@ -107,8 +126,11 @@ describe('MermaidDiagram', () => {
 
     render(<MermaidDiagram code="graph TD;A-->B" colorMode="light" />)
 
-    const copyButton = screen.getByRole('button', { name: 'Copy Mermaid code' })
-    fireEvent.click(copyButton)
+    const optionsButton = await screen.findByRole('button', { name: 'Mermaid copy options' })
+    fireEvent.click(optionsButton)
+
+    const copyCodeButton = await screen.findByRole('menuitem', { name: /copy code/i })
+    fireEvent.click(copyCodeButton)
 
     await waitFor(() => {
       expect(copyToClipboard).toHaveBeenCalledWith('graph TD;A-->B')
@@ -116,7 +138,39 @@ describe('MermaidDiagram', () => {
     })
   })
 
-  it('shows error toast when mermaid copy fails', async () => {
+  it('shows code-only copy control when mermaid rendering fails', async () => {
+    const { MermaidDiagram, mermaid } = await loadModule()
+    mermaid.render.mockRejectedValue(new Error('render failed'))
+
+    render(<MermaidDiagram code="graph TD;A-->B" colorMode="light" />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Copy Mermaid code' })).toBeInTheDocument()
+    })
+    expect(screen.queryByRole('button', { name: 'Copy Mermaid image' })).toBeNull()
+  })
+
+  it('shows error toast when mermaid image copy fails', async () => {
+    const { MermaidDiagram, mermaid, copySvgImageToClipboard, toast } = await loadModule()
+    mermaid.render.mockResolvedValue({
+      svg: '<svg><text>diagram</text></svg>',
+    })
+    copySvgImageToClipboard.mockRejectedValueOnce(new Error('copy image failed'))
+
+    render(<MermaidDiagram code="graph TD;A-->B" colorMode="light" />)
+
+    const copyImageButton = await screen.findByRole('button', { name: 'Copy Mermaid image' })
+    fireEvent.click(copyImageButton)
+
+    await waitFor(() => {
+      expect(toast).toHaveBeenCalledWith({
+        description: 'Failed to copy image to clipboard',
+        variant: 'destructive',
+      })
+    })
+  })
+
+  it('shows error toast when mermaid code copy fails', async () => {
     const { MermaidDiagram, mermaid, copyToClipboard, toast } = await loadModule()
     mermaid.render.mockResolvedValue({
       svg: '<svg><text>diagram</text></svg>',
@@ -125,8 +179,11 @@ describe('MermaidDiagram', () => {
 
     render(<MermaidDiagram code="graph TD;A-->B" colorMode="light" />)
 
-    const copyButton = screen.getByRole('button', { name: 'Copy Mermaid code' })
-    fireEvent.click(copyButton)
+    const optionsButton = await screen.findByRole('button', { name: 'Mermaid copy options' })
+    fireEvent.click(optionsButton)
+
+    const copyCodeButton = await screen.findByRole('menuitem', { name: /copy code/i })
+    fireEvent.click(copyCodeButton)
 
     await waitFor(() => {
       expect(toast).toHaveBeenCalledWith({
