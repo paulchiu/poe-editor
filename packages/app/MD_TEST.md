@@ -11,6 +11,7 @@ Use this document to quickly verify that Markdown rendering, syntax highlighting
 - Export as HTML in dark mode, open file, confirm dark styling.
 - Copy preview as rich text and paste into a rich-text target (e.g., docs editor) to verify structure survives.
 - Copy editor markdown and confirm pasted text matches source.
+- Verify GitHub-safe HTML tags render correctly and unsafe HTML is sanitized.
 
 ---
 
@@ -96,15 +97,39 @@ Alignment table:
 | L1   |   C1   |    R1 |
 | L2   |   C2   |    R2 |
 
-## 7) Inline HTML Should Be Escaped (Renderer Safety)
+## 7) GitHub-Safe HTML (Sanitized Rendering)
 
-The following should render as text, not active HTML:
+These common GitHub-safe tags should render:
 
-<div style="color: red;">This should not be interpreted as live HTML.</div>
+<details>
+<summary>Click to expand safe HTML sample</summary>
 
-And script tags should not execute:
+<div align="center">
+<kbd>Ctrl</kbd> + <kbd>K</kbd><br>
+<sup>2</sup> and H<sub>2</sub>O
+</div>
+
+<table>
+  <thead>
+    <tr><th align="left">Tag</th><th align="left">Expected</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>&lt;mark&gt;</code></td><td><mark>highlight text</mark></td></tr>
+    <tr><td><code>&lt;ins&gt;</code></td><td><ins>inserted text</ins></td></tr>
+    <tr><td><code>&lt;del&gt;</code></td><td><del>deleted text</del></td></tr>
+  </tbody>
+</table>
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/240px-PNG_transparency_demonstration_1.png" alt="Safe HTML image" width="180" />
+
+</details>
+
+Unsafe content should be sanitized:
 
 <script>window.__POE_MD_TEST__ = 'should-not-run'</script>
+
+<a href="javascript:alert('xss')">Unsafe javascript link</a>
+<img src="data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==" onerror="alert('xss')" />
 
 ## 8) Code Blocks (Language Labels + Highlighting)
 
@@ -247,4 +272,4 @@ If everything is working, you should see:
 - Syntax-highlighted code with language headers (except no-language block).
 - Mermaid diagrams rendered (not raw mermaid code) in preview.
 - Clean table borders/alignment in both themes.
-- Inline HTML displayed as literal text for safety.
+- GitHub-safe HTML renders; disallowed tags/attributes are stripped.

@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it'
 import highlightjs from 'markdown-it-highlightjs'
+import { sanitizeGithubSafeHtml } from '@/utils/githubSafeHtml'
 
 const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
   bash: 'Bash',
@@ -54,7 +55,7 @@ function toLanguageLabel(language: string): string {
 }
 
 const md = new MarkdownIt({
-  html: false,
+  html: true,
   linkify: true,
   typographer: true,
 }).use(highlightjs)
@@ -85,7 +86,7 @@ md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
  */
 export function renderMarkdown(markdown: string): string {
   if (!markdown) return ''
-  return md.render(markdown)
+  return sanitizeGithubSafeHtml(md.render(markdown))
 }
 
 /**

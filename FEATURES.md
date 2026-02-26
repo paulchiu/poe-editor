@@ -37,6 +37,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 | Theme-aware HTML export            | Exported HTML now uses the active app theme (light or dark) at download time.                         |
 | Sepia code blocks in light export  | Light-mode HTML exports render fenced code blocks with sepia borders/backgrounds for better contrast. |
 | Code fence language headers        | Fenced code blocks with a language show a header label in preview and HTML export.                    |
+| GitHub-safe HTML tag rendering     | Preview now supports a sanitized subset of common GitHub-safe HTML tags (e.g., `details`, `kbd`, tables, and images). |
 | Synchronized editor/preview scroll | Scroll sync uses ratio-based matching between Monaco and preview.                                     |
 | Preview rich-text copy             | Copy supports both HTML and plain text where browser APIs allow.                                      |
 | Editor markdown quick-copy         | Editor pane includes one-click Markdown copy action.                                                  |

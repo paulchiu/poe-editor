@@ -51,6 +51,25 @@ describe('renderMarkdown', () => {
     const html = renderMarkdown(markdown)
     expect(html).toContain('<a href="https://example.com">link</a>')
   })
+
+  it('should render supported safe html tags in markdown', () => {
+    const markdown = '<details><summary>More</summary><kbd>Cmd</kbd> + <kbd>K</kbd></details>'
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<details>')
+    expect(html).toContain('<summary>More</summary>')
+    expect(html).toContain('<kbd>Cmd</kbd>')
+    expect(html).toContain('<kbd>K</kbd>')
+  })
+
+  it('should sanitize unsafe raw html in markdown', () => {
+    const markdown = '<script>alert(1)</script><a href="javascript:alert(2)">link</a>'
+    const html = renderMarkdown(markdown)
+
+    expect(html).not.toContain('<script>')
+    expect(html).toContain('<a>link</a>')
+    expect(html).not.toContain('javascript:')
+  })
 })
 
 describe('getFirstHeading', () => {
