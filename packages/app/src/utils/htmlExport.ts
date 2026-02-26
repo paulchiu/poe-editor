@@ -130,6 +130,14 @@ ${codeSyntaxVariables}
       border-radius: 0;
       background: transparent !important;
     }
+    .markdown-body .code-block-with-language[data-language="mermaid"] {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+    }
+    .markdown-body .code-block-with-language[data-language="mermaid"] .code-block-language-hint {
+      display: none;
+    }
     .markdown-body .code-block-with-language pre code.hljs {
       display: block;
       padding: 0;

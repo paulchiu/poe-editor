@@ -49,5 +49,7 @@ describe('htmlExport', () => {
     expect(withoutMermaid).not.toContain('mermaid.min.js')
     expect(withMermaid).toContain('mermaid.min.js')
     expect(withMermaid).toContain('"primaryBorderColor":"#4493f8"')
+    expect(withMermaid).toContain('.code-block-with-language[data-language="mermaid"]')
+    expect(withMermaid).toContain('display: none;')
   })
 })
