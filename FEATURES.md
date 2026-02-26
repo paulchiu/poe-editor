@@ -45,6 +45,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 
 | Feature                                 | Notes                                                                                                               |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Editor auto-focus on load               | When the editor pane is visible at startup, Monaco receives focus automatically so typing can begin immediately.    |
 | Enhanced Vim mode (Monaco)              | Includes wrapped-line motions, custom bracket/quote/fence matching, and `%` jumps between opening and closing sets. |
 | Browser-aware Vim clipboard behavior    | Vim yank writes to system clipboard + register; `p/P` stays register-based (due to browser limitations).            |
 | Vim spell and wrap options              | Supports Vim `:set spell` sync and `:set wrap`/`:set nowrap` behavior.                                              |

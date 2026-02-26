@@ -6,6 +6,13 @@ import { copyToClipboard } from '@/utils/clipboard'
 import { toast } from '@/hooks/useToast'
 import { initVimMode } from 'monaco-vim'
 
+const mockEditorFocus = vi.fn()
+const mockCreateContextKey = vi.fn().mockReturnValue({
+  set: vi.fn(),
+  get: vi.fn(),
+  reset: vi.fn(),
+})
+
 // Mock the utilities and toast hook
 vi.mock('@/utils/clipboard', () => ({
   copyToClipboard: vi.fn(),
@@ -57,12 +64,8 @@ vi.mock('@monaco-editor/react', () => {
             getPosition: vi.fn(),
             executeEdits: vi.fn(),
             setPosition: vi.fn(),
-            focus: vi.fn(),
-            createContextKey: vi.fn().mockReturnValue({
-              set: vi.fn(),
-              get: vi.fn(),
-              reset: vi.fn(),
-            }),
+            focus: mockEditorFocus,
+            createContextKey: mockCreateContextKey,
             getModel: vi.fn(),
             onDidChangeModelContent: vi.fn(),
           },
@@ -92,6 +95,8 @@ describe('EditorPane', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockCreateContextKey.mockClear()
+    mockEditorFocus.mockClear()
   })
 
   it('renders progress and editor', () => {
@@ -133,5 +138,22 @@ describe('EditorPane', () => {
     await waitFor(() => {
       expect(initVimMode).toHaveBeenCalled()
     })
+  })
+
+  it('focuses editor on mount when pane is visible', async () => {
+    render(<EditorPane value={value} onChange={() => {}} viewMode="editor" />)
+
+    await waitFor(() => {
+      expect(mockEditorFocus).toHaveBeenCalled()
+    })
+  })
+
+  it('does not focus editor on mount when pane is preview-only', async () => {
+    render(<EditorPane value={value} onChange={() => {}} viewMode="preview" />)
+
+    await waitFor(() => {
+      expect(mockCreateContextKey).toHaveBeenCalled()
+    })
+    expect(mockEditorFocus).not.toHaveBeenCalled()
   })
 })

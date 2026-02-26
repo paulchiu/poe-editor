@@ -137,6 +137,11 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       setEditorInstance(editor)
       monacoRef.current = monacoInstance
 
+      // Focus on initial mount whenever the editor pane is visible.
+      if (viewMode !== 'preview') {
+        editor.focus()
+      }
+
       // Drain any scroll callbacks that were queued before Monaco mounted
       for (const { callback, resolve } of pendingScrollCallbacks.current) {
         const disposable = editor.onDidScrollChange(() => callback())
