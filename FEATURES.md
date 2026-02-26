@@ -34,6 +34,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 | Mermaid diagram rendering          | Mermaid code blocks render as diagrams in preview.                                 |
 | Theme-aware Mermaid diagrams       | Mermaid output uses separate light/dark theme tokens.                              |
 | Mermaid support in HTML export     | Exported HTML includes Mermaid runtime/init when diagrams exist.                   |
+| Theme-aware HTML export            | Exported HTML now uses the active app theme (light or dark) at download time.     |
 | Code fence language headers        | Fenced code blocks with a language show a header label in preview and HTML export. |
 | Synchronized editor/preview scroll | Scroll sync uses ratio-based matching between Monaco and preview.                  |
 | Preview rich-text copy             | Copy supports both HTML and plain text where browser APIs allow.                   |

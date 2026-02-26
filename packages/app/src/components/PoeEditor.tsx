@@ -13,6 +13,7 @@ import { useEditorPreferences } from '@/hooks/useEditorPreferences'
 import { useSpellCheck } from '@/hooks/useSpellCheck'
 import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
+import { buildHtmlExportDocument } from '@/utils/htmlExport'
 import { applyPipeline } from '@/utils/transformer-engine'
 import { EditorPane, type EditorPaneHandle, type TableAction } from '@/components/editor'
 import { PreviewPane } from '@/components/PreviewPane'
@@ -40,7 +41,7 @@ import { TransformerImportExportDialog } from '@/components/transformer/Transfor
 import type { TransformationPipeline } from '@/components/transformer/types'
 import { useToast } from '@/hooks/useToast'
 import { generateShareableUrl } from '@/utils/urlShare'
-import { getMermaidInitScript, type MermaidColorMode } from '@/utils/mermaidTheme'
+import type { MermaidColorMode } from '@/utils/mermaidTheme'
 
 import {
   formatBold,
@@ -89,7 +90,7 @@ interface PoeEditorProps {
  * @returns The PoeEditor component
  */
 export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
-  const { theme, setTheme } = useTheme()
+  const { theme, resolvedTheme, setTheme } = useTheme()
   const { toast } = useToast()
   const [mounted, setMounted] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
@@ -174,7 +175,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Rendered HTML for preview
   const htmlContent = useMemo(() => renderMarkdown(content), [content])
-  const colorMode: MermaidColorMode = mounted && theme === 'dark' ? 'dark' : 'light'
+  const colorMode: MermaidColorMode = mounted && resolvedTheme === 'dark' ? 'dark' : 'light'
 
   // Formatting functions
   const handleFormatBold = useCallback((): void => {
@@ -321,109 +322,11 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   }, [documentName, content, toast])
 
   const handleDownloadHTML = useCallback((): void => {
-    const hasMermaid = htmlContent.includes('language-mermaid')
-    const mermaidInitScript = getMermaidInitScript(colorMode)
-    const mermaidScripts = hasMermaid
-      ? `\n  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.2/dist/mermaid.min.js"></script>\n  <script>${mermaidInitScript}</script>`
-      : ''
-    const codeBlockStyles = `
-    .markdown-body .code-block-with-language {
-      margin: 1rem 0;
-      overflow: hidden;
-      border: 1px solid var(--borderColor-muted);
-      border-radius: 12px;
-      background: var(--bgColor-muted);
-    }
-    .markdown-body {
-      --code-syntax-keyword: #a626a4;
-      --code-syntax-string: #50a14f;
-      --code-syntax-variable: #986801;
-      --code-syntax-number: #986801;
-      --code-syntax-entity: #005cc5;
-      --code-syntax-comment: #6a737d;
-    }
-    @media (prefers-color-scheme: dark) {
-      .markdown-body {
-        --code-syntax-keyword: var(--color-prettylights-syntax-keyword);
-        --code-syntax-string: var(--color-prettylights-syntax-string);
-        --code-syntax-variable: var(--color-prettylights-syntax-variable);
-        --code-syntax-number: var(--color-prettylights-syntax-variable);
-        --code-syntax-entity: var(--color-prettylights-syntax-entity);
-        --code-syntax-comment: var(--color-prettylights-syntax-comment);
-      }
-    }
-    .markdown-body .code-block-language-hint {
-      display: flex;
-      align-items: center;
-      min-height: 2rem;
-      padding: 0.35rem 0.8rem;
-      border-bottom: 1px solid var(--borderColor-muted);
-      color: var(--fgColor-muted);
-      font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-    }
-    .markdown-body .code-block-with-language pre {
-      margin: 0;
-      border: 0;
-      border-radius: 0;
-      background: transparent !important;
-    }
-    .markdown-body .code-block-with-language pre code.hljs {
-      display: block;
-      padding: 0;
-      background: transparent;
-    }
-    .markdown-body .hljs {
-      color: var(--fgColor-default);
-    }
-    .markdown-body .hljs-keyword,
-    .markdown-body .hljs-selector-tag,
-    .markdown-body .hljs-literal,
-    .markdown-body .hljs-doctag,
-    .markdown-body .hljs-operator {
-      color: var(--code-syntax-keyword);
-    }
-    .markdown-body .hljs-string,
-    .markdown-body .hljs-meta .hljs-string,
-    .markdown-body .hljs-attribute,
-    .markdown-body .hljs-regexp {
-      color: var(--code-syntax-string);
-    }
-    .markdown-body .hljs-number,
-    .markdown-body .hljs-symbol,
-    .markdown-body .hljs-variable,
-    .markdown-body .hljs-template-variable {
-      color: var(--code-syntax-number);
-    }
-    .markdown-body .hljs-title,
-    .markdown-body .hljs-title.class_,
-    .markdown-body .hljs-title.function_ {
-      color: var(--code-syntax-entity);
-    }
-    .markdown-body .hljs-comment,
-    .markdown-body .hljs-quote {
-      color: var(--code-syntax-comment);
-    }`
-
-    const htmlDoc = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${documentName}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css">${mermaidScripts}
-  <style>
-    .markdown-body { box-sizing: border-box; min-width: 200px; max-width: 980px; margin: 0 auto; padding: 45px; }
-    @media (max-width: 767px) { .markdown-body { padding: 15px; } }
-${codeBlockStyles}
-  </style>
-</head>
-<body class="markdown-body">
-${htmlContent}
-</body>
-</html>`
+    const htmlDoc = buildHtmlExportDocument({
+      documentName,
+      htmlContent,
+      colorMode,
+    })
     const htmlFileName = documentName.replace(/\.md$/, '.html')
     downloadFile(htmlFileName, htmlDoc, 'text/html')
     toast({ description: 'Downloaded as HTML' })
