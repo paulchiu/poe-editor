@@ -21,6 +21,7 @@
     "generate:og": "npm run generate -w packages/og-generator",
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint:fix --workspaces",
+    "tsc": "npm run tsc --workspaces --if-present",
     "format": "npm run format --workspaces",
     "format:check": "npm run format:check --workspaces",
     "test": "npm test -w packages/app",
