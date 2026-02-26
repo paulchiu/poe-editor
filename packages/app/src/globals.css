@@ -170,6 +170,17 @@
   flex: 1 !important;
 }
 
+/* Visual mode caret fix for Monaco+Vim integration.
+   Monaco renders inclusive visual selections with a caret one character ahead. */
+.monaco-editor.vim-visual-char-active .cursor {
+  opacity: 0 !important;
+}
+
+.monaco-editor .vim-visual-head-cursor {
+  background-color: color-mix(in srgb, var(--foreground) 28%, transparent);
+  box-shadow: inset 0 0 0 1px var(--foreground);
+}
+
 /* Github Markdown CSS Overrides for Theme Support */
 html:not(.dark) .markdown-body {
   color-scheme: light;

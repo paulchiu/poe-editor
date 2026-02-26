@@ -1,9 +1,157 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import type { editor } from 'monaco-editor'
 import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
 import { toast } from '@/hooks/useToast'
+import { setupVim } from '../vim'
+
+const VISUAL_CURSOR_CLASS = 'vim-visual-head-cursor'
+const VISUAL_CURSOR_ACTIVE_CLASS = 'vim-visual-char-active'
+
+interface VimCursor {
+  line: number
+  ch: number
+}
+
+interface VimModeChangeEvent {
+  mode: string
+  subMode?: string
+}
+
+interface VimStateWithSelection {
+  state?: {
+    vim?: {
+      sel?: {
+        head?: VimCursor
+      }
+    }
+  }
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isVimCursor = (value: unknown): value is VimCursor => {
+  if (!isObject(value)) {
+    return false
+  }
+  return typeof value.line === 'number' && typeof value.ch === 'number'
+}
+
+const isVimModeChangeEvent = (value: unknown): value is VimModeChangeEvent => {
+  if (!isObject(value)) {
+    return false
+  }
+  if (typeof value.mode !== 'string') {
+    return false
+  }
+  if (typeof value.subMode !== 'undefined' && typeof value.subMode !== 'string') {
+    return false
+  }
+  return true
+}
+
+const getVisualHead = (vim: VimAdapter): VimCursor | null => {
+  const maybeState = vim as unknown as VimStateWithSelection
+  const head = maybeState.state?.vim?.sel?.head
+  return isVimCursor(head) ? head : null
+}
+
+const attachVisualCursorSync = (
+  editor: editor.IStandaloneCodeEditor,
+  vim: VimAdapter
+): (() => void) => {
+  let decorationIds: string[] = []
+  let isVisualCharMode = false
+  const domNode = editor.getDomNode()
+
+  const clearDecoration = (): void => {
+    if (decorationIds.length > 0) {
+      decorationIds = editor.deltaDecorations(decorationIds, [])
+    }
+    domNode?.classList.remove(VISUAL_CURSOR_ACTIVE_CLASS)
+  }
+
+  const applyDecoration = (): void => {
+    if (!isVisualCharMode) {
+      clearDecoration()
+      return
+    }
+
+    const model = editor.getModel()
+    const head = getVisualHead(vim)
+    if (!model || !head) {
+      clearDecoration()
+      return
+    }
+
+    const lineNumber = head.line + 1
+    if (lineNumber < 1 || lineNumber > model.getLineCount()) {
+      clearDecoration()
+      return
+    }
+
+    const maxColumn = model.getLineMaxColumn(lineNumber)
+    // Empty lines cannot receive an inline one-character decoration.
+    if (maxColumn <= 1) {
+      clearDecoration()
+      return
+    }
+
+    const startColumn = Math.min(Math.max(1, head.ch + 1), maxColumn - 1)
+    const endColumn = startColumn + 1
+
+    decorationIds = editor.deltaDecorations(decorationIds, [
+      {
+        range: {
+          startLineNumber: lineNumber,
+          startColumn,
+          endLineNumber: lineNumber,
+          endColumn,
+        },
+        options: {
+          inlineClassName: VISUAL_CURSOR_CLASS,
+        },
+      },
+    ])
+
+    domNode?.classList.add(VISUAL_CURSOR_ACTIVE_CLASS)
+  }
+
+  const onModeChange = (event: unknown): void => {
+    if (!isVimModeChangeEvent(event)) {
+      isVisualCharMode = false
+      clearDecoration()
+      return
+    }
+
+    isVisualCharMode = event.mode === 'visual' && !event.subMode
+    applyDecoration()
+  }
+
+  vim.on('vim-mode-change', onModeChange)
+
+  const cursorSelectionDisposable = editor.onDidChangeCursorSelection(() => {
+    if (isVisualCharMode) {
+      applyDecoration()
+    }
+  })
+
+  const modelChangeDisposable = editor.onDidChangeModel(() => {
+    if (isVisualCharMode) {
+      applyDecoration()
+    }
+  })
+
+  return () => {
+    vim.off('vim-mode-change', onModeChange)
+    cursorSelectionDisposable.dispose()
+    modelChangeDisposable.dispose()
+    clearDecoration()
+  }
+}
 
 interface UseEditorVimParams {
+  editorInstance: editor.IStandaloneCodeEditor | null
   editorRef: React.RefObject<editor.IStandaloneCodeEditor | null>
   vimInstanceRef: React.MutableRefObject<VimAdapter | null>
   statusBarRef: React.RefObject<HTMLDivElement | null>
@@ -18,13 +166,21 @@ interface UseEditorVimParams {
  * @returns void
  */
 export function useEditorVim({
+  editorInstance,
   editorRef,
   vimInstanceRef,
   statusBarRef,
   vimMode,
 }: UseEditorVimParams): void {
+  const visualCursorCleanupRef = useRef<(() => void) | null>(null)
+  const visualCursorEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
+
   useEffect(() => {
     if (!vimMode) {
+      visualCursorCleanupRef.current?.()
+      visualCursorCleanupRef.current = null
+      visualCursorEditorRef.current = null
+
       if (vimInstanceRef.current) {
         vimInstanceRef.current.dispose()
         vimInstanceRef.current = null
@@ -32,17 +188,40 @@ export function useEditorVim({
       return
     }
 
-    const ed = editorRef.current
+    const ed = editorInstance ?? editorRef.current
     const statusBar = statusBarRef.current
 
-    if (!ed || !statusBar || vimInstanceRef.current) {
+    if (!ed || !statusBar) {
+      return
+    }
+
+    if (visualCursorEditorRef.current !== ed) {
+      visualCursorCleanupRef.current?.()
+      visualCursorCleanupRef.current = null
+      visualCursorEditorRef.current = null
+    }
+
+    if (vimInstanceRef.current) {
+      if (!visualCursorCleanupRef.current) {
+        visualCursorCleanupRef.current = attachVisualCursorSync(ed, vimInstanceRef.current)
+        visualCursorEditorRef.current = ed
+      }
       return
     }
 
     const timer = setTimeout(() => {
-      if (editorRef.current && statusBarRef.current && !vimInstanceRef.current) {
+      const currentEditor = editorInstance ?? editorRef.current
+      const currentStatusBar = statusBarRef.current
+
+      if (currentEditor && currentStatusBar && !vimInstanceRef.current) {
         try {
-          vimInstanceRef.current = initVimMode(editorRef.current, statusBarRef.current)
+          setupVim()
+          vimInstanceRef.current = initVimMode(currentEditor, currentStatusBar)
+          visualCursorCleanupRef.current = attachVisualCursorSync(
+            currentEditor,
+            vimInstanceRef.current
+          )
+          visualCursorEditorRef.current = currentEditor
         } catch {
           toast({
             description: 'Error initializing vim mode',
@@ -55,5 +234,18 @@ export function useEditorVim({
     return () => {
       clearTimeout(timer)
     }
-  }, [vimMode, editorRef, vimInstanceRef, statusBarRef])
+  }, [vimMode, editorInstance, editorRef, vimInstanceRef, statusBarRef])
+
+  useEffect(
+    () => () => {
+      visualCursorCleanupRef.current?.()
+      visualCursorCleanupRef.current = null
+      visualCursorEditorRef.current = null
+      if (vimInstanceRef.current) {
+        vimInstanceRef.current.dispose()
+        vimInstanceRef.current = null
+      }
+    },
+    [vimInstanceRef]
+  )
 }

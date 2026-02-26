@@ -2,7 +2,7 @@ import { useRef, forwardRef, useState } from 'react'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import * as monaco from 'monaco-editor'
-import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
+import type { VimMode as VimAdapter } from 'monaco-vim'
 import { Copy, Check, Maximize2, Minimize2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -11,7 +11,6 @@ import { copyToClipboard } from '@/utils/clipboard'
 import { getAutoContinueEdit } from '@/utils/formatting'
 import { cn } from '@/utils/classnames'
 
-import { setupVim } from './vim'
 import { getTableAtCursor } from './table'
 import { registerEditorKeybindings } from './hooks/useEditorKeybindings'
 import { useEditorVim } from './hooks/useEditorVim'
@@ -137,18 +136,17 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       setEditorInstance(editor)
       monacoRef.current = monacoInstance
 
+      // Focus on initial mount whenever the editor pane is visible.
+      if (viewMode !== 'preview') {
+        editor.focus()
+      }
+
       // Drain any scroll callbacks that were queued before Monaco mounted
       for (const { callback, resolve } of pendingScrollCallbacks.current) {
         const disposable = editor.onDidScrollChange(() => callback())
         resolve(disposable)
       }
       pendingScrollCallbacks.current = []
-
-      // Initialize vim mode immediately after editor mounts if vimMode is enabled
-      if (vimMode) {
-        setupVim()
-        vimInstanceRef.current = initVimMode(editor, statusBarRef.current)
-      }
 
       // Initialize context key for table detection
       const isInTableContext = editor.createContextKey<boolean>('isInTable', false)
@@ -203,7 +201,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       })
     }
 
-    useEditorVim({ editorRef, vimInstanceRef, statusBarRef, vimMode })
+    useEditorVim({ editorInstance, editorRef, vimInstanceRef, statusBarRef, vimMode })
     useEditorSpellCheck({
       editorRef,
       monacoRef,
