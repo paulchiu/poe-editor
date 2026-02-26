@@ -6,6 +6,26 @@ interface BuildHtmlExportDocumentParams {
   colorMode: MermaidColorMode
 }
 
+function getCodeBlockVariables(colorMode: MermaidColorMode): string {
+  if (colorMode === 'dark') {
+    return `
+      --code-block-border: #3d444db3;
+      --code-block-background: #151b23;
+      --code-block-header-border: #3d444db3;
+      --code-block-header-background: #0d1117;
+      --code-block-header-color: #9198a1;
+      --code-block-foreground: #f0f6fc;`
+  }
+
+  return `
+      --code-block-border: #c8b28f;
+      --code-block-background: #f0efeb;
+      --code-block-header-border: #dbcdb6;
+      --code-block-header-background: #faf9f7;
+      --code-block-header-color: #6f5738;
+      --code-block-foreground: #2a2a2a;`
+}
+
 function getCodeSyntaxVariables(colorMode: MermaidColorMode): string {
   if (colorMode === 'dark') {
     return `
@@ -42,6 +62,7 @@ export function buildHtmlExportDocument({
     colorMode === 'dark'
       ? 'background-color: #0d1117; color: #f0f6fc;'
       : 'background-color: #ffffff; color: #24292f;'
+  const codeBlockVariables = getCodeBlockVariables(colorMode)
   const codeSyntaxVariables = getCodeSyntaxVariables(colorMode)
 
   const mermaidScripts = hasMermaid
@@ -68,6 +89,7 @@ export function buildHtmlExportDocument({
       margin: 0 auto;
       padding: 45px;
       color-scheme: ${colorMode};
+${codeBlockVariables}
 ${codeSyntaxVariables}
     }
     @media (max-width: 767px) {
@@ -75,20 +97,28 @@ ${codeSyntaxVariables}
         padding: 15px;
       }
     }
+    .markdown-body pre {
+      margin: 1rem 0;
+      overflow: hidden;
+      border: 1px solid var(--code-block-border);
+      border-radius: 12px;
+      background: var(--code-block-background);
+    }
     .markdown-body .code-block-with-language {
       margin: 1rem 0;
       overflow: hidden;
-      border: 1px solid var(--borderColor-muted);
+      border: 1px solid var(--code-block-border);
       border-radius: 12px;
-      background: var(--bgColor-muted);
+      background: var(--code-block-background);
     }
     .markdown-body .code-block-language-hint {
       display: flex;
       align-items: center;
       min-height: 2rem;
       padding: 0.35rem 0.8rem;
-      border-bottom: 1px solid var(--borderColor-muted);
-      color: var(--fgColor-muted);
+      border-bottom: 1px solid var(--code-block-header-border);
+      color: var(--code-block-header-color);
+      background: var(--code-block-header-background);
       font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
       font-size: 0.72rem;
       font-weight: 600;
@@ -106,7 +136,7 @@ ${codeSyntaxVariables}
       background: transparent;
     }
     .markdown-body .hljs {
-      color: var(--fgColor-default);
+      color: var(--code-block-foreground);
     }
     .markdown-body .hljs-keyword,
     .markdown-body .hljs-selector-tag,

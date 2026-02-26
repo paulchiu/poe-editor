@@ -11,6 +11,8 @@ describe('htmlExport', () => {
 
     expect(result).toContain('github-markdown-light.min.css')
     expect(result).toContain('<meta name="color-scheme" content="light">')
+    expect(result).toContain('--code-block-background: #f0efeb;')
+    expect(result).toContain('--code-block-border: #c8b28f;')
     expect(result).toContain('--code-syntax-keyword: #a626a4;')
     expect(result).not.toContain('github-markdown-dark.min.css')
   })
@@ -24,6 +26,8 @@ describe('htmlExport', () => {
 
     expect(result).toContain('github-markdown-dark.min.css')
     expect(result).toContain('<meta name="color-scheme" content="dark">')
+    expect(result).toContain('--code-block-background: #151b23;')
+    expect(result).toContain('--code-block-border: #3d444db3;')
     expect(result).toContain('--code-syntax-keyword: var(--color-prettylights-syntax-keyword);')
     expect(result).toContain('background-color: #0d1117;')
     expect(result).not.toContain('github-markdown-light.min.css')
