@@ -82,12 +82,17 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
           icon.setAttribute('aria-hidden', 'true')
           icon.classList.add('preview-code-copy-icon')
 
-          const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-          iconPath.setAttribute(
-            'd',
-            'M16 18H6a2 2 0 0 1-2-2V6m4 12h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2Z'
-          )
-          icon.append(iconPath)
+          const frontSheet = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+          frontSheet.setAttribute('x', '9')
+          frontSheet.setAttribute('y', '9')
+          frontSheet.setAttribute('width', '11')
+          frontSheet.setAttribute('height', '11')
+          frontSheet.setAttribute('rx', '2')
+          frontSheet.setAttribute('ry', '2')
+
+          const backSheet = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+          backSheet.setAttribute('d', 'M6 15c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h9c1.1 0 2 .9 2 2')
+          icon.append(frontSheet, backSheet)
 
           const label = document.createElement('span')
           label.className = 'preview-code-copy-label'
@@ -160,7 +165,9 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
           window.clearTimeout(timeoutId)
         }
 
-        const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('.preview-code-copy-button'))
+        const buttons = Array.from(
+          root.querySelectorAll<HTMLButtonElement>('.preview-code-copy-button')
+        )
         for (const button of buttons) {
           button.remove()
         }

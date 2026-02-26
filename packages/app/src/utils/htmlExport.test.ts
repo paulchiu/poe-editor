@@ -14,6 +14,12 @@ describe('htmlExport', () => {
     expect(result).toContain('--code-block-background: #f0efeb;')
     expect(result).toContain('--code-block-border: #c8b28f;')
     expect(result).toContain('--code-syntax-keyword: #a626a4;')
+    expect(result).toContain("font-family: 'Crimson Text', serif;")
+    expect(result).toContain(
+      "font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;"
+    )
+    expect(result).toContain('fonts.googleapis.com/css2?family=Crimson+Text')
+    expect(result).toContain('preview-code-copy-button')
     expect(result).not.toContain('github-markdown-dark.min.css')
   })
 
@@ -51,5 +57,6 @@ describe('htmlExport', () => {
     expect(withMermaid).toContain('"primaryBorderColor":"#4493f8"')
     expect(withMermaid).toContain('.code-block-with-language[data-language="mermaid"]')
     expect(withMermaid).toContain('display: none;')
+    expect(withMermaid).toContain('data-raw-code')
   })
 })

@@ -381,19 +381,24 @@ html:not(.dark) .markdown-body {
 }
 
 .markdown-body .preview-code-copy-button .preview-code-copy-icon {
-  width: 0.78rem;
-  height: 0.78rem;
+  width: 0.9rem;
+  height: 0.9rem;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 1.9;
   stroke-linecap: round;
   stroke-linejoin: round;
   flex-shrink: 0;
+  display: block;
 }
 
 .markdown-body pre.preview-code-copy-host > .preview-code-copy-button,
 .markdown-body .preview-mermaid-copy-button {
   top: 0.55rem;
+}
+
+.markdown-body .preview-code-copy-button .preview-code-copy-icon rect {
+  fill: none;
 }
 
 .markdown-body .preview-code-copy-host:hover > .preview-code-copy-button,
