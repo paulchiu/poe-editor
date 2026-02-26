@@ -31,10 +31,13 @@ const createVim = () => {
   return { vim, pushText, handleKey }
 }
 
-const createAdapter = (selection: string): CodeMirrorAdapter =>
+const createAdapter = (
+  selection: string,
+  vimState: CodeMirrorAdapter['state']['vim'] = { visualBlock: false }
+): CodeMirrorAdapter =>
   ({
     getSelection: () => selection,
-    state: { vim: { visualBlock: false } },
+    state: { vim: vimState },
     editor: {} as CodeMirrorAdapter['editor'],
   }) as CodeMirrorAdapter
 
@@ -101,6 +104,41 @@ describe('vimClipboard', () => {
 
     expect(clipboard.writeText).not.toHaveBeenCalled()
     expect(pushText).not.toHaveBeenCalled()
+  })
+
+  it('moves cursor to visual selection start after yank in visual mode', async () => {
+    const clipboard = {
+      writeText: vi.fn().mockResolvedValue(undefined),
+      readText: vi.fn(),
+    }
+    setClipboard(clipboard)
+
+    const { vim } = createVim()
+    const yank = createYankSystemOperator(vim)
+    const oldAnchor = { line: 10, ch: 4 }
+
+    const result = yank(
+      createAdapter('selected text', {
+        visualMode: true,
+        visualBlock: false,
+        sel: {
+          anchor: { line: 1, ch: 3 },
+          head: { line: 1, ch: 7 },
+        },
+      }),
+      { registerName: '"', linewise: false },
+      [
+        {
+          anchor: { line: 1, ch: 3 },
+          head: { line: 1, ch: 8 },
+        },
+      ],
+      oldAnchor
+    )
+
+    await Promise.resolve()
+
+    expect(result).toEqual({ line: 1, ch: 3 })
   })
 
   it('pastes clipboard text after or before the cursor', async () => {

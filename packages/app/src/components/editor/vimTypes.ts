@@ -12,7 +12,12 @@ export interface VimRegisterController {
 
 export interface VimState {
   vim: {
+    visualMode?: boolean
     visualBlock: boolean
+    sel?: {
+      anchor: { line: number; ch: number }
+      head: { line: number; ch: number }
+    }
   }
 }
 
