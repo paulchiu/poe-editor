@@ -43,14 +43,14 @@ Poe includes standard Markdown editor functionality and a set of unique features
 
 ### Editing and Input
 
-| Feature                                 | Notes                                                                                                                                                                                                               |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Editor auto-focus on load               | When the editor pane is visible at startup, Monaco receives focus automatically so typing can begin immediately.                                                                                                    |
-| Enhanced Vim mode (Monaco)              | Includes wrapped-line motions, custom bracket/quote/fence matching, and `%` jumps between opening and closing sets.                                                                                                 |
-| Browser-aware Vim clipboard behavior    | Vim yank writes to system clipboard + register; visual-mode yank restores cursor to selection start; visual-char mode renders cursor at Vim head position; `p/P` stays register-based (due to browser limitations). |
-| Vim spell and wrap options              | Supports Vim `:set spell` sync and `:set wrap`/`:set nowrap` behavior.                                                                                                                                              |
-| Spell check with dictionary integration | Monaco spellcheck uses `typo-js` dictionary data.                                                                                                                                                                   |
-| Auto-continue lists and blockquotes     | Enter key continues or exits list/quote prefixes intelligently.                                                                                                                                                     |
+| Feature                                 | Notes                                                                                                                                                                                                                                   |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Editor auto-focus on load               | When the editor pane is visible at startup, Monaco receives focus automatically so typing can begin immediately.                                                                                                                        |
+| Enhanced Vim mode (Monaco)              | Includes wrapped-line motions, custom bracket/quote/fence matching, `%` jumps between opening and closing sets, and reliable `H/M/L` high-middle-low cursor jumps (document-relative when file fits view, viewport-relative otherwise). |
+| Browser-aware Vim clipboard behavior    | Vim yank writes to system clipboard + register; visual-mode yank restores cursor to selection start; visual-char mode renders cursor at Vim head position; `p/P` stays register-based (due to browser limitations).                     |
+| Vim spell and wrap options              | Supports Vim `:set spell` sync and `:set wrap`/`:set nowrap` behavior.                                                                                                                                                                  |
+| Spell check with dictionary integration | Monaco spellcheck uses `typo-js` dictionary data.                                                                                                                                                                                       |
+| Auto-continue lists and blockquotes     | Enter key continues or exits list/quote prefixes intelligently.                                                                                                                                                                         |
 
 ### Markdown Table
 

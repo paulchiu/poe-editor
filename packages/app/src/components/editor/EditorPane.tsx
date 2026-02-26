@@ -201,7 +201,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       })
     }
 
-    useEditorVim({ editorRef, vimInstanceRef, statusBarRef, vimMode })
+    useEditorVim({ editorInstance, editorRef, vimInstanceRef, statusBarRef, vimMode })
     useEditorSpellCheck({
       editorRef,
       monacoRef,

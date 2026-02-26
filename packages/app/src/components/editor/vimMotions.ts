@@ -5,6 +5,49 @@ import {
   findStandardBracketTarget,
 } from './vimBracketHelpers'
 
+interface VisibleLineBounds {
+  startLineNumber: number
+  endLineNumber: number
+}
+
+const clampLineNumber = (lineNumber: number, bounds: VisibleLineBounds): number =>
+  Math.min(Math.max(lineNumber, bounds.startLineNumber), bounds.endLineNumber)
+
+const getFirstNonWhitespaceColumn = (cm: CodeMirrorAdapter, lineNumber: number): number => {
+  const model = cm.editor.getModel()
+  if (!model) {
+    return 1
+  }
+
+  const firstNonWhitespaceColumn = model.getLineFirstNonWhitespaceColumn(lineNumber)
+  return firstNonWhitespaceColumn > 0 ? firstNonWhitespaceColumn : 1
+}
+
+const getTargetLineBounds = (cm: CodeMirrorAdapter): VisibleLineBounds | null => {
+  const model = cm.editor.getModel()
+  if (!model) {
+    return null
+  }
+
+  const visibleRanges = cm.editor.getVisibleRanges()
+  const visibleRange = visibleRanges[0]
+  if (!visibleRange) {
+    return null
+  }
+
+  const totalLineCount = model.getLineCount()
+  const visibleLineCount = visibleRange.endLineNumber - visibleRange.startLineNumber + 1
+
+  if (totalLineCount <= visibleLineCount) {
+    return { startLineNumber: 1, endLineNumber: totalLineCount }
+  }
+
+  return {
+    startLineNumber: visibleRange.startLineNumber,
+    endLineNumber: visibleRange.endLineNumber,
+  }
+}
+
 /**
  * Vim motion that moves the cursor by display (wrapped) lines using Monaco's native cursor movement.
  * @param cm - The CodeMirror adapter wrapping the Monaco editor
@@ -32,6 +75,82 @@ export const moveByDisplayLinesMotion = (
   if (!newPos) return { line: head.line, ch: head.ch }
 
   return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+}
+
+/**
+ * Vim motion that jumps to a high document position.
+ * Uses viewport-relative lines when the file is taller than the viewport,
+ * otherwise uses the whole document.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @param motionArgs - Motion arguments including optional repeat count
+ * @returns { { line: number; ch: number } } The 0-indexed target position
+ */
+export const moveToHighDocumentPositionMotion = (
+  cm: CodeMirrorAdapter,
+  head: { line: number; ch: number },
+  motionArgs: { repeat?: number }
+): { line: number; ch: number } => {
+  const bounds = getTargetLineBounds(cm)
+  if (!bounds) {
+    return { line: head.line, ch: head.ch }
+  }
+
+  const repeat = motionArgs.repeat || 1
+  const targetLineNumber = clampLineNumber(bounds.startLineNumber + repeat - 1, bounds)
+  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+
+  return { line: targetLineNumber - 1, ch: targetColumn - 1 }
+}
+
+/**
+ * Vim motion that jumps to a middle document position.
+ * Uses viewport-relative lines when the file is taller than the viewport,
+ * otherwise uses the whole document.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @returns { { line: number; ch: number } } The 0-indexed target position
+ */
+export const moveToMiddleDocumentPositionMotion = (
+  cm: CodeMirrorAdapter,
+  head: { line: number; ch: number }
+): { line: number; ch: number } => {
+  const bounds = getTargetLineBounds(cm)
+  if (!bounds) {
+    return { line: head.line, ch: head.ch }
+  }
+
+  const targetLineNumber =
+    bounds.startLineNumber + Math.floor((bounds.endLineNumber - bounds.startLineNumber) / 2)
+  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+
+  return { line: targetLineNumber - 1, ch: targetColumn - 1 }
+}
+
+/**
+ * Vim motion that jumps to a low document position.
+ * Uses viewport-relative lines when the file is taller than the viewport,
+ * otherwise uses the whole document.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @param motionArgs - Motion arguments including optional repeat count
+ * @returns { { line: number; ch: number } } The 0-indexed target position
+ */
+export const moveToLowDocumentPositionMotion = (
+  cm: CodeMirrorAdapter,
+  head: { line: number; ch: number },
+  motionArgs: { repeat?: number }
+): { line: number; ch: number } => {
+  const bounds = getTargetLineBounds(cm)
+  if (!bounds) {
+    return { line: head.line, ch: head.ch }
+  }
+
+  const repeat = motionArgs.repeat || 1
+  const targetLineNumber = clampLineNumber(bounds.endLineNumber - repeat + 1, bounds)
+  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+
+  return { line: targetLineNumber - 1, ch: targetColumn - 1 }
 }
 
 /**

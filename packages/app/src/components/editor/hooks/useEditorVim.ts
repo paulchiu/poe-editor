@@ -151,6 +151,7 @@ const attachVisualCursorSync = (
 }
 
 interface UseEditorVimParams {
+  editorInstance: editor.IStandaloneCodeEditor | null
   editorRef: React.RefObject<editor.IStandaloneCodeEditor | null>
   vimInstanceRef: React.MutableRefObject<VimAdapter | null>
   statusBarRef: React.RefObject<HTMLDivElement | null>
@@ -165,6 +166,7 @@ interface UseEditorVimParams {
  * @returns void
  */
 export function useEditorVim({
+  editorInstance,
   editorRef,
   vimInstanceRef,
   statusBarRef,
@@ -186,7 +188,7 @@ export function useEditorVim({
       return
     }
 
-    const ed = editorRef.current
+    const ed = editorInstance ?? editorRef.current
     const statusBar = statusBarRef.current
 
     if (!ed || !statusBar) {
@@ -208,15 +210,18 @@ export function useEditorVim({
     }
 
     const timer = setTimeout(() => {
-      if (editorRef.current && statusBarRef.current && !vimInstanceRef.current) {
+      const currentEditor = editorInstance ?? editorRef.current
+      const currentStatusBar = statusBarRef.current
+
+      if (currentEditor && currentStatusBar && !vimInstanceRef.current) {
         try {
           setupVim()
-          vimInstanceRef.current = initVimMode(editorRef.current, statusBarRef.current)
+          vimInstanceRef.current = initVimMode(currentEditor, currentStatusBar)
           visualCursorCleanupRef.current = attachVisualCursorSync(
-            editorRef.current,
+            currentEditor,
             vimInstanceRef.current
           )
-          visualCursorEditorRef.current = editorRef.current
+          visualCursorEditorRef.current = currentEditor
         } catch {
           toast({
             description: 'Error initializing vim mode',
@@ -229,7 +234,7 @@ export function useEditorVim({
     return () => {
       clearTimeout(timer)
     }
-  }, [vimMode, editorRef, vimInstanceRef, statusBarRef])
+  }, [vimMode, editorInstance, editorRef, vimInstanceRef, statusBarRef])
 
   useEffect(
     () => () => {

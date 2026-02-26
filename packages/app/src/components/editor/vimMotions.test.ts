@@ -4,6 +4,9 @@ import type { CodeMirrorAdapter } from './vimTypes'
 import {
   moveByDisplayLinesMotion,
   moveToEndOfDisplayLineMotion,
+  moveToHighDocumentPositionMotion,
+  moveToLowDocumentPositionMotion,
+  moveToMiddleDocumentPositionMotion,
   moveToMatchingBracketMotion,
   moveToStartOfDisplayLineMotion,
 } from './vimMotions'
@@ -16,23 +19,32 @@ interface Position {
 interface MockTextModel {
   getLineContent: (lineNumber: number) => string
   getLineCount: () => number
+  getLineFirstNonWhitespaceColumn: (lineNumber: number) => number
 }
 
 const createModel = (lines: string[]): editor.ITextModel =>
   ({
     getLineContent: (lineNumber: number) => lines[lineNumber - 1] ?? '',
     getLineCount: () => lines.length,
+    getLineFirstNonWhitespaceColumn: (lineNumber: number) => {
+      const line = lines[lineNumber - 1] ?? ''
+      const firstNonWhitespaceIndex = line.search(/\S/)
+      return firstNonWhitespaceIndex === -1 ? 0 : firstNonWhitespaceIndex + 1
+    },
   }) as unknown as editor.ITextModel
 
 const createCodeMirrorAdapter = ({
   position,
   model,
+  visibleRange,
 }: {
   position: Position
   model?: MockTextModel | null
+  visibleRange?: { startLineNumber: number; endLineNumber: number }
 }): CodeMirrorAdapter => {
   let currentPosition = position
   const currentModel = model ?? null
+  const currentVisibleRange = visibleRange ?? { startLineNumber: 1, endLineNumber: 20 }
 
   const editorMock = {
     setPosition: vi.fn((next: Position) => {
@@ -63,6 +75,13 @@ const createCodeMirrorAdapter = ({
     }),
     getPosition: vi.fn(() => currentPosition),
     getModel: vi.fn(() => currentModel),
+    getVisibleRanges: vi.fn(() => [
+      {
+        ...currentVisibleRange,
+        startColumn: 1,
+        endColumn: 1,
+      },
+    ]),
   }
 
   return {
@@ -97,6 +116,122 @@ describe('vimMotions', () => {
 
     const target = moveByDisplayLinesMotion(cm, { line: 1, ch: 1 }, { forward: true })
     expect(target).toEqual({ line: 1, ch: 1 })
+  })
+
+  it('moves to high/middle/low using the full document when it fits in view', () => {
+    const model = createModel(['  one', 'two', '    three', 'four', '     five'])
+    const cm = createCodeMirrorAdapter({
+      position: { lineNumber: 3, column: 3 },
+      model,
+      visibleRange: { startLineNumber: 1, endLineNumber: 20 },
+    })
+
+    expect(moveToHighDocumentPositionMotion(cm, { line: 2, ch: 2 }, { repeat: 1 })).toEqual({
+      line: 0,
+      ch: 2,
+    })
+    expect(moveToMiddleDocumentPositionMotion(cm, { line: 2, ch: 2 })).toEqual({
+      line: 2,
+      ch: 4,
+    })
+    expect(moveToLowDocumentPositionMotion(cm, { line: 2, ch: 2 }, { repeat: 1 })).toEqual({
+      line: 4,
+      ch: 5,
+    })
+  })
+
+  it('moves to high/middle/low using visible viewport when file exceeds view height', () => {
+    const model = createModel([
+      'line 1',
+      'line 2',
+      'line 3',
+      'line 4',
+      'line 5',
+      'line 6',
+      'line 7',
+      'line 8',
+      'line 9',
+      'line 10',
+      'line 11',
+      'line 12',
+    ])
+    const cm = createCodeMirrorAdapter({
+      position: { lineNumber: 8, column: 2 },
+      model,
+      visibleRange: { startLineNumber: 4, endLineNumber: 8 },
+    })
+
+    expect(moveToHighDocumentPositionMotion(cm, { line: 7, ch: 1 }, { repeat: 1 })).toEqual({
+      line: 3,
+      ch: 0,
+    })
+    expect(moveToMiddleDocumentPositionMotion(cm, { line: 7, ch: 1 })).toEqual({
+      line: 5,
+      ch: 0,
+    })
+    expect(moveToLowDocumentPositionMotion(cm, { line: 7, ch: 1 }, { repeat: 1 })).toEqual({
+      line: 7,
+      ch: 0,
+    })
+  })
+
+  it('clamps high/low repeat counts inside the computed target bounds', () => {
+    const model = createModel(['a', 'b', 'c', 'd', 'e', 'f'])
+    const cm = createCodeMirrorAdapter({
+      position: { lineNumber: 3, column: 1 },
+      model,
+      visibleRange: { startLineNumber: 2, endLineNumber: 4 },
+    })
+
+    expect(moveToHighDocumentPositionMotion(cm, { line: 2, ch: 0 }, { repeat: 50 })).toEqual({
+      line: 3,
+      ch: 0,
+    })
+    expect(moveToLowDocumentPositionMotion(cm, { line: 2, ch: 0 }, { repeat: 50 })).toEqual({
+      line: 1,
+      ch: 0,
+    })
+  })
+
+  it('falls back to the current head when H/M/L cannot resolve model or viewport', () => {
+    const noModelAdapter = createCodeMirrorAdapter({
+      position: { lineNumber: 2, column: 2 },
+      model: null,
+    })
+
+    expect(
+      moveToHighDocumentPositionMotion(noModelAdapter, { line: 5, ch: 3 }, { repeat: 1 })
+    ).toEqual({
+      line: 5,
+      ch: 3,
+    })
+    expect(moveToMiddleDocumentPositionMotion(noModelAdapter, { line: 5, ch: 3 })).toEqual({
+      line: 5,
+      ch: 3,
+    })
+    expect(
+      moveToLowDocumentPositionMotion(noModelAdapter, { line: 5, ch: 3 }, { repeat: 1 })
+    ).toEqual({
+      line: 5,
+      ch: 3,
+    })
+
+    const noVisibleRangeAdapter = createCodeMirrorAdapter({
+      position: { lineNumber: 2, column: 2 },
+      model: createModel(['one', 'two']),
+    })
+    vi.mocked(noVisibleRangeAdapter.editor.getVisibleRanges).mockReturnValue([])
+
+    expect(
+      moveToHighDocumentPositionMotion(noVisibleRangeAdapter, { line: 1, ch: 1 }, { repeat: 1 })
+    ).toEqual({ line: 1, ch: 1 })
+    expect(moveToMiddleDocumentPositionMotion(noVisibleRangeAdapter, { line: 1, ch: 1 })).toEqual({
+      line: 1,
+      ch: 1,
+    })
+    expect(
+      moveToLowDocumentPositionMotion(noVisibleRangeAdapter, { line: 1, ch: 1 }, { repeat: 1 })
+    ).toEqual({ line: 1, ch: 1 })
   })
 
   it('prefers markdown fences and quotes before bracket fallback', () => {

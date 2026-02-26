@@ -3,6 +3,9 @@ import type { CodeMirrorAdapter, VimModeModule } from './vimTypes'
 import { createYankSystemOperator, createPasteSystemAction } from './vimClipboard'
 import {
   moveByDisplayLinesMotion,
+  moveToHighDocumentPositionMotion,
+  moveToLowDocumentPositionMotion,
+  moveToMiddleDocumentPositionMotion,
   moveToMatchingBracketMotion,
   moveToEndOfDisplayLineMotion,
 } from './vimMotions'
@@ -93,6 +96,14 @@ export function setupVim(): void {
   // Override default g^/g0 to use Monaco's native cursorHome (start of display line)
   Vim.mapCommand('g^', 'motion', 'moveToStartOfDisplayLine')
   Vim.mapCommand('g0', 'motion', 'moveToStartOfDisplayLine')
+
+  // Override H/M/L to ensure reliable high/middle/low line jumps with Monaco viewport behavior
+  Vim.defineMotion('moveToHighDocumentPosition', moveToHighDocumentPositionMotion)
+  Vim.defineMotion('moveToMiddleDocumentPosition', moveToMiddleDocumentPositionMotion)
+  Vim.defineMotion('moveToLowDocumentPosition', moveToLowDocumentPositionMotion)
+  Vim.mapCommand('H', 'motion', 'moveToHighDocumentPosition')
+  Vim.mapCommand('M', 'motion', 'moveToMiddleDocumentPosition')
+  Vim.mapCommand('L', 'motion', 'moveToLowDocumentPosition')
 
   // Register spell check option
   // We use a custom event to notify React when Vim changes this option
