@@ -39,7 +39,7 @@ interface TransformerStepProps {
 }
 
 // Operations that support line-by-line mode
-const LINE_MODE_OPERATIONS = ['trim', 'change-case', 'replace', 'slugify', 'quote']
+const LINE_MODE_OPERATIONS = ['trim', 'change-case', 'replace', 'slugify', 'quote', 'format-json']
 
 /**
  * Component representing a single step in a transformation pipeline.
@@ -96,14 +96,9 @@ export function TransformerStep({
 
   const Icon = ICON_MAP[operation.icon]
 
-  /* 
-     Determine if this operation has any configurable options.
-     We check if the renderConfig returns null, but we need to know *before* rendering.
-     Simpler check: these operations have no config in this app.
-  */
-  const hasConfig = !['unique'].includes(step.operationId)
   const supportsLineMode = LINE_MODE_OPERATIONS.includes(step.operationId)
-  const isLineMode = step.config.lines !== false // Default to true
+  const isLineMode =
+    step.operationId === 'format-json' ? step.config.lines === true : step.config.lines !== false
 
   const handleConfigChange = (newConfig: Record<string, unknown>) => {
     onUpdate(step.id, newConfig)
@@ -173,6 +168,9 @@ export function TransformerStep({
         return null
     }
   }
+
+  const configContent = renderConfig()
+  const hasConfig = configContent !== null
 
   return (
     <div
@@ -269,7 +267,7 @@ export function TransformerStep({
           </div>
         </div>
 
-        {hasConfig && showConfig && renderConfig()}
+        {hasConfig && showConfig && configContent}
       </div>
     </div>
   )

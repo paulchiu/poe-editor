@@ -1,0 +1,9 @@
+{
+  "ignores": ["MD_TEST.md"],
+  "config": {
+    "default": false,
+    "MD060": {
+      "style": "aligned",
+    },
+  },
+}

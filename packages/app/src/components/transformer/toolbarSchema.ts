@@ -29,6 +29,8 @@ export const PipelineStepSchema = z.object({
     'remove-lines',
     'remove-chars',
     'encode-decode',
+    'format-json',
+    'strip-html',
     'escape',
     'pad-align',
     'format-numbers',

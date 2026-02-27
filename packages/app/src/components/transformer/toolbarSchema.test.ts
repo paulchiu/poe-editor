@@ -192,6 +192,8 @@ describe('toolbarSchema', () => {
           { id: '5', operationId: 'join-lines', config: {}, enabled: true },
           { id: '6', operationId: 'split-lines', config: {}, enabled: true },
           { id: '7', operationId: 'filter-lines', config: {}, enabled: true },
+          { id: '8', operationId: 'format-json', config: {}, enabled: true },
+          { id: '9', operationId: 'strip-html', config: {}, enabled: true },
         ],
       }
       const exportData = createToolbarExport([validOperations])
@@ -200,7 +202,7 @@ describe('toolbarSchema', () => {
       const result = parseToolbarImport(json)
 
       expect(result).toHaveLength(1)
-      expect(result[0].steps).toHaveLength(7)
+      expect(result[0].steps).toHaveLength(9)
     })
   })
 })
