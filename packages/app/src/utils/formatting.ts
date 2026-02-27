@@ -219,16 +219,25 @@ export function formatBulletList(editor: EditorPaneHandle | null): void {
     placeholder: '- ',
     transform: (lines) => {
       const processableLines = lines.filter((line) => line.trim().length > 0)
+      const isTaskList =
+        processableLines.length > 0 &&
+        processableLines.every((line) => /^\s*[-*+]\s+\[[ xX]\]\s/.test(line))
       const isBulletList =
-        processableLines.length > 0 && processableLines.every((line) => /^\s*[-*]\s/.test(line))
+        !isTaskList &&
+        processableLines.length > 0 &&
+        processableLines.every((line) => /^\s*[-*]\s/.test(line))
       const isNumberedList =
         !isBulletList &&
+        !isTaskList &&
         processableLines.length > 0 &&
         processableLines.every((line) => /^\s*\d+\.\s/.test(line))
 
       return lines.map((line) => {
         if (line.trim().length === 0) return line
 
+        if (isTaskList) {
+          return line.replace(/^(\s*)[-*+]\s+\[[ xX]\]\s+/, '$1- ')
+        }
         if (isBulletList) {
           return line.replace(/^(\s*)([-*]\s+)/, '$1')
         }
@@ -254,9 +263,13 @@ export function formatNumberedList(editor: EditorPaneHandle | null): void {
     placeholder: '1. ',
     transform: (lines) => {
       const processableLines = lines.filter((line) => line.trim().length > 0)
+      const isTaskList =
+        processableLines.length > 0 &&
+        processableLines.every((line) => /^\s*[-*+]\s+\[[ xX]\]\s/.test(line))
       const isNumberedList =
         processableLines.length > 0 && processableLines.every((line) => /^\s*\d+\.\s/.test(line))
       const isBulletList =
+        !isTaskList &&
         !isNumberedList &&
         processableLines.length > 0 &&
         processableLines.every((line) => /^\s*[-*]\s/.test(line))
@@ -270,6 +283,9 @@ export function formatNumberedList(editor: EditorPaneHandle | null): void {
         }
 
         const prefix = `${counter++}. `
+        if (isTaskList) {
+          return line.replace(/^(\s*)[-*+]\s+\[[ xX]\]\s+/, `$1${prefix}`)
+        }
         if (isBulletList) {
           return line.replace(/^(\s*)([-*]\s+)/, `$1${prefix}`)
         }

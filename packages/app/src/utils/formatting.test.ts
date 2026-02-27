@@ -291,6 +291,24 @@ describe('formatting utils', () => {
       expect(replaceSelectionMock).toHaveBeenCalledWith('- item 1\n- item 2')
     })
 
+    it('should convert task list to bullet list', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 13,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '- [ ] item 1'
+        if (line === 2) return '- [x] item 2'
+        return ''
+      })
+
+      formatBulletList(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('- item 1\n- item 2')
+    })
+
     it('should insert bullet list item if no selection', () => {
       getSelectionRangeMock.mockReturnValue({
         startLineNumber: 1,
@@ -353,6 +371,24 @@ describe('formatting utils', () => {
       getLineContentMock.mockImplementation((line) => {
         if (line === 1) return '- item 1'
         if (line === 2) return '- item 2'
+        return ''
+      })
+
+      formatNumberedList(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('1. item 1\n2. item 2')
+    })
+
+    it('should convert task list to numbered list without checkbox markers', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 13,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '- [ ] item 1'
+        if (line === 2) return '- [x] item 2'
         return ''
       })
 
