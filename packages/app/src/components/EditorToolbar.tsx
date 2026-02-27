@@ -86,6 +86,7 @@ import {
   Columns,
   Rows,
   SpellCheck,
+  Check,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/transformer/constants'
 import { cn } from '@/utils/classnames'
@@ -264,6 +265,7 @@ interface EditorToolbarProps {
   onFormatQuote: () => void
   onFormatBulletList: () => void
   onFormatNumberedList: () => void
+  onFormatTaskList: () => void
   onFormatCodeBlock: () => void
   onTableAction: (action: TableAction) => void
   isInTable: boolean
@@ -317,6 +319,7 @@ export function EditorToolbar({
   onFormatQuote,
   onFormatBulletList,
   onFormatNumberedList,
+  onFormatTaskList,
   onFormatCodeBlock,
   onTableAction,
   isInTable,
@@ -348,6 +351,7 @@ export function EditorToolbar({
   const [activeDragPipeline, setActiveDragPipeline] = useState<TransformationPipeline | null>(null)
   const clearTimerRef = useRef<NodeJS.Timeout | null>(null)
   const headingActionRef = useRef(false)
+  const listActionRef = useRef(false)
 
   const handleClearSelect = (e: Event) => {
     if (!isConfirmingClear) {
@@ -523,8 +527,54 @@ export function EditorToolbar({
           </DropdownMenuContent>
         </DropdownMenu>
         <ToolbarButton icon={Quote} label="Quote" onClick={onFormatQuote} />
-        <ToolbarButton icon={List} label="Bullet List" onClick={onFormatBulletList} />
-        <ToolbarButton icon={ListOrdered} label="Numbered List" onClick={onFormatNumberedList} />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <List className="size-4" />
+              <span className="sr-only">Lists</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            onCloseAutoFocus={(e) => {
+              if (listActionRef.current) {
+                e.preventDefault()
+                listActionRef.current = false
+              }
+            }}
+          >
+            <DropdownMenuItem
+              onClick={() => {
+                listActionRef.current = true
+                setTimeout(() => onFormatBulletList(), 50)
+              }}
+            >
+              <List className="size-4" />
+              Bullet List
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                listActionRef.current = true
+                setTimeout(() => onFormatNumberedList(), 50)
+              }}
+            >
+              <ListOrdered className="size-4" />
+              Numbered List
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                listActionRef.current = true
+                setTimeout(() => onFormatTaskList(), 50)
+              }}
+            >
+              <Check className="size-4" />
+              Task List
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <ToolbarButton icon={CodeSquare} label="Code Block" onClick={onFormatCodeBlock} />
 
         <DropdownMenu>

@@ -20,6 +20,8 @@ describe('htmlExport', () => {
     )
     expect(result).toContain('fonts.googleapis.com/css2?family=Crimson+Text')
     expect(result).toContain('preview-code-copy-button')
+    expect(result).toContain('.markdown-body .contains-task-list')
+    expect(result).toContain('.markdown-body .task-list-item > .task-list-item-checkbox')
     expect(result).not.toContain('github-markdown-dark.min.css')
   })
 
@@ -88,6 +90,8 @@ describe('htmlExport', () => {
     expect(result).toContain('.markdown-body details > *')
     expect(result).toContain(".markdown-body svg[id^='mermaid-'] text")
     expect(result).toContain('.markdown-body pre code *')
+    expect(result).toContain('.markdown-body .contains-task-list')
+    expect(result).toContain('.markdown-body .task-list-item > .task-list-item-checkbox')
     expect(result).toContain('.markdown-body table,')
     expect(result).toContain(
       ".markdown-body .code-block-with-language[data-language='mermaid'] svg .label"

@@ -53,6 +53,19 @@ describe('renderMarkdown', () => {
     expect(html).toContain('<a href="https://example.com">link</a>')
   })
 
+  it('should render task list items as checkbox inputs', () => {
+    const markdown = '- [ ] todo\n- [x] done'
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<ul class="contains-task-list">')
+    expect(html).toContain('<li class="task-list-item">')
+    expect(html).toContain(
+      '<input type="checkbox" class="task-list-item-checkbox" data-task-index="0"'
+    )
+    expect(html).toContain('data-task-index="1"')
+    expect(html).toContain('checked=""')
+  })
+
   it('should render supported safe html tags in markdown', () => {
     const markdown = '<details><summary>More</summary><kbd>Cmd</kbd> + <kbd>K</kbd></details>'
     const html = renderMarkdown(markdown)

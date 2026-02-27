@@ -30,6 +30,7 @@ describe('EditorToolbar', () => {
     onFormatQuote: vi.fn(),
     onFormatBulletList: vi.fn(),
     onFormatNumberedList: vi.fn(),
+    onFormatTaskList: vi.fn(),
     onFormatCodeBlock: vi.fn(),
     onTableAction: vi.fn(),
     isInTable: false,
@@ -103,8 +104,6 @@ describe('EditorToolbar', () => {
     await user.click(screen.getByRole('button', { name: 'Link' }))
     await user.click(screen.getByRole('button', { name: 'Code' }))
     await user.click(screen.getByRole('button', { name: 'Quote' }))
-    await user.click(screen.getByRole('button', { name: 'Bullet List' }))
-    await user.click(screen.getByRole('button', { name: 'Numbered List' }))
     await user.click(screen.getByRole('button', { name: 'Code Block' }))
     await user.click(screen.getByRole('button', { name: 'Transform Selection' }))
     await user.click(screen.getByRole('button', { name: 'Vim Mode' }))
@@ -115,15 +114,13 @@ describe('EditorToolbar', () => {
     expect(props.onFormatLink).toHaveBeenCalledTimes(1)
     expect(props.onFormatCode).toHaveBeenCalledTimes(1)
     expect(props.onFormatQuote).toHaveBeenCalledTimes(1)
-    expect(props.onFormatBulletList).toHaveBeenCalledTimes(1)
-    expect(props.onFormatNumberedList).toHaveBeenCalledTimes(1)
     expect(props.onFormatCodeBlock).toHaveBeenCalledTimes(1)
     expect(props.onOpenTransformer).toHaveBeenCalledTimes(1)
     expect(props.toggleVimMode).toHaveBeenCalledTimes(1)
     expect(props.toggleTheme).toHaveBeenCalledTimes(1)
   })
 
-  it('triggers heading and table menu actions', async () => {
+  it('triggers heading, list, and table menu actions', async () => {
     const user = userEvent.setup()
     const props = renderToolbar()
 
@@ -132,6 +129,24 @@ describe('EditorToolbar', () => {
 
     await waitFor(() => {
       expect(props.onFormatHeading).toHaveBeenCalledWith(2)
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Lists' }))
+    await user.click(await screen.findByText('Bullet List'))
+    await waitFor(() => {
+      expect(props.onFormatBulletList).toHaveBeenCalledTimes(1)
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Lists' }))
+    await user.click(await screen.findByText('Numbered List'))
+    await waitFor(() => {
+      expect(props.onFormatNumberedList).toHaveBeenCalledTimes(1)
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Lists' }))
+    await user.click(await screen.findByText('Task List'))
+    await waitFor(() => {
+      expect(props.onFormatTaskList).toHaveBeenCalledTimes(1)
     })
 
     await user.click(screen.getByRole('button', { name: 'Table Operations' }))

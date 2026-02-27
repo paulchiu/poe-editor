@@ -279,6 +279,82 @@ export function formatNumberedList(editor: EditorPaneHandle | null): void {
   })
 }
 
+/**
+ * Formats selected text as a task list or removes existing task formatting
+ * @param editor - Editor instance handle
+ * @returns void
+ */
+export function formatTaskList(editor: EditorPaneHandle | null): void {
+  if (!editor) return
+
+  applyLineFormatting({
+    editor,
+    placeholder: '- [ ] ',
+    transform: (lines) => {
+      const processableLines = lines.filter((line) => line.trim().length > 0)
+      const isTaskList =
+        processableLines.length > 0 &&
+        processableLines.every((line) => /^\s*[-*+]\s+\[[ xX]\]\s/.test(line))
+      const isBulletList =
+        !isTaskList &&
+        processableLines.length > 0 &&
+        processableLines.every((line) => /^\s*[-*+]\s/.test(line))
+      const isNumberedList =
+        !isTaskList &&
+        !isBulletList &&
+        processableLines.length > 0 &&
+        processableLines.every((line) => /^\s*\d+\.\s/.test(line))
+
+      return lines.map((line) => {
+        if (line.trim().length === 0) return line
+
+        if (isTaskList) {
+          return line.replace(/^(\s*)[-*+]\s+\[[ xX]\]\s*/, '$1')
+        }
+
+        if (isBulletList) {
+          return line.replace(/^(\s*)[-*+]\s+/, '$1- [ ] ')
+        }
+
+        if (isNumberedList) {
+          return line.replace(/^(\s*)\d+\.\s+/, '$1- [ ] ')
+        }
+
+        return `- [ ] ${line}`
+      })
+    },
+  })
+}
+
+/**
+ * Toggles a task list checkbox marker by rendered task index.
+ * @param markdown - Source markdown
+ * @param taskIndex - Zero-based index of task item in render order
+ * @param checked - Next checked state
+ * @returns Updated markdown
+ */
+export function toggleTaskListItem(markdown: string, taskIndex: number, checked: boolean): string {
+  if (!markdown || taskIndex < 0) return markdown
+
+  const lines = markdown.split('\n')
+  let currentTaskIndex = 0
+
+  const updatedLines = lines.map((line) => {
+    const taskMatch = line.match(/^(\s*[-*+]\s+\[)([ xX])(\])(.*)$/)
+    if (!taskMatch) return line
+
+    if (currentTaskIndex !== taskIndex) {
+      currentTaskIndex += 1
+      return line
+    }
+
+    currentTaskIndex += 1
+    return `${taskMatch[1]}${checked ? 'x' : ' '}${taskMatch[3]}${taskMatch[4]}`
+  })
+
+  return updatedLines.join('\n')
+}
+
 export interface AutoContinueResult {
   action: 'exit' | 'continue'
   text?: string
@@ -303,6 +379,8 @@ export function getAutoContinueEdit(
   const beforeCursor = lineContent.substring(0, cursorColumn - 1)
 
   // Patterns
+  const taskListPattern = /^(\s*)[-*+]\s+\[[ xX]\]\s*$/
+  const taskListContentPattern = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.+)/
   const unorderedListPattern = /^(\s*)[-*+]\s+$/
   const unorderedListContentPattern = /^(\s*)([-*+])\s+(.+)/
   const orderedListPattern = /^(\s*)(\d+)\.\s+$/
@@ -312,6 +390,7 @@ export function getAutoContinueEdit(
 
   // Check for empty list/quote (to exit)
   if (
+    taskListPattern.test(beforeCursor) ||
     unorderedListPattern.test(beforeCursor) ||
     orderedListPattern.test(beforeCursor) ||
     quotePattern.test(beforeCursor)
@@ -326,6 +405,21 @@ export function getAutoContinueEdit(
   }
 
   // Check for content (to continue)
+  const taskListMatch = beforeCursor.match(taskListContentPattern)
+  if (taskListMatch) {
+    const indent = taskListMatch[1]
+    const prefix = taskListMatch[2]
+    const state = taskListMatch[3].toLowerCase() === 'x' ? 'x' : ' '
+    return {
+      action: 'continue',
+      text: `\n${indent}${prefix} [${state}] `,
+      range: {
+        startColumn: cursorColumn,
+        endColumn: cursorColumn,
+      },
+    }
+  }
+
   const ulMatch = beforeCursor.match(unorderedListContentPattern)
   if (ulMatch) {
     const indent = ulMatch[1]

@@ -509,6 +509,20 @@ ${codeSyntaxVariables}
         padding: 15px;
       }
     }
+    .markdown-body .contains-task-list {
+      list-style: none;
+      padding-left: 1.4rem;
+    }
+    .markdown-body .task-list-item {
+      list-style: none;
+    }
+    .markdown-body .task-list-item > .task-list-item-checkbox {
+      margin: 0 0.5rem 0.1rem 0;
+      inline-size: 0.95rem;
+      block-size: 0.95rem;
+      vertical-align: middle;
+      accent-color: var(--fgColor-accent);
+    }
     .markdown-body pre {
       margin: 1rem 0;
       overflow: hidden;
@@ -828,6 +842,21 @@ ${codeSyntaxVariables}
       }
       .markdown-body li {
         margin: 0.2rem 0;
+      }
+      .markdown-body .contains-task-list {
+        list-style: none;
+        padding-left: 1.4rem;
+      }
+      .markdown-body .task-list-item {
+        list-style: none;
+      }
+      .markdown-body .task-list-item > .task-list-item-checkbox {
+        margin: 0 0.5rem 0.1rem 0;
+        inline-size: 0.95rem;
+        block-size: 0.95rem;
+        vertical-align: middle;
+        pointer-events: none;
+        accent-color: #000;
       }
       .markdown-body a {
         color: #000 !important;

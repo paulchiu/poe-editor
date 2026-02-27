@@ -13,6 +13,7 @@ Use this document to quickly verify that Markdown rendering, syntax highlighting
 - Copy editor markdown and confirm pasted text matches source.
 - Verify GitHub callouts (`NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`) render with alert styling.
 - Verify GitHub-safe HTML tags render correctly and unsafe HTML is sanitized.
+- Verify task list checkboxes render in preview, can be clicked, and update markdown source markers.
 
 ---
 
@@ -71,6 +72,14 @@ Mixed content list:
 3. Step three with a sub-list:
    - Sub step A
    - Sub step B
+
+Task list:
+
+- [ ] Plan release notes
+- [x] Merge dependency upgrades
+- [ ] Validate print output
+  - [x] Verify headings and tables
+  - [ ] Verify task list checkboxes
 
 ## 5) Blockquotes and Rules
 

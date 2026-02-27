@@ -326,6 +326,24 @@ html:not(.dark) .markdown-body {
   }
 }
 
+.markdown-body .contains-task-list {
+  list-style: none;
+  padding-left: 1.4rem;
+}
+
+.markdown-body .task-list-item {
+  list-style: none;
+}
+
+.markdown-body .task-list-item > .task-list-item-checkbox {
+  margin: 0 0.5rem 0.1rem 0;
+  inline-size: 0.95rem;
+  block-size: 0.95rem;
+  vertical-align: middle;
+  cursor: pointer;
+  accent-color: var(--fgColor-accent);
+}
+
 .markdown-body .code-block-with-language {
   margin: 1rem 0;
   overflow: hidden;
@@ -656,6 +674,27 @@ html:not(.dark) .markdown-body {
 
   .poe-editor-print-shell .poe-editor-print-markdown-body li {
     margin: 0.2rem 0;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body .contains-task-list {
+    list-style: none;
+    padding-left: 1.4rem;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body .task-list-item {
+    list-style: none;
+  }
+
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .task-list-item
+    > .task-list-item-checkbox {
+    margin: 0 0.5rem 0.1rem 0;
+    inline-size: 0.95rem;
+    block-size: 0.95rem;
+    vertical-align: middle;
+    pointer-events: none;
+    accent-color: #000;
   }
 
   .poe-editor-print-shell .poe-editor-print-markdown-body a {

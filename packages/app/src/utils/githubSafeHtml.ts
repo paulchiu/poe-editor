@@ -16,6 +16,7 @@ const ALLOWED_TAGS = new Set([
   'hr',
   'img',
   'ins',
+  'input',
   'kbd',
   'li',
   'mark',
@@ -40,8 +41,10 @@ const DROP_CONTENT_TAGS = new Set(['embed', 'form', 'iframe', 'object', 'script'
 
 const GLOBAL_ALLOWED_ATTRIBUTES = new Set([
   'align',
+  'aria-label',
   'class',
   'data-language',
+  'data-task-index',
   'data-raw-code',
   'title',
 ])
@@ -49,6 +52,7 @@ const TAG_ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
   a: new Set(['href', 'title']),
   details: new Set(['open']),
   img: new Set(['align', 'alt', 'height', 'src', 'title', 'width']),
+  input: new Set(['checked', 'disabled', 'type']),
   li: new Set(['value']),
   ol: new Set(['start']),
   td: new Set(['align', 'colspan', 'rowspan']),
@@ -108,6 +112,16 @@ function sanitizeAttributes(element: Element): void {
     if (URL_ATTRIBUTE_NAMES.has(attributeName) && !isSafeUrl(attributeValue)) {
       element.removeAttribute(attribute.name)
     }
+  }
+
+  if (tagName === 'input') {
+    const inputType = (element.getAttribute('type') ?? '').toLowerCase()
+    if (inputType !== 'checkbox') {
+      element.remove()
+      return
+    }
+
+    element.setAttribute('type', 'checkbox')
   }
 }
 

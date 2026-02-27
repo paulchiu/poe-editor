@@ -11,6 +11,7 @@ import type { MermaidColorMode } from '@/utils/mermaidTheme'
 
 interface PreviewPaneProps {
   htmlContent: string
+  onTaskListToggle?: (taskIndex: number, checked: boolean) => void
   viewMode?: 'editor' | 'preview' | 'split'
   onToggleLayout?: () => void
   colorMode?: MermaidColorMode
@@ -29,6 +30,7 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
   (
     {
       htmlContent,
+      onTaskListToggle,
       viewMode,
       onToggleLayout,
       colorMode = 'light',
@@ -124,6 +126,22 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
         const target = event.target
         if (!(target instanceof Element)) return
 
+        const taskCheckbox = target.closest<HTMLInputElement>('input.task-list-item-checkbox')
+        if (taskCheckbox && root.contains(taskCheckbox) && onTaskListToggle) {
+          event.preventDefault()
+          event.stopPropagation()
+
+          const taskIndexText = taskCheckbox.getAttribute('data-task-index')
+          if (!taskIndexText) return
+
+          const taskIndex = Number.parseInt(taskIndexText, 10)
+          if (Number.isNaN(taskIndex)) return
+
+          const currentlyChecked = taskCheckbox.hasAttribute('checked')
+          onTaskListToggle(taskIndex, !currentlyChecked)
+          return
+        }
+
         const button = target.closest<HTMLButtonElement>('.preview-code-copy-button')
         if (!button || !root.contains(button)) return
 
@@ -193,7 +211,7 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
           host.classList.remove('preview-code-copy-host')
         }
       }
-    }, [htmlContent, printFriendly])
+    }, [htmlContent, onTaskListToggle, printFriendly])
 
     const handleCopy = async (): Promise<void> => {
       try {
