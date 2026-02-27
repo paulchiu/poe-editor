@@ -121,6 +121,7 @@ const defaultFenceRenderer = md.renderer.rules.fence?.bind(md.renderer.rules)
 
 md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
   const language = tokens[idx].info.trim().split(/\s+/)[0]?.toLowerCase()
+  const rawCode = tokens[idx].content.replace(/\n$/, '')
 
   const renderedFence =
     language === 'mermaid'
@@ -132,8 +133,10 @@ md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
 
   const escapedLanguage = md.utils.escapeHtml(language)
   const escapedLabel = md.utils.escapeHtml(toLanguageLabel(language))
+  const dataRawCodeAttribute =
+    language === 'mermaid' ? ` data-raw-code="${md.utils.escapeHtml(rawCode)}"` : ''
 
-  return `<div class="code-block-with-language" data-language="${escapedLanguage}"><div class="code-block-language-hint">${escapedLabel}</div>${renderedFence}</div>`
+  return `<div class="code-block-with-language" data-language="${escapedLanguage}"${dataRawCodeAttribute}><div class="code-block-language-hint">${escapedLabel}</div>${renderedFence}</div>`
 }
 
 /**

@@ -6,7 +6,7 @@ describe('sanitizeGithubSafeHtml', () => {
     const html = `
       <details open>
         <summary>See more</summary>
-        <div align="center">
+        <div align="center" data-raw-code="graph TD;A--&gt;B;">
           <kbd>Ctrl</kbd> + <kbd>C</kbd>
           <img src="/image.png" alt="Preview" width="240" />
         </div>
@@ -17,7 +17,7 @@ describe('sanitizeGithubSafeHtml', () => {
 
     expect(sanitized).toContain('<details open="">')
     expect(sanitized).toContain('<summary>See more</summary>')
-    expect(sanitized).toContain('<div align="center">')
+    expect(sanitized).toContain('<div align="center" data-raw-code="graph TD;A-->B;">')
     expect(sanitized).toContain('<kbd>Ctrl</kbd>')
     expect(sanitized).toContain('<img src="/image.png" alt="Preview" width="240">')
   })

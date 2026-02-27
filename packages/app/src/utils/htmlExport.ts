@@ -12,10 +12,10 @@ function getExportCopyScript(): string {
   const COPY_BUTTON_CLASS = 'preview-code-copy-button'
   const COPY_LABEL_CLASS = 'preview-code-copy-label'
   const MERMAID_CONTROLS_CLASS = 'preview-mermaid-copy-controls'
-  const MERMAID_IMAGE_BUTTON_CLASS = 'preview-mermaid-copy-image-button'
+  const MERMAID_DOWNLOAD_SVG_BUTTON_CLASS = 'preview-mermaid-download-svg-button'
   const MERMAID_MENU_TOGGLE_CLASS = 'preview-mermaid-copy-menu-toggle'
   const MERMAID_MENU_CLASS = 'preview-mermaid-copy-menu'
-  const MERMAID_CODE_BUTTON_CLASS = 'preview-mermaid-copy-code-button'
+  const MERMAID_COPY_CODE_BUTTON_CLASS = 'preview-mermaid-copy-code-button'
   const MERMAID_HOST_SELECTOR = '.code-block-with-language[data-language="mermaid"]'
 
   const toCodeText = (value) => value.replace(/\\n$/, '')
@@ -60,39 +60,33 @@ function getExportCopyScript(): string {
     const controls = document.createElement('div')
     controls.className = MERMAID_CONTROLS_CLASS
 
-    const imageButton = document.createElement('button')
-    imageButton.type = 'button'
-    imageButton.className = MERMAID_IMAGE_BUTTON_CLASS
-    imageButton.setAttribute('aria-label', 'Copy Mermaid image')
-    imageButton.setAttribute('data-default-label', 'Copy image')
+    const downloadSvgButton = document.createElement('button')
+    downloadSvgButton.type = 'button'
+    downloadSvgButton.className = MERMAID_DOWNLOAD_SVG_BUTTON_CLASS
+    downloadSvgButton.setAttribute('aria-label', 'Download Mermaid diagram as SVG')
+    downloadSvgButton.setAttribute('data-default-label', 'Download SVG')
 
-    const imageIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-    imageIcon.setAttribute('viewBox', '0 0 24 24')
-    imageIcon.setAttribute('aria-hidden', 'true')
-    imageIcon.classList.add('preview-code-copy-icon')
+    const downloadSvgIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    downloadSvgIcon.setAttribute('viewBox', '0 0 24 24')
+    downloadSvgIcon.setAttribute('aria-hidden', 'true')
+    downloadSvgIcon.classList.add('preview-code-copy-icon')
 
-    const imageRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
-    imageRect.setAttribute('x', '3')
-    imageRect.setAttribute('y', '5')
-    imageRect.setAttribute('width', '18')
-    imageRect.setAttribute('height', '14')
-    imageRect.setAttribute('rx', '2')
-    imageRect.setAttribute('ry', '2')
+    const svgArrow = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    svgArrow.setAttribute('d', 'M12 3v11m0 0l4-4m-4 4l-4-4')
+    const svgBase = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    svgBase.setAttribute('d', 'M5 21h14')
+    downloadSvgIcon.append(svgArrow, svgBase)
 
-    const imagePath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    imagePath.setAttribute('d', 'M3 15l5-5 4 4 4-4 5 5')
-    imageIcon.append(imageRect, imagePath)
+    const downloadSvgLabel = document.createElement('span')
+    downloadSvgLabel.className = COPY_LABEL_CLASS
+    downloadSvgLabel.textContent = 'Download SVG'
 
-    const imageLabel = document.createElement('span')
-    imageLabel.className = COPY_LABEL_CLASS
-    imageLabel.textContent = 'Copy image'
-
-    imageButton.append(imageIcon, imageLabel)
+    downloadSvgButton.append(downloadSvgIcon, downloadSvgLabel)
 
     const menuToggle = document.createElement('button')
     menuToggle.type = 'button'
     menuToggle.className = MERMAID_MENU_TOGGLE_CLASS
-    menuToggle.setAttribute('aria-label', 'Mermaid copy options')
+    menuToggle.setAttribute('aria-label', 'Mermaid actions')
     menuToggle.setAttribute('aria-haspopup', 'menu')
     menuToggle.setAttribute('aria-expanded', 'false')
     menuToggle.textContent = '▾'
@@ -100,11 +94,11 @@ function getExportCopyScript(): string {
     const menu = document.createElement('div')
     menu.className = MERMAID_MENU_CLASS
     menu.setAttribute('role', 'menu')
-    menu.setAttribute('aria-label', 'Mermaid copy options')
+    menu.setAttribute('aria-label', 'Mermaid actions')
 
     const copyCodeButton = document.createElement('button')
     copyCodeButton.type = 'button'
-    copyCodeButton.className = MERMAID_CODE_BUTTON_CLASS
+    copyCodeButton.className = MERMAID_COPY_CODE_BUTTON_CLASS
     copyCodeButton.setAttribute('role', 'menuitem')
     copyCodeButton.setAttribute('data-default-label', 'Copy code')
 
@@ -131,7 +125,7 @@ function getExportCopyScript(): string {
 
     copyCodeButton.append(codeIcon, codeLabel)
     menu.append(copyCodeButton)
-    controls.append(imageButton, menuToggle, menu)
+    controls.append(downloadSvgButton, menuToggle, menu)
 
     return controls
   }
@@ -145,6 +139,8 @@ function getExportCopyScript(): string {
       if (toggle) toggle.setAttribute('aria-expanded', 'false')
     }
   }
+
+  let mermaidExportCounter = 0
 
   const ensureButtons = () => {
     const codeElements = Array.from(document.querySelectorAll('pre > code'))
@@ -166,7 +162,9 @@ function getExportCopyScript(): string {
         (host.matches && host.matches(MERMAID_HOST_SELECTOR))
 
       if (isMermaidHost) {
-        if (codeText) host.setAttribute('data-raw-code', codeText)
+        if (codeText && !host.getAttribute('data-raw-code')) {
+          host.setAttribute('data-raw-code', codeText)
+        }
         mermaidHosts.add(host)
         continue
       }
@@ -188,6 +186,11 @@ function getExportCopyScript(): string {
 
     for (const host of mermaidHosts) {
       host.classList.add(COPY_HOST_CLASS)
+
+      if (!host.getAttribute('data-mermaid-export-index')) {
+        mermaidExportCounter += 1
+        host.setAttribute('data-mermaid-export-index', String(mermaidExportCounter))
+      }
 
       if (!host.getAttribute('data-raw-code')) {
         const mermaidCodeElement = host.querySelector('pre > code')
@@ -216,11 +219,14 @@ function getExportCopyScript(): string {
     } catch {}
 
     try {
+      if (typeof document.execCommand !== 'function') return false
       const textarea = document.createElement('textarea')
       textarea.value = text
       textarea.setAttribute('readonly', '')
       textarea.style.position = 'fixed'
       textarea.style.top = '-9999px'
+      textarea.style.left = '-9999px'
+      textarea.style.opacity = '0'
       document.body.append(textarea)
       textarea.focus()
       textarea.select()
@@ -251,22 +257,51 @@ function getExportCopyScript(): string {
     activeTimeouts.set(button, timeoutId)
   }
 
-  const copySvgAsImage = async (svgMarkup) => {
-    if (!svgMarkup || !navigator.clipboard || typeof navigator.clipboard.write !== 'function' || typeof ClipboardItem === 'undefined') {
-      return false
-    }
+  const withSvgNamespace = (svgMarkup) => {
+    if (svgMarkup.includes('xmlns=')) return svgMarkup
+    return svgMarkup.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"')
+  }
 
-    try {
-      const svgBlob = new Blob([svgMarkup], { type: 'image/svg+xml' })
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          'image/svg+xml': svgBlob,
-        }),
-      ])
-      return true
-    } catch {
-      return false
+  const getRenderedMermaidSvg = (host) => {
+    const svgElements = Array.from(host.querySelectorAll('svg'))
+    for (const svgElement of svgElements) {
+      if (svgElement.closest('.' + MERMAID_CONTROLS_CLASS)) continue
+      return svgElement
     }
+    return null
+  }
+
+  const toFileSafePart = (value) =>
+    value
+      .toLowerCase()
+      .replace(/\\.html?$/i, '')
+      .replace(/[^a-z0-9._-]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'document'
+
+  const getMermaidDownloadName = (host, extension) => {
+    const documentBase = toFileSafePart(document.title || 'document')
+    const mermaidIndex = host.getAttribute('data-mermaid-export-index') || '1'
+    return documentBase + '-mermaid-' + mermaidIndex + '.' + extension
+  }
+
+  const triggerBlobDownload = (blob, filename) => {
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.style.display = 'none'
+    document.body.append(link)
+    link.click()
+    link.remove()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1500)
+  }
+
+  const serializeRenderedMermaidSvg = (svgElement) =>
+    withSvgNamespace(new XMLSerializer().serializeToString(svgElement))
+
+  const downloadMermaidSvg = (host, svgMarkup) => {
+    const svgBlob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' })
+    triggerBlobDownload(svgBlob, getMermaidDownloadName(host, 'svg'))
   }
 
   const onClick = async (event) => {
@@ -289,26 +324,30 @@ function getExportCopyScript(): string {
       return
     }
 
-    const imageButton = target.closest('.' + MERMAID_IMAGE_BUTTON_CLASS)
-    if (imageButton) {
+    const downloadSvgButton = target.closest('.' + MERMAID_DOWNLOAD_SVG_BUTTON_CLASS)
+    if (downloadSvgButton) {
       event.preventDefault()
       event.stopPropagation()
 
-      const host = imageButton.closest('.' + COPY_HOST_CLASS)
+      const host = downloadSvgButton.closest('.' + COPY_HOST_CLASS)
       if (!(host instanceof HTMLElement)) return
 
-      const svgElement = host.querySelector('svg')
+      const svgElement = getRenderedMermaidSvg(host)
       if (!svgElement) return
-      const svgMarkup = new XMLSerializer().serializeToString(svgElement)
-      const copied = await copySvgAsImage(svgMarkup)
-      if (!copied) return
+      const svgMarkup = serializeRenderedMermaidSvg(svgElement)
 
-      setCopiedState(imageButton, 'Image copied')
+      try {
+        downloadMermaidSvg(host, svgMarkup)
+      } catch {
+        return
+      }
+
+      setCopiedState(downloadSvgButton, 'SVG downloaded')
       closeMermaidMenus()
       return
     }
 
-    const mermaidCopyCodeButton = target.closest('.' + MERMAID_CODE_BUTTON_CLASS)
+    const mermaidCopyCodeButton = target.closest('.' + MERMAID_COPY_CODE_BUTTON_CLASS)
     if (mermaidCopyCodeButton) {
       event.preventDefault()
       event.stopPropagation()
@@ -531,7 +570,7 @@ ${codeSyntaxVariables}
       opacity: 0;
       transition: opacity 0.15s ease;
     }
-    .markdown-body .preview-mermaid-copy-image-button,
+    .markdown-body .preview-mermaid-download-svg-button,
     .markdown-body .preview-mermaid-copy-menu-toggle {
       display: inline-flex;
       align-items: center;
@@ -548,7 +587,7 @@ ${codeSyntaxVariables}
       cursor: pointer;
       transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
     }
-    .markdown-body .preview-mermaid-copy-image-button {
+    .markdown-body .preview-mermaid-download-svg-button {
       padding: 0 0.55rem;
       border-top-left-radius: 999px;
       border-bottom-left-radius: 999px;
@@ -616,7 +655,7 @@ ${codeSyntaxVariables}
       border-color: var(--code-block-border);
       background: color-mix(in srgb, var(--code-block-header-background) 95%, var(--code-block-background));
     }
-    .markdown-body .preview-mermaid-copy-image-button:hover,
+    .markdown-body .preview-mermaid-download-svg-button:hover,
     .markdown-body .preview-mermaid-copy-menu-toggle:hover {
       color: var(--code-block-foreground);
       border-color: var(--code-block-border);
@@ -626,7 +665,7 @@ ${codeSyntaxVariables}
       outline: 2px solid #1f6feb;
       outline-offset: 1px;
     }
-    .markdown-body .preview-mermaid-copy-image-button:focus-visible,
+    .markdown-body .preview-mermaid-download-svg-button:focus-visible,
     .markdown-body .preview-mermaid-copy-menu-toggle:focus-visible,
     .markdown-body .preview-mermaid-copy-code-button:focus-visible {
       outline: 2px solid #1f6feb;
@@ -646,7 +685,7 @@ ${codeSyntaxVariables}
     .markdown-body .preview-code-copy-button .preview-code-copy-icon rect {
       fill: none;
     }
-    .markdown-body .preview-mermaid-copy-image-button .preview-code-copy-icon,
+    .markdown-body .preview-mermaid-download-svg-button .preview-code-copy-icon,
     .markdown-body .preview-mermaid-copy-code-button .preview-code-copy-icon {
       width: 0.9rem;
       height: 0.9rem;

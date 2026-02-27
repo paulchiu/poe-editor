@@ -79,8 +79,12 @@ describe('clipboard utils', () => {
       const ClipboardItemMock = global.ClipboardItem as unknown as ReturnType<typeof vi.fn>
       expect(ClipboardItemMock).toHaveBeenCalledTimes(1)
 
-      const firstCall = ClipboardItemMock.mock.calls[0]?.[0] as Record<string, Blob>
-      expect(firstCall['image/svg+xml']).toBeInstanceOf(Blob)
+      const firstCall = ClipboardItemMock.mock.calls[0]?.[0] as Record<string, Blob | Promise<Blob>>
+      expect(
+        firstCall['image/png'] instanceof Blob ||
+          firstCall['image/png'] instanceof Promise ||
+          firstCall['image/svg+xml'] instanceof Blob
+      ).toBe(true)
       expect(firstCall['text/plain']).toBeUndefined()
     })
 

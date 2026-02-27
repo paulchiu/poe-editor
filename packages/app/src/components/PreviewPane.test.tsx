@@ -7,6 +7,9 @@ import { copyToClipboard } from '@/utils/clipboard'
 import { toast } from '@/hooks/useToast'
 import { renderMarkdown } from '@/utils/markdown'
 
+const CLIPBOARD_FAILURE_HINT =
+  'Copy failed. Clipboard access may be blocked by your browser permissions.'
+
 // Mock the utilities and toast hook
 vi.mock('@/utils/clipboard', () => ({
   copyToClipboard: vi.fn(),
@@ -50,7 +53,7 @@ describe('PreviewPane', () => {
 
     await waitFor(() => {
       expect(toast).toHaveBeenCalledWith({
-        description: 'Failed to copy to clipboard',
+        description: CLIPBOARD_FAILURE_HINT,
         variant: 'destructive',
       })
     })

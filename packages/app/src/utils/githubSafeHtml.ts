@@ -38,7 +38,13 @@ const ALLOWED_TAGS = new Set([
 
 const DROP_CONTENT_TAGS = new Set(['embed', 'form', 'iframe', 'object', 'script', 'style'])
 
-const GLOBAL_ALLOWED_ATTRIBUTES = new Set(['align', 'class', 'data-language', 'title'])
+const GLOBAL_ALLOWED_ATTRIBUTES = new Set([
+  'align',
+  'class',
+  'data-language',
+  'data-raw-code',
+  'title',
+])
 const TAG_ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
   a: new Set(['href', 'title']),
   details: new Set(['open']),

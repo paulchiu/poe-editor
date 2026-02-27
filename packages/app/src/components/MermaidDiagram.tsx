@@ -9,6 +9,11 @@ interface MermaidDiagramProps {
   colorMode?: MermaidColorMode
 }
 
+const CLIPBOARD_FAILURE_HINT =
+  'Copy failed. Clipboard access may be blocked by your browser permissions.'
+const CLIPBOARD_IMAGE_FAILURE_HINT =
+  'Failed to copy image. Clipboard access may be blocked by your browser permissions.'
+
 let initializedColorMode: MermaidColorMode | null = null
 let renderCounter = 0
 
@@ -102,7 +107,7 @@ export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProp
       toast({ description: 'Mermaid code copied to clipboard' })
     } catch {
       toast({
-        description: 'Failed to copy to clipboard',
+        description: CLIPBOARD_FAILURE_HINT,
         variant: 'destructive',
       })
     }
@@ -124,7 +129,7 @@ export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProp
       toast({ description: 'Mermaid image copied to clipboard' })
     } catch {
       toast({
-        description: 'Failed to copy image to clipboard',
+        description: CLIPBOARD_IMAGE_FAILURE_HINT,
         variant: 'destructive',
       })
     }

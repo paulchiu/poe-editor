@@ -16,6 +16,9 @@ interface PreviewPaneProps {
   colorMode?: MermaidColorMode
 }
 
+const CLIPBOARD_FAILURE_HINT =
+  'Copy failed. Clipboard access may be blocked by your browser permissions.'
+
 /**
  * Renders the HTML preview of markdown content.
  * Displays styled HTML with GitHub markdown styles and copy-to-clipboard functionality.
@@ -145,7 +148,7 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
           copyResetTimeouts.set(button, timeoutId)
         } catch {
           toast({
-            description: 'Failed to copy to clipboard',
+            description: CLIPBOARD_FAILURE_HINT,
             variant: 'destructive',
           })
         }
@@ -188,7 +191,7 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
         setTimeout(() => setCopied(false), 2000)
       } catch {
         toast({
-          description: 'Failed to copy to clipboard',
+          description: CLIPBOARD_FAILURE_HINT,
           variant: 'destructive',
         })
       }

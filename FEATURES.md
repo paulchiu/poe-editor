@@ -29,22 +29,22 @@ Poe includes standard Markdown editor functionality and a set of unique features
 
 ### Preview and Rendering
 
-| Feature                            | Notes                                                                                                                                                              |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Mermaid diagram rendering          | Mermaid code blocks render as diagrams in preview.                                                                                                                 |
-| Theme-aware Mermaid diagrams       | Mermaid output uses separate light/dark theme tokens.                                                                                                              |
-| Mermaid support in HTML export     | Exported HTML includes Mermaid runtime/init when diagrams exist.                                                                                                   |
-| Theme-aware HTML export            | Exported HTML now uses the active app theme (light or dark) at download time.                                                                                      |
-| HTML export code quick-copy        | Downloaded HTML includes copy controls for fenced code blocks; Mermaid blocks support copy-image (primary) and copy-code (menu).                                   |
-| HTML export preview-style fonts    | Exported HTML attempts to match preview typography (`Crimson Text` body + `JetBrains Mono` code) with graceful fallbacks.                                          |
-| Sepia code blocks in light export  | Light-mode HTML exports render fenced code blocks with sepia borders/backgrounds for better contrast.                                                              |
-| Code fence language headers        | Fenced code blocks with a language show a header label in preview and HTML export.                                                                                 |
-| GitHub-safe HTML tag rendering     | Preview now supports a sanitized subset of common GitHub-safe HTML tags (e.g., `details`, `kbd`, tables, and images).                                              |
-| GitHub callout rendering           | GitHub alert syntax blockquotes (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) render with `markdown-alert` styling in preview and HTML export. |
-| Synchronized editor/preview scroll | Scroll sync uses ratio-based matching between Monaco and preview.                                                                                                  |
-| Preview rich-text copy             | Copy supports both HTML and plain text where browser APIs allow.                                                                                                   |
-| Preview code-block quick-copy      | Fenced code blocks in preview include one-click source copy controls; Mermaid blocks provide split actions for image copy and source copy.                         |
-| Editor markdown quick-copy         | Editor pane includes one-click Markdown copy action.                                                                                                               |
+| Feature                            | Notes                                                                                                                                                                                                                      |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mermaid diagram rendering          | Mermaid code blocks render as diagrams in preview.                                                                                                                                                                         |
+| Theme-aware Mermaid diagrams       | Mermaid output uses separate light/dark theme tokens.                                                                                                                                                                      |
+| Mermaid support in HTML export     | Exported HTML includes Mermaid runtime/init when diagrams exist.                                                                                                                                                           |
+| Theme-aware HTML export            | Exported HTML now uses the active app theme (light or dark) at download time.                                                                                                                                              |
+| HTML export code quick-copy        | Downloaded HTML includes copy controls for fenced code blocks; Mermaid blocks support `Download SVG` and `Copy code` actions.                                                                                              |
+| HTML export preview-style fonts    | Exported HTML attempts to match preview typography (`Crimson Text` body + `JetBrains Mono` code) with graceful fallbacks.                                                                                                  |
+| Sepia code blocks in light export  | Light-mode HTML exports render fenced code blocks with sepia borders/backgrounds for better contrast.                                                                                                                      |
+| Code fence language headers        | Fenced code blocks with a language show a header label in preview and HTML export.                                                                                                                                         |
+| GitHub-safe HTML tag rendering     | Preview now supports a sanitized subset of common GitHub-safe HTML tags (e.g., `details`, `kbd`, tables, and images).                                                                                                      |
+| GitHub callout rendering           | GitHub alert syntax blockquotes (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) render with `markdown-alert` styling in preview and HTML export.                                                         |
+| Synchronized editor/preview scroll | Scroll sync uses ratio-based matching between Monaco and preview.                                                                                                                                                          |
+| Preview rich-text copy             | Copy supports both HTML and plain text where browser APIs allow.                                                                                                                                                           |
+| Preview code-block quick-copy      | Fenced code blocks in preview include one-click source copy controls; Mermaid blocks provide split actions for image copy and source copy, with failure toasts that call out possible browser clipboard-permission issues. |
+| Editor markdown quick-copy         | Editor pane includes one-click Markdown copy action.                                                                                                                                                                       |
 
 ### Editing and Input
 

@@ -26,13 +26,22 @@ function loadSvgImage(svg: string): Promise<HTMLImageElement> {
     const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const image = new Image()
+    const timeoutId = window.setTimeout(() => {
+      cleanup()
+      reject(new Error('Timed out while decoding SVG image'))
+    }, 1500)
+
+    const cleanup = (): void => {
+      window.clearTimeout(timeoutId)
+      URL.revokeObjectURL(url)
+    }
 
     image.onload = () => {
-      URL.revokeObjectURL(url)
+      cleanup()
       resolve(image)
     }
     image.onerror = () => {
-      URL.revokeObjectURL(url)
+      cleanup()
       reject(new Error('Failed to decode SVG image'))
     }
     image.src = url
@@ -52,10 +61,14 @@ function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
 }
 
 async function svgToPngBlob(svg: string): Promise<Blob> {
+  const canvas = document.createElement('canvas')
+  if (typeof canvas.toBlob !== 'function') {
+    throw new Error('Canvas PNG export is unavailable')
+  }
+
   const image = await loadSvgImage(svg)
   const width = image.naturalWidth || image.width || 1
   const height = image.naturalHeight || image.height || 1
-  const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
 
@@ -83,21 +96,27 @@ export async function copySvgImageToClipboard(svg: string): Promise<void> {
     throw new Error('Image clipboard API is unavailable')
   }
 
-  const svgBlob = new Blob([svg], { type: 'image/svg+xml' })
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'image/png': svgToPngBlob(svg),
+      }),
+    ])
+    return
+  } catch {
+    // Fall back to SVG if PNG copy is not supported in this browser/context.
+  }
 
   try {
+    const svgBlob = new Blob([svg], { type: 'image/svg+xml' })
     await navigator.clipboard.write([
       new ClipboardItem({
         'image/svg+xml': svgBlob,
       }),
     ])
+    return
   } catch {
-    const pngBlob = await svgToPngBlob(svg)
-    await navigator.clipboard.write([
-      new ClipboardItem({
-        'image/png': pngBlob,
-      }),
-    ])
+    throw new Error('Failed to copy Mermaid image to clipboard')
   }
 }
 

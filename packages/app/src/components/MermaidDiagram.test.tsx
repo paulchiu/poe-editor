@@ -22,6 +22,11 @@ interface MermaidMock {
   render: ReturnType<typeof vi.fn>
 }
 
+const CLIPBOARD_FAILURE_HINT =
+  'Copy failed. Clipboard access may be blocked by your browser permissions.'
+const CLIPBOARD_IMAGE_FAILURE_HINT =
+  'Failed to copy image. Clipboard access may be blocked by your browser permissions.'
+
 const loadModule = async () => {
   vi.resetModules()
 
@@ -164,7 +169,7 @@ describe('MermaidDiagram', () => {
 
     await waitFor(() => {
       expect(toast).toHaveBeenCalledWith({
-        description: 'Failed to copy image to clipboard',
+        description: CLIPBOARD_IMAGE_FAILURE_HINT,
         variant: 'destructive',
       })
     })
@@ -187,7 +192,7 @@ describe('MermaidDiagram', () => {
 
     await waitFor(() => {
       expect(toast).toHaveBeenCalledWith({
-        description: 'Failed to copy to clipboard',
+        description: CLIPBOARD_FAILURE_HINT,
         variant: 'destructive',
       })
     })
