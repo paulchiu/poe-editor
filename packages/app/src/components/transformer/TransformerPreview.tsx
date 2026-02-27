@@ -1,5 +1,6 @@
 import { useState, useMemo, type ReactElement } from 'react'
-import { applyPipeline } from '@/utils/transformer-engine'
+import { AlertTriangle } from 'lucide-react'
+import { applyPipelineWithIssues, getPipelineIssueSummary } from '@/utils/transformer-engine'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { TransformationPipeline } from './types'
 
@@ -32,9 +33,14 @@ export function TransformerPreview({
     setPrevInitialText(initialText)
   }
 
-  const outputText = useMemo(() => {
-    return applyPipeline(inputText, pipeline)
+  const executionResult = useMemo(() => {
+    return applyPipelineWithIssues(inputText, pipeline)
   }, [inputText, pipeline])
+  const outputText = executionResult.output
+  const issueSummary = useMemo(
+    () => getPipelineIssueSummary(executionResult.issues),
+    [executionResult.issues]
+  )
 
   return (
     <div className="flex flex-col h-full bg-background">
@@ -59,6 +65,12 @@ export function TransformerPreview({
           <span className="text-xs font-semibold text-primary uppercase tracking-wide">Output</span>
           <span className="text-xs text-muted-foreground font-mono">{outputText.length} chars</span>
         </div>
+        {issueSummary && (
+          <div className="px-3 py-2 border-b bg-destructive/5 text-destructive flex items-center gap-2">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span className="text-xs">{issueSummary}</span>
+          </div>
+        )}
         <ScrollArea className="flex-1">
           <pre className="p-4 font-mono text-sm leading-relaxed whitespace-pre-wrap break-all text-foreground/90">
             {outputText}

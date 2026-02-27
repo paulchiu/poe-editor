@@ -14,7 +14,7 @@ import { useSpellCheck } from '@/hooks/useSpellCheck'
 import { renderMarkdown } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
 import { buildHtmlExportDocument } from '@/utils/htmlExport'
-import { applyPipeline } from '@/utils/transformer-engine'
+import { applyPipelineWithIssues, getPipelineIssueSummary } from '@/utils/transformer-engine'
 import { EditorPane, type EditorPaneHandle, type TableAction } from '@/components/editor'
 import { PreviewPane } from '@/components/PreviewPane'
 import { SplashScreen } from '@/components/SplashScreen'
@@ -240,8 +240,18 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
         return
       }
 
-      const transformed = applyPipeline(selection, pipeline)
-      editor.replaceSelection(transformed)
+      const result = applyPipelineWithIssues(selection, pipeline)
+      editor.replaceSelection(result.output)
+
+      const issueSummary = getPipelineIssueSummary(result.issues)
+      if (issueSummary) {
+        toast({
+          description: `Could not fully apply ${pipeline.name}: ${issueSummary}`,
+          variant: 'destructive',
+        })
+        return
+      }
+
       toast({ description: `Applied ${pipeline.name}` })
     },
     [toast, sourceRef]

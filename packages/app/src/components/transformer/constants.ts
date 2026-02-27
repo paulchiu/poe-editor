@@ -206,6 +206,22 @@ export const OPERATIONS: TransformerOperation[] = [
     defaultConfig: { mode: 'url-encode' },
   },
   {
+    id: 'format-json',
+    name: 'Format JSON',
+    icon: 'FileCode',
+    category: 'Data',
+    description: 'Pretty-print valid JSON',
+    defaultConfig: { lines: false },
+  },
+  {
+    id: 'strip-html',
+    name: 'Strip HTML',
+    icon: 'Eraser',
+    category: 'Data',
+    description: 'Remove HTML tags and decode entities',
+    defaultConfig: {},
+  },
+  {
     id: 'escape',
     name: 'Escape/Unescape',
     icon: 'Languages',

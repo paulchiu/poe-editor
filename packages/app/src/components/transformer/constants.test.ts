@@ -50,6 +50,8 @@ describe('constants', () => {
         'split-lines',
         'change-case',
         'replace',
+        'format-json',
+        'strip-html',
       ]
 
       const actualIds = OPERATIONS.map((op) => op.id)

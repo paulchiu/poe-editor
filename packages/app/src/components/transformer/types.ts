@@ -22,6 +22,8 @@ export type OperationId =
   // Phase 4
   | 'remove-chars'
   | 'encode-decode'
+  | 'format-json'
+  | 'strip-html'
   | 'escape'
   // Phase 5
   | 'pad-align'

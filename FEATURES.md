@@ -72,13 +72,14 @@ Full operation details are listed in [Built-In Transformer Operations](#built-in
 
 | Feature                               | Notes                                                                    |
 | ------------------------------------- | ------------------------------------------------------------------------ |
-| Transformer pipelines (25 operations) | Build reusable pipelines and apply them to selected text.                |
+| Transformer pipelines (27 operations) | Build reusable pipelines and apply them to selected text.                |
 | Pipeline drag-and-drop reorder        | Reorder pipeline buttons in the toolbar and steps in the workbench.      |
 | Transformer GUI + JSON editing modes  | Switch between visual builder and JSON mode with schema validation.      |
 | Transformer config import/export      | Versioned JSON schema import/export for sharing and reuse.               |
 | Transformer configuration reset       | Clear saved transformer configuration back to an empty set when needed.  |
 | Transformer toolbox search/categories | Search and filter by `Text`, `Lines`, `Structure`, `Search`, and `Data`. |
 | Transformer power command             | `/add-all` in toolbox search adds all available operations.              |
+| Transformer JSON error feedback       | `Format JSON` surfaces invalid-input warnings in preview and on apply.   |
 
 #### Built-In Transformer Operations
 
@@ -86,4 +87,4 @@ Full operation details are listed in [Built-In Transformer Operations](#built-in
 - Lines: Remove Empty Lines, Sort Lines, Remove Duplicates, Reverse Lines, Number Lines, Shuffle Lines.
 - Structure: Join Lines, Split Lines, Wrap Lines, Word Wrap.
 - Search: Extract Matches, Keep Lines Matching, Remove Lines Matching, Remove Characters.
-- Data: Encode/Decode, Escape/Unescape, Format Numbers, Increment Numbers.
+- Data: Encode/Decode, Format JSON (whole text or line-by-line), Strip HTML, Escape/Unescape, Format Numbers, Increment Numbers.

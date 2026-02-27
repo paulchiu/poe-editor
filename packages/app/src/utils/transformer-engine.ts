@@ -1,4 +1,36 @@
-import type { TransformationPipeline, PipelineStep } from '@/components/transformer/types'
+import type {
+  OperationId,
+  TransformationPipeline,
+  PipelineStep,
+} from '@/components/transformer/types'
+
+export type TransformationIssueCode = 'invalid-json-input' | 'invalid-json-line'
+
+export interface TransformationIssue {
+  stepId: string
+  operationId: OperationId
+  code: TransformationIssueCode
+  message: string
+  line?: number
+}
+
+export interface PipelineExecutionResult {
+  output: string
+  issues: TransformationIssue[]
+}
+
+interface ApplyStepContext {
+  issues: TransformationIssue[]
+}
+
+/**
+ * Determines whether a parsed JSON value is a plain object.
+ * @param value - Parsed JSON value.
+ * @returns True when value is a non-null object (and not an array).
+ */
+function isJsonObject(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 /**
  * Applies a single transformation step to the text.
@@ -6,7 +38,7 @@ import type { TransformationPipeline, PipelineStep } from '@/components/transfor
  * @param step - The pipeline step to apply.
  * @returns The transformed text.
  */
-function applyStep(text: string, step: PipelineStep): string {
+function applyStep(text: string, step: PipelineStep, context: ApplyStepContext): string {
   if (!step.enabled) return text
 
   const { config } = step
@@ -335,6 +367,52 @@ function applyStep(text: string, step: PipelineStep): string {
       }
     }
 
+    case 'format-json': {
+      if (config.lines === true) {
+        return text
+          .split('\n')
+          .map((line, index) => {
+            if (!line.trim()) return line
+            try {
+              const parsed: unknown = JSON.parse(line)
+              if (!isJsonObject(parsed)) {
+                throw new Error('Line is not a JSON object')
+              }
+              return JSON.stringify(parsed, null, 2)
+            } catch {
+              context.issues.push({
+                stepId: step.id,
+                operationId: 'format-json',
+                code: 'invalid-json-line',
+                message: `Line ${index + 1} is not a valid JSON object`,
+                line: index + 1,
+              })
+              return line
+            }
+          })
+          .join('\n')
+      }
+
+      try {
+        const parsed: unknown = JSON.parse(text)
+        return JSON.stringify(parsed, null, 2)
+      } catch {
+        context.issues.push({
+          stepId: step.id,
+          operationId: 'format-json',
+          code: 'invalid-json-input',
+          message: 'Input is not valid JSON',
+        })
+        return text
+      }
+    }
+
+    case 'strip-html': {
+      const doc = new DOMParser().parseFromString(text, 'text/html')
+      doc.querySelectorAll('script, style').forEach((element) => element.remove())
+      return doc.body.textContent || ''
+    }
+
     case 'escape': {
       const mode = (config.mode as string) || 'json-escape'
       switch (mode) {
@@ -507,10 +585,52 @@ function toConstantCase(str: string): string {
  * Applies a transformation pipeline to the input text.
  * @param text - The input text to transform.
  * @param pipeline - The pipeline configuration containing steps.
+ * @returns The transformed text and collected non-fatal transformation issues.
+ */
+export function applyPipelineWithIssues(
+  text: string,
+  pipeline: TransformationPipeline
+): PipelineExecutionResult {
+  const issues: TransformationIssue[] = []
+  const output = pipeline.steps.reduce((currentText, step) => {
+    return applyStep(currentText, step, { issues })
+  }, text)
+
+  return { output, issues }
+}
+
+/**
+ * Builds a user-facing summary for known pipeline issues.
+ * @param issues - Transformation issues from pipeline execution.
+ * @returns A short summary string, or null when there are no issues.
+ */
+export function getPipelineIssueSummary(issues: TransformationIssue[]): string | null {
+  if (issues.length === 0) return null
+
+  const invalidLineCount = issues.filter((issue) => issue.code === 'invalid-json-line').length
+  const hasInvalidInput = issues.some((issue) => issue.code === 'invalid-json-input')
+
+  if (invalidLineCount > 0 && hasInvalidInput) {
+    return `Format JSON skipped ${invalidLineCount} invalid line${invalidLineCount === 1 ? '' : 's'} and found invalid JSON input`
+  }
+
+  if (invalidLineCount > 0) {
+    return `Format JSON skipped ${invalidLineCount} invalid line${invalidLineCount === 1 ? '' : 's'}`
+  }
+
+  if (hasInvalidInput) {
+    return 'Format JSON requires valid JSON input'
+  }
+
+  return issues[0]?.message ?? null
+}
+
+/**
+ * Applies a transformation pipeline to the input text.
+ * @param text - The input text to transform.
+ * @param pipeline - The pipeline configuration containing steps.
  * @returns The transformed text.
  */
 export function applyPipeline(text: string, pipeline: TransformationPipeline): string {
-  return pipeline.steps.reduce((currentText, step) => {
-    return applyStep(currentText, step)
-  }, text)
+  return applyPipelineWithIssues(text, pipeline).output
 }

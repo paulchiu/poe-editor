@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { applyPipeline } from './transformer-engine'
+import {
+  applyPipeline,
+  applyPipelineWithIssues,
+  getPipelineIssueSummary,
+} from './transformer-engine'
 import type { TransformationPipeline } from '@/components/transformer/types'
 
 describe('transformer-engine', () => {
@@ -350,6 +354,65 @@ describe('transformer-engine', () => {
     const encoded = applyPipeline(input, pipelineEnc)
     expect(encoded).toBe('hello%20world')
     expect(applyPipeline(encoded, pipelineDec)).toBe(input)
+  })
+
+  it('should format valid JSON', () => {
+    const pipeline = createPipeline([
+      { id: '1', operationId: 'format-json', config: {}, enabled: true },
+    ])
+
+    expect(applyPipeline('{"name":"poe","tags":["md","editor"]}', pipeline)).toBe(
+      '{\n  "name": "poe",\n  "tags": [\n    "md",\n    "editor"\n  ]\n}'
+    )
+  })
+
+  it('should keep invalid JSON unchanged when formatting', () => {
+    const pipeline = createPipeline([
+      { id: '1', operationId: 'format-json', config: {}, enabled: true },
+    ])
+
+    expect(applyPipeline('{"name":"poe",}', pipeline)).toBe('{"name":"poe",}')
+  })
+
+  it('should format valid JSON objects line by line and skip invalid lines', () => {
+    const pipeline = createPipeline([
+      { id: '1', operationId: 'format-json', config: { lines: true }, enabled: true },
+    ])
+
+    expect(applyPipeline('{"ok":1}\n{"bad":}\n{"alsoOk":{"nested":true}}', pipeline)).toBe(
+      '{\n  "ok": 1\n}\n{"bad":}\n{\n  "alsoOk": {\n    "nested": true\n  }\n}'
+    )
+  })
+
+  it('should report issue for invalid whole-input JSON formatting', () => {
+    const pipeline = createPipeline([
+      { id: '1', operationId: 'format-json', config: {}, enabled: true },
+    ])
+    const result = applyPipelineWithIssues('{"bad":}', pipeline)
+
+    expect(result.output).toBe('{"bad":}')
+    expect(result.issues).toHaveLength(1)
+    expect(getPipelineIssueSummary(result.issues)).toBe('Format JSON requires valid JSON input')
+  })
+
+  it('should report issue count for line mode JSON formatting', () => {
+    const pipeline = createPipeline([
+      { id: '1', operationId: 'format-json', config: { lines: true }, enabled: true },
+    ])
+    const result = applyPipelineWithIssues('{"ok":1}\n[]\n{"bad":}', pipeline)
+
+    expect(result.issues).toHaveLength(2)
+    expect(getPipelineIssueSummary(result.issues)).toBe('Format JSON skipped 2 invalid lines')
+  })
+
+  it('should strip HTML tags and decode entities', () => {
+    const pipeline = createPipeline([
+      { id: '1', operationId: 'strip-html', config: {}, enabled: true },
+    ])
+
+    expect(applyPipeline('<div>Hello <strong>world</strong> &amp; all</div>', pipeline)).toBe(
+      'Hello world & all'
+    )
   })
 
   it('should escape/unescape JSON', () => {
