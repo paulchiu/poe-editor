@@ -117,6 +117,58 @@ function renderGithubCallouts(html: string): string {
   return document.body.innerHTML
 }
 
+function renderTaskLists(html: string): string {
+  if (!html || typeof DOMParser === 'undefined') return html
+
+  const parser = new DOMParser()
+  const document = parser.parseFromString(`<body>${html}</body>`, 'text/html')
+  const listItems = Array.from(document.body.querySelectorAll('li'))
+  let taskIndex = 0
+
+  for (const listItem of listItems) {
+    const firstElement = listItem.firstElementChild
+    const container =
+      firstElement && firstElement.tagName.toLowerCase() === 'p' ? firstElement : listItem
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+
+    let firstTextNode: Text | null = null
+    while (walker.nextNode()) {
+      const candidate = walker.currentNode as Text
+      const candidateText = candidate.textContent ?? ''
+      if (candidateText.trim().length === 0) continue
+      firstTextNode = candidate
+      break
+    }
+
+    if (!firstTextNode) continue
+
+    const initialText = firstTextNode.textContent ?? ''
+    const taskPrefixMatch = initialText.match(/^(\s*)\[([ xX])\](\s+|$)/)
+    if (!taskPrefixMatch) continue
+
+    const checked = taskPrefixMatch[2].toLowerCase() === 'x'
+    firstTextNode.textContent = initialText.slice(taskPrefixMatch[0].length)
+
+    const checkbox = document.createElement('input')
+    checkbox.setAttribute('type', 'checkbox')
+    checkbox.setAttribute('class', 'task-list-item-checkbox')
+    checkbox.setAttribute('data-task-index', String(taskIndex))
+    checkbox.setAttribute('aria-label', `Toggle task ${taskIndex + 1}`)
+    if (checked) checkbox.setAttribute('checked', '')
+
+    container.insertBefore(checkbox, firstTextNode)
+    container.insertBefore(document.createTextNode(' '), firstTextNode)
+
+    listItem.classList.add('task-list-item')
+    const parentList = listItem.closest('ul,ol')
+    if (parentList) parentList.classList.add('contains-task-list')
+
+    taskIndex += 1
+  }
+
+  return document.body.innerHTML
+}
+
 const defaultFenceRenderer = md.renderer.rules.fence?.bind(md.renderer.rules)
 
 md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
@@ -148,7 +200,8 @@ export function renderMarkdown(markdown: string): string {
   if (!markdown) return ''
   const html = md.render(markdown)
   const withGithubCallouts = renderGithubCallouts(html)
-  return sanitizeGithubSafeHtml(withGithubCallouts)
+  const withTaskLists = renderTaskLists(withGithubCallouts)
+  return sanitizeGithubSafeHtml(withTaskLists)
 }
 
 /**

@@ -7,6 +7,7 @@ describe('sanitizeGithubSafeHtml', () => {
       <details open>
         <summary>See more</summary>
         <div align="center" data-raw-code="graph TD;A--&gt;B;">
+          <input type="checkbox" class="task-list-item-checkbox" checked data-task-index="0" />
           <kbd>Ctrl</kbd> + <kbd>C</kbd>
           <img src="/image.png" alt="Preview" width="240" />
         </div>
@@ -18,6 +19,9 @@ describe('sanitizeGithubSafeHtml', () => {
     expect(sanitized).toContain('<details open="">')
     expect(sanitized).toContain('<summary>See more</summary>')
     expect(sanitized).toContain('<div align="center" data-raw-code="graph TD;A-->B;">')
+    expect(sanitized).toContain(
+      '<input type="checkbox" class="task-list-item-checkbox" checked="" data-task-index="0">'
+    )
     expect(sanitized).toContain('<kbd>Ctrl</kbd>')
     expect(sanitized).toContain('<img src="/image.png" alt="Preview" width="240">')
   })
@@ -43,5 +47,12 @@ describe('sanitizeGithubSafeHtml', () => {
     const html = '<section><p><strong>hello</strong> world</p></section>'
     const sanitized = sanitizeGithubSafeHtml(html)
     expect(sanitized).toBe('<p><strong>hello</strong> world</p>')
+  })
+
+  it('removes non-checkbox input elements', () => {
+    const html = '<input type="text" value="x"><input type="checkbox" checked>'
+    const sanitized = sanitizeGithubSafeHtml(html)
+
+    expect(sanitized).toBe('<input type="checkbox" checked="">')
   })
 })

@@ -6,7 +6,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 
 - Live Markdown preview while typing.
 - Split-pane editing and preview, with editor-only and preview-only modes.
-- Standard formatting actions: headings, bold/italic, links, inline code, code blocks, quotes, and lists.
+- Standard formatting actions: headings, bold/italic, links, inline code, code blocks, quotes, and lists (bullet, numbered, task).
 - Syntax-highlighted code blocks in preview.
 - Keyboard shortcuts and in-app shortcuts help.
 - Export/download as Markdown (`.md`) and HTML (`.html`).
@@ -36,6 +36,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 | Code fence language headers        | Fenced code blocks with a language show a header label.                                                                                                                                                                    |
 | GitHub-safe HTML tag rendering     | Preview supports a sanitized subset of common GitHub-safe HTML tags (e.g., `details`, `kbd`, tables, and images).                                                                                                          |
 | GitHub callout rendering           | GitHub alert syntax blockquotes (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) render with `markdown-alert` styling.                                                                                    |
+| Interactive task list checkboxes   | Markdown task items (`- [ ]` / `- [x]`) render as clickable checkboxes in preview and update source markdown state.                                                                                                         |
 | Synchronized editor/preview scroll | Scroll sync uses ratio-based matching between Monaco and preview.                                                                                                                                                          |
 | Preview rich-text copy             | Copy supports both HTML and plain text where browser APIs allow.                                                                                                                                                           |
 | Preview code-block quick-copy      | Fenced code blocks in preview include one-click source copy controls; Mermaid blocks provide split actions for image copy and source copy.                                                                                 |
@@ -50,7 +51,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 | Browser-aware Vim clipboard behavior    | Vim yank writes to system clipboard + register; visual-mode yank restores cursor to selection start; visual-char mode renders cursor at Vim head position; `p/P` stays register-based (due to browser limitations).                     |
 | Vim spell and wrap options              | Supports Vim `:set spell` sync and `:set wrap`/`:set nowrap` behavior.                                                                                                                                                                  |
 | Spell check with dictionary integration | Monaco spellcheck uses `typo-js` dictionary data.                                                                                                                                                                                       |
-| Auto-continue lists and blockquotes     | Enter key continues or exits list/quote prefixes intelligently.                                                                                                                                                                         |
+| Auto-continue lists and blockquotes     | Enter key continues or exits list/quote prefixes intelligently, including preserving task list checked state for new items.                                                                                                     |
 
 ### Markdown Table
 

@@ -120,4 +120,25 @@ describe('PreviewPane', () => {
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
+
+  it('calls onTaskListToggle when task checkbox is clicked', async () => {
+    const markdown = '- [ ] first task\n- [x] done task'
+    const renderedHtml = renderMarkdown(markdown)
+    const onTaskListToggle = vi.fn()
+
+    const { container } = render(
+      <PreviewPane htmlContent={renderedHtml} onTaskListToggle={onTaskListToggle} />
+    )
+
+    const firstCheckbox = container.querySelector<HTMLInputElement>(
+      'input.task-list-item-checkbox[data-task-index="0"]'
+    )
+    expect(firstCheckbox).toBeTruthy()
+
+    fireEvent.click(firstCheckbox!)
+
+    await waitFor(() => {
+      expect(onTaskListToggle).toHaveBeenCalledWith(0, true)
+    })
+  })
 })

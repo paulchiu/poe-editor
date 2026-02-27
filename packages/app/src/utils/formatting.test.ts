@@ -9,6 +9,8 @@ import {
   formatQuote,
   formatBulletList,
   formatNumberedList,
+  formatTaskList,
+  toggleTaskListItem,
 } from './formatting'
 import type { EditorPaneHandle } from '@/components/editor'
 
@@ -289,6 +291,24 @@ describe('formatting utils', () => {
       expect(replaceSelectionMock).toHaveBeenCalledWith('- item 1\n- item 2')
     })
 
+    it('should convert task list to bullet list', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 13,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '- [ ] item 1'
+        if (line === 2) return '- [x] item 2'
+        return ''
+      })
+
+      formatBulletList(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('- item 1\n- item 2')
+    })
+
     it('should insert bullet list item if no selection', () => {
       getSelectionRangeMock.mockReturnValue({
         startLineNumber: 1,
@@ -359,6 +379,24 @@ describe('formatting utils', () => {
       expect(replaceSelectionMock).toHaveBeenCalledWith('1. item 1\n2. item 2')
     })
 
+    it('should convert task list to numbered list without checkbox markers', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 13,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '- [ ] item 1'
+        if (line === 2) return '- [x] item 2'
+        return ''
+      })
+
+      formatNumberedList(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('1. item 1\n2. item 2')
+    })
+
     it('should insert numbered list item if no selection', () => {
       getSelectionRangeMock.mockReturnValue({
         startLineNumber: 1,
@@ -374,6 +412,94 @@ describe('formatting utils', () => {
     })
   })
 
+  describe('formatTaskList', () => {
+    it('should prefix lines with unchecked task markers', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 7,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return 'item 1'
+        if (line === 2) return 'item 2'
+        return ''
+      })
+
+      formatTaskList(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('- [ ] item 1\n- [ ] item 2')
+    })
+
+    it('should convert bullet list to task list', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 9,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '- item 1'
+        if (line === 2) return '* item 2'
+        return ''
+      })
+
+      formatTaskList(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('- [ ] item 1\n- [ ] item 2')
+    })
+
+    it('should convert numbered list to task list', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 10,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '1. item 1'
+        if (line === 2) return '2. item 2'
+        return ''
+      })
+
+      formatTaskList(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('- [ ] item 1\n- [ ] item 2')
+    })
+
+    it('should toggle off task list markers', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 2,
+        startColumn: 1,
+        endColumn: 12,
+      })
+      getLineContentMock.mockImplementation((line) => {
+        if (line === 1) return '- [ ] item 1'
+        if (line === 2) return '- [x] item 2'
+        return ''
+      })
+
+      formatTaskList(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('item 1\nitem 2')
+    })
+
+    it('should insert task list marker on empty line', () => {
+      getSelectionRangeMock.mockReturnValue({
+        startLineNumber: 1,
+        endLineNumber: 1,
+        startColumn: 1,
+        endColumn: 1,
+      })
+      getLineContentMock.mockReturnValue('')
+
+      formatTaskList(mockEditor)
+
+      expect(insertTextMock).toHaveBeenCalledWith('- [ ] ')
+    })
+  })
+
   it('should do nothing if editor is null', () => {
     formatBold(null)
     // Expect no errors
@@ -381,6 +507,23 @@ describe('formatting utils', () => {
 })
 
 import { getAutoContinueEdit, type AutoContinueResult } from './formatting'
+
+describe('toggleTaskListItem', () => {
+  it('updates matching task marker to checked', () => {
+    const input = '- [ ] first\n- [x] second'
+    expect(toggleTaskListItem(input, 0, true)).toBe('- [x] first\n- [x] second')
+  })
+
+  it('updates matching task marker to unchecked', () => {
+    const input = '- [x] first\n- [x] second'
+    expect(toggleTaskListItem(input, 1, false)).toBe('- [x] first\n- [ ] second')
+  })
+
+  it('returns original markdown when index does not exist', () => {
+    const input = '- [ ] first'
+    expect(toggleTaskListItem(input, 3, true)).toBe(input)
+  })
+})
 
 describe('getAutoContinueEdit', () => {
   it('should return null if no pattern matches', () => {
@@ -428,6 +571,41 @@ describe('getAutoContinueEdit', () => {
       range: {
         startColumn: 9,
         endColumn: 9,
+      },
+    })
+  })
+
+  it('should return exit action for empty task list item', () => {
+    const result = getAutoContinueEdit('- [ ] ', 7)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'exit',
+      range: {
+        startColumn: 1,
+        endColumn: 7,
+      },
+    })
+  })
+
+  it('should continue unchecked task list', () => {
+    const result = getAutoContinueEdit('- [ ] todo', 11)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'continue',
+      text: '\n- [ ] ',
+      range: {
+        startColumn: 11,
+        endColumn: 11,
+      },
+    })
+  })
+
+  it('should continue checked task list', () => {
+    const result = getAutoContinueEdit('- [x] done', 11)
+    expect(result).toEqual<AutoContinueResult>({
+      action: 'continue',
+      text: '\n- [x] ',
+      range: {
+        startColumn: 11,
+        endColumn: 11,
       },
     })
   })

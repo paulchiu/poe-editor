@@ -53,6 +53,8 @@ import {
   formatQuote,
   formatBulletList,
   formatNumberedList,
+  formatTaskList,
+  toggleTaskListItem,
 } from '@/utils/formatting'
 
 const DEFAULT_CONTENT = `# Poe Markdown Editor
@@ -217,6 +219,10 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     formatNumberedList(sourceRef.current)
   }, [sourceRef])
 
+  const handleFormatTaskList = useCallback((): void => {
+    formatTaskList(sourceRef.current)
+  }, [sourceRef])
+
   // Deprecated usage from keyboard shortcut, can map to format-table
   const handleFormatTable = useCallback((): void => {
     sourceRef.current?.performTableAction('format-table')
@@ -366,6 +372,16 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     setContent('')
     toast({ description: 'Content cleared' })
   }, [setContent, toast])
+
+  const handleTaskListToggle = useCallback(
+    (taskIndex: number, checked: boolean): void => {
+      const updatedContent = toggleTaskListItem(content, taskIndex, checked)
+      if (updatedContent !== content) {
+        setContent(updatedContent)
+      }
+    },
+    [content, setContent]
+  )
 
   const handleSave = useCallback((): void => {
     // Save is automatic via URL state, just show confirmation
@@ -531,6 +547,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
           onFormatQuote={handleFormatQuote}
           onFormatBulletList={handleFormatBulletList}
           onFormatNumberedList={handleFormatNumberedList}
+          onFormatTaskList={handleFormatTaskList}
           onFormatCodeBlock={handleFormatCodeBlock}
           onTableAction={handleTableAction}
           isInTable={isInTable}
@@ -630,6 +647,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
                       <PreviewPane
                         ref={targetRef}
                         htmlContent={htmlContent}
+                        onTaskListToggle={handleTaskListToggle}
                         viewMode={viewMode}
                         onToggleLayout={handleTogglePreview}
                         colorMode={colorMode}
@@ -692,7 +710,12 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
               <div
                 className={cn('flex-1 p-4 mt-0 overflow-auto', activeTab !== 'preview' && 'hidden')}
               >
-                <PreviewPane ref={targetRef} htmlContent={htmlContent} colorMode={colorMode} />
+                <PreviewPane
+                  ref={targetRef}
+                  htmlContent={htmlContent}
+                  onTaskListToggle={handleTaskListToggle}
+                  colorMode={colorMode}
+                />
               </div>
             </div>
           )}
