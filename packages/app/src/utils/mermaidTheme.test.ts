@@ -10,6 +10,7 @@ describe('mermaidTheme', () => {
     expect(options.themeVariables.primaryColor).toBe('#f0efeb')
     expect(options.themeVariables.primaryTextColor).toBe('#2a2a2a')
     expect(options.themeVariables.primaryBorderColor).toBe('#8b6f47')
+    expect(options.themeVariables.textColor).toBe('#2a2a2a')
   })
 
   it('returns dark options aligned with dark palette', () => {
@@ -18,8 +19,21 @@ describe('mermaidTheme', () => {
     expect(options.theme).toBe('base')
     expect(options.startOnLoad).toBe(false)
     expect(options.themeVariables.primaryColor).toBe('#151b23')
-    expect(options.themeVariables.primaryTextColor).toBe('#f0f6fc')
+    expect(options.themeVariables.primaryTextColor).toBe('#ffffff')
     expect(options.themeVariables.primaryBorderColor).toBe('#4493f8')
+    expect(options.themeVariables.textColor).toBe('#ffffff')
+  })
+
+  it('returns print options aligned with monochrome palette', () => {
+    const options = getMermaidInitializeOptions('print')
+
+    expect(options.theme).toBe('base')
+    expect(options.startOnLoad).toBe(false)
+    expect(options.themeVariables.background).toBe('#ffffff')
+    expect(options.themeVariables.primaryColor).toBe('#ffffff')
+    expect(options.themeVariables.primaryTextColor).toBe('#000000')
+    expect(options.themeVariables.primaryBorderColor).toBe('#000000')
+    expect(options.themeVariables.textColor).toBe('#000000')
   })
 
   it('returns copied objects so callers cannot mutate shared config', () => {

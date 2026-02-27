@@ -500,7 +500,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
         <SplashScreen onComplete={() => setShowSplash(false)} isLoading={false} debug={true} />
       )}
 
-      <div className="h-screen flex flex-col overflow-hidden bg-background">
+      <div className="poe-editor-app-shell h-screen flex flex-col overflow-hidden bg-background">
         <EditorToolbar
           documentName={documentName}
           isOverLimit={isOverLimit}
@@ -687,6 +687,15 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
             </div>
           )}
         </main>
+      </div>
+
+      <div className="poe-editor-print-shell" aria-hidden="true">
+        <PreviewPane
+          htmlContent={htmlContent}
+          colorMode="print"
+          printFriendly
+          bodyClassName="poe-editor-print-markdown-body"
+        />
       </div>
     </TooltipProvider>
   )

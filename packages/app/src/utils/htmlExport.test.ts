@@ -14,6 +14,12 @@ describe('htmlExport', () => {
     expect(result).toContain('--code-block-background: #f0efeb;')
     expect(result).toContain('--code-block-border: #c8b28f;')
     expect(result).toContain('--code-syntax-keyword: #a626a4;')
+    expect(result).toContain("font-family: 'Crimson Text', serif;")
+    expect(result).toContain(
+      "font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;"
+    )
+    expect(result).toContain('fonts.googleapis.com/css2?family=Crimson+Text')
+    expect(result).toContain('preview-code-copy-button')
     expect(result).not.toContain('github-markdown-dark.min.css')
   })
 
@@ -51,5 +57,44 @@ describe('htmlExport', () => {
     expect(withMermaid).toContain('"primaryBorderColor":"#4493f8"')
     expect(withMermaid).toContain('.code-block-with-language[data-language="mermaid"]')
     expect(withMermaid).toContain('display: none;')
+    expect(withMermaid).toContain('data-raw-code')
+    expect(withMermaid).toContain('preview-mermaid-download-svg-button')
+    expect(withMermaid).toContain('preview-mermaid-copy-code-button')
+    expect(withMermaid).toContain('getRenderedMermaidSvg')
+    expect(withMermaid).toContain('downloadMermaidSvg')
+    expect(withMermaid).toContain("if (codeText && !host.getAttribute('data-raw-code'))")
+    expect(withMermaid).toContain('Download SVG')
+    expect(withMermaid).toContain('Mermaid actions')
+    expect(withMermaid).not.toContain("const svgElement = host.querySelector('svg')")
+    expect(withMermaid).not.toContain('ClipboardItem')
+    expect(withMermaid).not.toContain('Download PNG')
+    expect(withMermaid).not.toContain('showCopyFailureToast')
+  })
+
+  it('includes monochrome print styles and hides export copy controls when printing', () => {
+    const result = buildHtmlExportDocument({
+      documentName: 'print.md',
+      htmlContent: '<pre><code class="hljs language-js">console.log("print")</code></pre>',
+      colorMode: 'dark',
+    })
+
+    expect(result).toContain('@media print')
+    expect(result).toContain('--fgColor-default: #000;')
+    expect(result).toContain('--bgColor-default: #fff;')
+    expect(result).toContain('.markdown-body .preview-code-copy-button')
+    expect(result).toContain('.markdown-body .preview-mermaid-copy-controls')
+    expect(result).toContain('display: none !important;')
+    expect(result).toContain('text-decoration: underline !important;')
+    expect(result).toContain('.markdown-body details > *')
+    expect(result).toContain(".markdown-body svg[id^='mermaid-'] text")
+    expect(result).toContain('.markdown-body pre code *')
+    expect(result).toContain('.markdown-body table,')
+    expect(result).toContain(
+      ".markdown-body .code-block-with-language[data-language='mermaid'] svg .label"
+    )
+    expect(result).toContain(
+      ".markdown-body .code-block-with-language[data-language='mermaid'] svg .edgeLabel rect"
+    )
+    expect(result).toContain('-webkit-text-fill-color: #000 !important;')
   })
 })

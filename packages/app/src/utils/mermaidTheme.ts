@@ -1,10 +1,11 @@
-export type MermaidColorMode = 'light' | 'dark'
+export type MermaidColorMode = 'light' | 'dark' | 'print'
 
 interface MermaidThemeVariables {
   background: string
   primaryColor: string
   primaryTextColor: string
   primaryBorderColor: string
+  textColor: string
   secondaryColor: string
   secondaryTextColor: string
   tertiaryColor: string
@@ -32,6 +33,7 @@ const MERMAID_THEME_OPTIONS: Record<MermaidColorMode, MermaidInitializeOptions> 
       primaryColor: '#f0efeb',
       primaryTextColor: '#2a2a2a',
       primaryBorderColor: '#8b6f47',
+      textColor: '#2a2a2a',
       secondaryColor: '#faf9f7',
       secondaryTextColor: '#2a2a2a',
       tertiaryColor: '#f0efeb',
@@ -50,16 +52,38 @@ const MERMAID_THEME_OPTIONS: Record<MermaidColorMode, MermaidInitializeOptions> 
       // Align with existing dark markdown colors.
       background: '#0d1117',
       primaryColor: '#151b23',
-      primaryTextColor: '#f0f6fc',
+      primaryTextColor: '#ffffff',
       primaryBorderColor: '#4493f8',
+      textColor: '#ffffff',
       secondaryColor: '#0d1117',
-      secondaryTextColor: '#f0f6fc',
+      secondaryTextColor: '#ffffff',
       tertiaryColor: '#151b23',
-      tertiaryTextColor: '#f0f6fc',
+      tertiaryTextColor: '#ffffff',
       lineColor: '#4493f8',
       clusterBkg: '#151b23',
       clusterBorder: '#3d444d',
       edgeLabelBackground: '#151b23',
+      fontFamily: 'Crimson Text, serif',
+    },
+  },
+  print: {
+    startOnLoad: false,
+    theme: 'base',
+    themeVariables: {
+      // Dedicated monochrome palette for printer-friendly rendering.
+      background: '#ffffff',
+      primaryColor: '#ffffff',
+      primaryTextColor: '#000000',
+      primaryBorderColor: '#000000',
+      textColor: '#000000',
+      secondaryColor: '#ffffff',
+      secondaryTextColor: '#000000',
+      tertiaryColor: '#ffffff',
+      tertiaryTextColor: '#000000',
+      lineColor: '#000000',
+      clusterBkg: '#ffffff',
+      clusterBorder: '#000000',
+      edgeLabelBackground: '#ffffff',
       fontFamily: 'Crimson Text, serif',
     },
   },

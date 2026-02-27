@@ -347,6 +347,154 @@ html:not(.dark) .markdown-body {
   letter-spacing: 0.03em;
 }
 
+.markdown-body .preview-code-copy-host,
+.markdown-body .preview-mermaid-block {
+  position: relative;
+}
+
+.markdown-body .preview-code-copy-button,
+.markdown-body .preview-mermaid-copy-main-button,
+.markdown-body .preview-mermaid-copy-menu-button {
+  position: absolute;
+  top: 0.22rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.5rem;
+  padding: 0 0.55rem;
+  border: 1px solid var(--borderColor-muted);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bgColor-default) 70%, var(--bgColor-muted));
+  color: var(--fgColor-muted);
+  font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.markdown-body .preview-mermaid-copy-controls {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.5rem;
+  z-index: 3;
+  display: flex;
+  align-items: stretch;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.markdown-body .preview-mermaid-copy-main-button,
+.markdown-body .preview-mermaid-copy-menu-button {
+  position: static;
+  opacity: 1;
+}
+
+.markdown-body .preview-mermaid-copy-main-button {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.markdown-body .preview-mermaid-copy-menu-button {
+  width: 1.8rem;
+  padding: 0;
+  border-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.markdown-body .preview-mermaid-copy-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 8.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--borderColor-muted);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--bgColor-default) 96%, var(--bgColor-muted));
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--fgColor-default) 15%, transparent);
+}
+
+.markdown-body .preview-mermaid-copy-menu-item {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.35rem;
+  height: 1.7rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--fgColor-muted);
+  font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  font-size: 0.69rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 0.45rem;
+}
+
+.markdown-body .preview-mermaid-copy-menu-item:hover {
+  color: var(--fgColor-default);
+  background: color-mix(in srgb, var(--bgColor-muted) 72%, transparent);
+}
+
+.markdown-body .preview-mermaid-copy-menu-item:focus-visible {
+  outline: 2px solid var(--focus-outlineColor);
+  outline-offset: 1px;
+}
+
+.markdown-body .preview-code-copy-button .preview-code-copy-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  display: block;
+}
+
+.markdown-body pre.preview-code-copy-host > .preview-code-copy-button,
+.markdown-body .preview-mermaid-copy-controls {
+  top: 0.55rem;
+}
+
+.markdown-body .preview-code-copy-button .preview-code-copy-icon rect {
+  fill: none;
+}
+
+.markdown-body .preview-code-copy-host:hover > .preview-code-copy-button,
+.markdown-body .preview-code-copy-button:focus-visible,
+.markdown-body .preview-code-copy-button[data-copied='true'],
+.markdown-body .preview-mermaid-block:hover > .preview-mermaid-copy-controls,
+.markdown-body .preview-mermaid-copy-controls:focus-within,
+.markdown-body .preview-mermaid-copy-controls[data-open='true'] {
+  opacity: 1;
+}
+
+.markdown-body .preview-code-copy-button:hover,
+.markdown-body .preview-mermaid-copy-main-button:hover,
+.markdown-body .preview-mermaid-copy-menu-button:hover {
+  color: var(--fgColor-default);
+  border-color: var(--borderColor-default);
+  background: color-mix(in srgb, var(--bgColor-default) 85%, var(--bgColor-muted));
+}
+
+.markdown-body .preview-code-copy-button:focus-visible,
+.markdown-body .preview-mermaid-copy-main-button:focus-visible,
+.markdown-body .preview-mermaid-copy-menu-button:focus-visible {
+  outline: 2px solid var(--focus-outlineColor);
+  outline-offset: 1px;
+}
+
 .markdown-body .code-block-with-language pre {
   margin: 0;
   border: 0;
@@ -395,4 +543,392 @@ html:not(.dark) .markdown-body {
 .markdown-body .hljs-comment,
 .markdown-body .hljs-quote {
   color: var(--code-syntax-comment);
+}
+
+.poe-editor-print-shell {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .poe-editor-app-shell,
+  [data-sonner-toaster],
+  .radix-portal {
+    display: none !important;
+  }
+
+  .poe-editor-print-shell {
+    display: block !important;
+  }
+
+  .poe-editor-print-shell > div {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body {
+    box-sizing: border-box;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    color-scheme: light !important;
+    font-family: 'Crimson Text', serif;
+    font-size: 1rem;
+    line-height: 1.35;
+    --fgColor-default: #000;
+    --fgColor-muted: #000;
+    --fgColor-accent: #000;
+    --fgColor-success: #000;
+    --fgColor-attention: #000;
+    --fgColor-danger: #000;
+    --fgColor-done: #000;
+    --bgColor-default: #fff;
+    --bgColor-muted: #fff;
+    --bgColor-neutral-muted: #fff;
+    --bgColor-attention-muted: #fff;
+    --borderColor-default: #000;
+    --borderColor-muted: #000;
+    --borderColor-neutral-muted: #000;
+    --borderColor-accent-emphasis: #000;
+    --borderColor-success-emphasis: #000;
+    --borderColor-attention-emphasis: #000;
+    --borderColor-danger-emphasis: #000;
+    --borderColor-done-emphasis: #000;
+    --code-syntax-keyword: #000;
+    --code-syntax-string: #000;
+    --code-syntax-variable: #000;
+    --code-syntax-number: #000;
+    --code-syntax-entity: #000;
+    --code-syntax-comment: #000;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body p {
+    margin: 0 0 0.8rem;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body h1,
+  .poe-editor-print-shell .poe-editor-print-markdown-body h2,
+  .poe-editor-print-shell .poe-editor-print-markdown-body h3,
+  .poe-editor-print-shell .poe-editor-print-markdown-body h4,
+  .poe-editor-print-shell .poe-editor-print-markdown-body h5,
+  .poe-editor-print-shell .poe-editor-print-markdown-body h6 {
+    margin: 1.1rem 0 0.6rem;
+    color: #000 !important;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body h1 {
+    font-size: 2rem;
+    border-bottom: 1px solid #000;
+    padding-bottom: 0.25rem;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body h2 {
+    font-size: 1.55rem;
+    border-bottom: 1px solid #000;
+    padding-bottom: 0.2rem;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body h3 {
+    font-size: 1.3rem;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body ul,
+  .poe-editor-print-shell .poe-editor-print-markdown-body ol {
+    margin: 0.35rem 0 0.9rem;
+    padding-left: 1.4rem;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body li {
+    margin: 0.2rem 0;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body a {
+    color: #000 !important;
+    text-decoration: underline !important;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body code,
+  .poe-editor-print-shell .poe-editor-print-markdown-body pre,
+  .poe-editor-print-shell .poe-editor-print-markdown-body tt {
+    font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body blockquote {
+    margin: 0 0 0.95rem;
+    padding: 0 0.9rem;
+    border-left: 3px solid #000;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body table,
+  .poe-editor-print-shell .poe-editor-print-markdown-body thead,
+  .poe-editor-print-shell .poe-editor-print-markdown-body tbody,
+  .poe-editor-print-shell .poe-editor-print-markdown-body tr,
+  .poe-editor-print-shell .poe-editor-print-markdown-body th,
+  .poe-editor-print-shell .poe-editor-print-markdown-body td {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #000;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body details {
+    margin: 0 0 0.95rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #000;
+    border-radius: 6px;
+    background: #fff !important;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body details > * {
+    display: block !important;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body details > summary {
+    margin: 0 0 0.35rem;
+    font-weight: 700;
+    list-style: none;
+    cursor: default;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body details > summary::marker,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    details
+    > summary::-webkit-details-marker {
+    display: none;
+    content: '';
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body pre,
+  .poe-editor-print-shell .poe-editor-print-markdown-body .code-block-with-language {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body .code-block-language-hint {
+    color: #000 !important;
+    background: #fff !important;
+    border-bottom-color: #000 !important;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body pre code,
+  .poe-editor-print-shell .poe-editor-print-markdown-body pre code *,
+  .poe-editor-print-shell .poe-editor-print-markdown-body code.hljs,
+  .poe-editor-print-shell .poe-editor-print-markdown-body code.hljs * {
+    color: #000 !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #000 !important;
+    text-shadow: none !important;
+  }
+
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] {
+    background: #fff !important;
+  }
+
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    text,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    tspan,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    .label,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    .nodeLabel,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    .edgeLabel,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    foreignObject,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    foreignObject
+    *,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] text,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] tspan,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] .label,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] .nodeLabel,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] .edgeLabel,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] foreignObject,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] foreignObject * {
+    fill: #000 !important;
+    color: #000 !important;
+    stroke: none !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #000 !important;
+    text-shadow: none !important;
+  }
+
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    .edgeLabel
+    rect,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    .labelBkg,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    .edgeLabel
+    foreignObject,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    .edgeLabel
+    foreignObject
+    *,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] .edgeLabel rect,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] .labelBkg,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    svg[id^='mermaid-']
+    .edgeLabel
+    foreignObject,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    svg[id^='mermaid-']
+    .edgeLabel
+    foreignObject
+    * {
+    fill: #fff !important;
+    background: #fff !important;
+    stroke: #000 !important;
+    color: #000 !important;
+    opacity: 1 !important;
+    -webkit-text-fill-color: #000 !important;
+  }
+
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    rect,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    circle,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    ellipse,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    polygon,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] rect,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] circle,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] ellipse,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] polygon {
+    fill: #fff !important;
+    stroke: #000 !important;
+  }
+
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    line,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    path,
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    polyline,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] line,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] path,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] polyline {
+    stroke: #000 !important;
+  }
+
+  .poe-editor-print-shell
+    .poe-editor-print-markdown-body
+    .code-block-with-language[data-language='mermaid']
+    svg
+    marker
+    path,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg[id^='mermaid-'] marker path {
+    fill: #000 !important;
+    stroke: #000 !important;
+  }
+
+  .poe-editor-print-shell .preview-code-copy-button,
+  .poe-editor-print-shell .preview-mermaid-copy-controls,
+  .poe-editor-print-shell .preview-mermaid-copy-menu {
+    display: none !important;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body h1,
+  .poe-editor-print-shell .poe-editor-print-markdown-body h2,
+  .poe-editor-print-shell .poe-editor-print-markdown-body h3,
+  .poe-editor-print-shell .poe-editor-print-markdown-body h4 {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body img,
+  .poe-editor-print-shell .poe-editor-print-markdown-body svg,
+  .poe-editor-print-shell .poe-editor-print-markdown-body table,
+  .poe-editor-print-shell .poe-editor-print-markdown-body blockquote {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
