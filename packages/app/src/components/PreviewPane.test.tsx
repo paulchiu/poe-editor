@@ -106,4 +106,18 @@ describe('PreviewPane', () => {
       expect(screen.getAllByRole('button', { name: 'Copy code block' })).toHaveLength(8)
     })
   })
+
+  it('skips interactive controls in print-friendly mode', async () => {
+    const markdown = '```js\nconsole.log("print mode")\n```'
+    const renderedHtml = renderMarkdown(markdown)
+
+    const { container } = render(<PreviewPane htmlContent={renderedHtml} printFriendly />)
+
+    await waitFor(() => {
+      expect(container.querySelector('.preview-code-copy-button')).toBeNull()
+      expect(container.querySelector('.preview-mermaid-copy-controls')).toBeNull()
+    })
+
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
 })

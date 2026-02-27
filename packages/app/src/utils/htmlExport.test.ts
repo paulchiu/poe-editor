@@ -70,4 +70,31 @@ describe('htmlExport', () => {
     expect(withMermaid).not.toContain('Download PNG')
     expect(withMermaid).not.toContain('showCopyFailureToast')
   })
+
+  it('includes monochrome print styles and hides export copy controls when printing', () => {
+    const result = buildHtmlExportDocument({
+      documentName: 'print.md',
+      htmlContent: '<pre><code class="hljs language-js">console.log("print")</code></pre>',
+      colorMode: 'dark',
+    })
+
+    expect(result).toContain('@media print')
+    expect(result).toContain('--fgColor-default: #000;')
+    expect(result).toContain('--bgColor-default: #fff;')
+    expect(result).toContain('.markdown-body .preview-code-copy-button')
+    expect(result).toContain('.markdown-body .preview-mermaid-copy-controls')
+    expect(result).toContain('display: none !important;')
+    expect(result).toContain('text-decoration: underline !important;')
+    expect(result).toContain('.markdown-body details > *')
+    expect(result).toContain(".markdown-body svg[id^='mermaid-'] text")
+    expect(result).toContain('.markdown-body pre code *')
+    expect(result).toContain('.markdown-body table,')
+    expect(result).toContain(
+      ".markdown-body .code-block-with-language[data-language='mermaid'] svg .label"
+    )
+    expect(result).toContain(
+      ".markdown-body .code-block-with-language[data-language='mermaid'] svg .edgeLabel rect"
+    )
+    expect(result).toContain('-webkit-text-fill-color: #000 !important;')
+  })
 })

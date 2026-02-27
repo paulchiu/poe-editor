@@ -7,6 +7,7 @@ import { getMermaidInitializeOptions, type MermaidColorMode } from '@/utils/merm
 interface MermaidDiagramProps {
   code: string
   colorMode?: MermaidColorMode
+  interactive?: boolean
 }
 
 const CLIPBOARD_FAILURE_HINT =
@@ -24,9 +25,14 @@ let renderCounter = 0
  * @param props - Component props
  * @param props.code - The Mermaid diagram source code
  * @param props.colorMode - Active app color mode
+ * @param props.interactive - Whether copy controls should be rendered
  * @returns A rendered SVG diagram or a fallback code block
  */
-export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProps): ReactElement {
+export function MermaidDiagram({
+  code,
+  colorMode = 'light',
+  interactive = true,
+}: MermaidDiagramProps): ReactElement {
   const [svg, setSvg] = useState<string | null>(null)
   const [error, setError] = useState(false)
   const [copyStatus, setCopyStatus] = useState<'idle' | 'code' | 'image'>('idle')
@@ -69,6 +75,7 @@ export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProp
   }, [code, colorMode])
 
   useEffect(() => {
+    if (!interactive) return
     if (!menuOpen) return
 
     const handlePointerDown = (event: MouseEvent): void => {
@@ -83,7 +90,7 @@ export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProp
     return () => {
       document.removeEventListener('mousedown', handlePointerDown)
     }
-  }, [menuOpen])
+  }, [interactive, menuOpen])
 
   useEffect(() => {
     if (!svg || error) {
@@ -216,7 +223,7 @@ export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProp
   if (svg && !error) {
     return (
       <div className="preview-mermaid-block relative my-4">
-        {renderCopyControls(true)}
+        {interactive ? renderCopyControls(true) : null}
         <div
           ref={containerRef}
           className="flex justify-center"
@@ -229,7 +236,7 @@ export function MermaidDiagram({ code, colorMode = 'light' }: MermaidDiagramProp
   // Fallback: show the raw code in a styled pre/code block
   return (
     <div className="preview-mermaid-block relative my-4">
-      {renderCopyControls(false)}
+      {interactive ? renderCopyControls(false) : null}
       <pre>
         <code className="hljs language-mermaid">{code}</code>
       </pre>

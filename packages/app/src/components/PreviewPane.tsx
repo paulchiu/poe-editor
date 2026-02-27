@@ -14,6 +14,8 @@ interface PreviewPaneProps {
   viewMode?: 'editor' | 'preview' | 'split'
   onToggleLayout?: () => void
   colorMode?: MermaidColorMode
+  printFriendly?: boolean
+  bodyClassName?: string
 }
 
 const CLIPBOARD_FAILURE_HINT =
@@ -24,13 +26,25 @@ const CLIPBOARD_FAILURE_HINT =
  * Displays styled HTML with GitHub markdown styles and copy-to-clipboard functionality.
  */
 export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
-  ({ htmlContent, viewMode, onToggleLayout, colorMode = 'light' }, ref): ReactElement => {
+  (
+    {
+      htmlContent,
+      viewMode,
+      onToggleLayout,
+      colorMode = 'light',
+      printFriendly = false,
+      bodyClassName = 'markdown-body',
+    },
+    ref
+  ): ReactElement => {
     const [copied, setCopied] = useState(false)
     const previewBodyRef = useRef<HTMLDivElement>(null)
 
     const segments = useMemo(() => splitHtmlAtMermaid(htmlContent), [htmlContent])
 
     useEffect(() => {
+      if (printFriendly) return
+
       const root = previewBodyRef.current
       if (!root) return
 
@@ -179,7 +193,7 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
           host.classList.remove('preview-code-copy-host')
         }
       }
-    }, [htmlContent])
+    }, [htmlContent, printFriendly])
 
     const handleCopy = async (): Promise<void> => {
       try {
@@ -201,59 +215,66 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
       <div ref={ref} className="h-full overflow-auto">
         <div
           ref={previewBodyRef}
-          className="relative group markdown-body p-6 pt-0 bg-transparent h-full"
+          className={`relative group ${bodyClassName} p-6 pt-0 bg-transparent h-full`}
         >
-          <div className="absolute top-4 right-4 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {onToggleLayout && viewMode && (
+          {!printFriendly && (
+            <div className="absolute top-4 right-4 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {onToggleLayout && viewMode && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={onToggleLayout}
+                      className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border"
+                    >
+                      {viewMode === 'split' ? (
+                        <Maximize2 className="h-4 w-4" />
+                      ) : (
+                        <Minimize2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs">
+                      {viewMode === 'split' ? 'Expand Preview' : 'Restore Split View'}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={onToggleLayout}
+                    onClick={handleCopy}
                     className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border"
                   >
-                    {viewMode === 'split' ? (
-                      <Maximize2 className="h-4 w-4" />
+                    {copied ? (
+                      <Check className="h-4 w-4 text-green-600" />
                     ) : (
-                      <Minimize2 className="h-4 w-4" />
+                      <Copy className="h-4 w-4" />
                     )}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  <p className="text-xs">
-                    {viewMode === 'split' ? 'Expand Preview' : 'Restore Split View'}
-                  </p>
+                  <p className="text-xs">Copy Rich Text</p>
                 </TooltipContent>
               </Tooltip>
-            )}
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={handleCopy}
-                  className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p className="text-xs">Copy Rich Text</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
+            </div>
+          )}
 
           {segments.map((segment, i) =>
             segment.type === 'html' ? (
               <div key={i} dangerouslySetInnerHTML={{ __html: segment.content }} />
             ) : (
-              <MermaidDiagram key={i} code={segment.code} colorMode={colorMode} />
+              <MermaidDiagram
+                key={i}
+                code={segment.code}
+                colorMode={colorMode}
+                interactive={!printFriendly}
+              />
             )
           )}
         </div>
