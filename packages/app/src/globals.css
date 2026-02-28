@@ -237,6 +237,8 @@ html:not(.dark) .markdown-body {
   --color-prettylights-syntax-markup-ignored-bg: #0550ae;
   --color-prettylights-syntax-meta-diff-range: #8250df;
   --color-prettylights-syntax-sublimelinter-gutter-mark: #818b98;
+  --markdown-mark-bg: #ffe888;
+  --markdown-mark-color: #2a2a2a;
   --code-syntax-keyword: #a626a4;
   --code-syntax-string: #50a14f;
   --code-syntax-variable: #986801;
@@ -309,6 +311,8 @@ html:not(.dark) .markdown-body {
   --color-prettylights-syntax-markup-ignored-bg: #1158c7;
   --color-prettylights-syntax-meta-diff-range: #d2a8ff;
   --color-prettylights-syntax-sublimelinter-gutter-mark: #3d444d;
+  --markdown-mark-bg: #e5e7eb;
+  --markdown-mark-color: #111827;
   --code-syntax-keyword: var(--color-prettylights-syntax-keyword);
   --code-syntax-string: var(--color-prettylights-syntax-string);
   --code-syntax-variable: var(--color-prettylights-syntax-variable);
@@ -324,6 +328,14 @@ html:not(.dark) .markdown-body {
     list-style-type: decimal;
     padding-left: 1.5em;
   }
+}
+
+html:not(.dark) .markdown-body mark,
+.dark .markdown-body mark {
+  padding: 0 0.2em;
+  border-radius: 0.2em;
+  background-color: var(--markdown-mark-bg);
+  color: var(--markdown-mark-color);
 }
 
 .markdown-body .contains-task-list {
