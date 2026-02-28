@@ -47,6 +47,15 @@ export function setupVim(): void {
     cm.editor.trigger('vim', 'cursorUp', {})
   })
 
+  Vim.defineAction('centerCursorLine', (cm: CodeMirrorAdapter) => {
+    const position = cm.editor.getPosition()
+    if (!position) {
+      return
+    }
+
+    cm.editor.revealLineInCenter(position.lineNumber)
+  })
+
   // Register the internal paste command to a custom key
   Vim.mapCommand('<PasteTrigger>', 'action', 'paste', { after: true, isEdit: true })
   Vim.mapCommand('<PasteTriggerBefore>', 'action', 'paste', { after: false, isEdit: true })
@@ -96,6 +105,7 @@ export function setupVim(): void {
   // Override default g^/g0 to use Monaco's native cursorHome (start of display line)
   Vim.mapCommand('g^', 'motion', 'moveToStartOfDisplayLine')
   Vim.mapCommand('g0', 'motion', 'moveToStartOfDisplayLine')
+  Vim.mapCommand('zz', 'action', 'centerCursorLine')
 
   // Override H/M/L to ensure reliable high/middle/low line jumps with Monaco viewport behavior
   Vim.defineMotion('moveToHighDocumentPosition', moveToHighDocumentPositionMotion)
