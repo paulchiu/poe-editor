@@ -2,6 +2,9 @@ import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useWordCount } from './useWordCount'
 
+const PREFERENCES_STORAGE_KEY = 'poe-editor-preferences'
+const LEGACY_STORAGE_KEY = 'poe-editor-word-count'
+
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {
@@ -17,6 +20,12 @@ const localStorageMock = (() => {
     }),
   }
 })()
+
+function getStoredPreferences(): Record<string, unknown> {
+  const raw = localStorage.getItem(PREFERENCES_STORAGE_KEY)
+  if (!raw) return {}
+  return JSON.parse(raw) as Record<string, unknown>
+}
 
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
@@ -41,19 +50,21 @@ describe('useWordCount', () => {
     })
 
     expect(result.current.showWordCount).toBe(true)
-    expect(localStorage.getItem('poe-editor-word-count')).toBe('true')
+    expect(getStoredPreferences().showWordCount).toBe(true)
 
     act(() => {
       result.current.toggleWordCount()
     })
 
     expect(result.current.showWordCount).toBe(false)
-    expect(localStorage.getItem('poe-editor-word-count')).toBe('false')
+    expect(getStoredPreferences().showWordCount).toBe(false)
   })
 
-  it('should initialize from localStorage', () => {
-    localStorage.setItem('poe-editor-word-count', 'true')
+  it('should initialize from legacy localStorage key and migrate', () => {
+    localStorage.setItem(LEGACY_STORAGE_KEY, 'true')
     const { result } = renderHook(() => useWordCount())
     expect(result.current.showWordCount).toBe(true)
+    expect(getStoredPreferences().showWordCount).toBe(true)
+    expect(localStorage.getItem(LEGACY_STORAGE_KEY)).toBeNull()
   })
 })

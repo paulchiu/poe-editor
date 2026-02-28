@@ -1,32 +1,14 @@
 import { useEffect, useState } from 'react'
+import {
+  getBooleanEditorPreference,
+  setBooleanEditorPreference,
+} from '@/utils/editorPreferencesStorage'
 
-const STORAGE_KEY = 'poe-editor-preferences'
-
-interface EditorPreferences {
+interface UseEditorPreferencesReturn {
   startEmpty: boolean
-}
-
-const DEFAULT_PREFERENCES: EditorPreferences = {
-  startEmpty: false,
-}
-
-interface UseEditorPreferencesReturn extends EditorPreferences {
+  showTocPanel: boolean
   toggleStartEmpty: () => void
-}
-
-/**
- * Gets the initial preferences from localStorage or defaults.
- */
-function getInitialPreferences(): EditorPreferences {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      return { ...DEFAULT_PREFERENCES, ...JSON.parse(stored) }
-    }
-  } catch {
-    // localStorage not available or invalid JSON
-  }
-  return DEFAULT_PREFERENCES
+  toggleShowTocPanel: () => void
 }
 
 /**
@@ -34,26 +16,33 @@ function getInitialPreferences(): EditorPreferences {
  * @returns Current preferences and toggle functions
  */
 export function useEditorPreferences(): UseEditorPreferencesReturn {
-  const [preferences, setPreferences] = useState<EditorPreferences>(getInitialPreferences)
+  const [startEmpty, setStartEmpty] = useState<boolean>(() =>
+    getBooleanEditorPreference('startEmpty', false)
+  )
+  const [showTocPanel, setShowTocPanel] = useState<boolean>(() =>
+    getBooleanEditorPreference('showTocPanel', false)
+  )
 
   const toggleStartEmpty = (): void => {
-    setPreferences((current) => ({
-      ...current,
-      startEmpty: !current.startEmpty,
-    }))
+    setStartEmpty((current) => !current)
   }
 
-  // Persist preferences to localStorage whenever they change
+  const toggleShowTocPanel = (): void => {
+    setShowTocPanel((current) => !current)
+  }
+
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences))
-    } catch {
-      // Silently fail if localStorage is not available
-    }
-  }, [preferences])
+    setBooleanEditorPreference('startEmpty', startEmpty)
+  }, [startEmpty])
+
+  useEffect(() => {
+    setBooleanEditorPreference('showTocPanel', showTocPanel)
+  }, [showTocPanel])
 
   return {
-    ...preferences,
+    startEmpty,
+    showTocPanel,
     toggleStartEmpty,
+    toggleShowTocPanel,
   }
 }

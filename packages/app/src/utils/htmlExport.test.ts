@@ -92,6 +92,7 @@ describe('htmlExport', () => {
     expect(result).toContain('.markdown-body pre code *')
     expect(result).toContain('.markdown-body .contains-task-list')
     expect(result).toContain('.markdown-body .task-list-item > .task-list-item-checkbox')
+    expect(result).toContain('.markdown-body .footnotes-list')
     expect(result).toContain('.markdown-body table,')
     expect(result).toContain(
       ".markdown-body .code-block-with-language[data-language='mermaid'] svg .label"

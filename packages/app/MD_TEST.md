@@ -14,6 +14,8 @@ Use this document to quickly verify that Markdown rendering, syntax highlighting
 - Verify GitHub callouts (`NOTE`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`) render with alert styling.
 - Verify GitHub-safe HTML tags render correctly and unsafe HTML is sanitized.
 - Verify task list checkboxes render in preview, can be clicked, and update markdown source markers.
+- Verify autolink literals render for bare URLs/emails, but not inside inline/fenced code.
+- Verify footnote references link to a grouped footnote section with backreferences.
 
 ---
 
@@ -43,7 +45,9 @@ Long wrapping paragraph check: Lorem ipsum dolor sit amet, consectetur adipiscin
 
 - Standard link: [Poe Editor Repository](https://github.com/)
 - Autolink text (should become clickable): https://example.com/path?q=poe-editor
+- Autolink text with `www` prefix: www.example.com/docs
 - Mail autolink: test@example.com
+- Inline code should not autolink: `https://example.com test@example.com www.example.com`
 
 Image check:
 
@@ -259,7 +263,17 @@ Escaped symbols: \*literal asterisks\*, \_literal underscore\_, \`literal backti
 
 Inline code with markdown syntax inside: `**not bold inside inline code**`.
 
-## 12) Large Section for Scroll Sync
+## 12) Footnotes (GitHub-style)
+
+Footnote references should render as superscript links: one note[^footnote-one], another note[^footnote-two], and a repeated reference[^footnote-one].
+
+[^footnote-one]: First footnote definition paragraph.
+
+    Continued paragraph inside the same footnote definition to verify multi-paragraph rendering.
+
+[^footnote-two]: Second footnote definition with a [link](https://example.com).
+
+## 13) Large Section for Scroll Sync
 
 Paragraph 1: The quick brown fox jumps over the lazy dog.
 
@@ -291,7 +305,7 @@ Paragraph 14: The quick brown fox jumps over the lazy dog.
 
 Paragraph 15: The quick brown fox jumps over the lazy dog.
 
-## 13) Final Render Sanity
+## 14) Final Render Sanity
 
 If everything is working, you should see:
 
@@ -300,3 +314,47 @@ If everything is working, you should see:
 - Mermaid diagrams rendered (not raw mermaid code) in preview.
 - Clean table borders/alignment in both themes.
 - GitHub-safe HTML renders; disallowed tags/attributes are stripped.
+
+## 14) Extended Markdown
+
+### TOC directive
+
+<!-- TOC -->
+
+### TOC Level 3 Child
+
+#### TOC Level 4 Child
+
+### TOC Level 3 Sibling
+
+Superscript example: 19^th^ century
+
+Subscript example: H~2~O and CO~2~.
+
+Highlight example: ==this text is highlighted==.
+
+Definition list examples:
+
+Term One
+: Single definition line
+
+Term Two
+: First definition
+: Second definition
+
+Term Three
+: First paragraph in definition
+
+Second paragraph continuation for the same definition.
+
+Code fence edge-cases (should remain literal and **not** render as extensions):
+
+```markdown
+<!-- TOC -->
+
+19^th^
+H~2~O
+==not highlighted==
+Term In Code
+: Not a definition list
+```

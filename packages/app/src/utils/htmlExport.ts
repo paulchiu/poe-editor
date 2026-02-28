@@ -840,8 +840,18 @@ ${codeSyntaxVariables}
         margin: 0.35rem 0 0.9rem;
         padding-left: 1.4rem;
       }
+      .markdown-body ul {
+        list-style-type: disc;
+      }
+      .markdown-body ol {
+        list-style-type: decimal;
+      }
       .markdown-body li {
         margin: 0.2rem 0;
+      }
+      .markdown-body .footnotes-list {
+        list-style-type: decimal;
+        padding-left: 1.4rem;
       }
       .markdown-body .contains-task-list {
         list-style: none;

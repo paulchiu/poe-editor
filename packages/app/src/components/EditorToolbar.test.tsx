@@ -45,10 +45,12 @@ describe('EditorToolbar', () => {
     toggleWordCount: vi.fn(),
     toggleLineNumbers: vi.fn(),
     toggleStartEmpty: vi.fn(),
+    toggleShowTocPanel: vi.fn(),
     toggleSpellCheck: vi.fn(),
     showWordCount: false,
     showLineNumbers: false,
     startEmpty: false,
+    showTocPanel: false,
     spellCheck: false,
   })
 
@@ -195,6 +197,10 @@ describe('EditorToolbar', () => {
     await user.click(screen.getByRole('button', { name: 'Menu' }))
     await user.click(await screen.findByText('Start with Empty Editor'))
     expect(props.toggleStartEmpty).toHaveBeenCalledTimes(1)
+
+    await user.click(screen.getByRole('button', { name: 'Menu' }))
+    await user.click(await screen.findByText('Show TOC Panel'))
+    expect(props.toggleShowTocPanel).toHaveBeenCalledTimes(1)
 
     await user.click(screen.getByRole('button', { name: 'Menu' }))
     await user.click(await screen.findByText('Import/Export Transformers'))

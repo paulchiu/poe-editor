@@ -5,7 +5,7 @@ describe('renderMarkdown', () => {
   it('should render basic markdown', () => {
     const markdown = '# Hello\n\n**Bold** and *Italic*'
     const html = renderMarkdown(markdown)
-    expect(html).toContain('<h1>Hello</h1>')
+    expect(html).toContain('<h1 id="hello">Hello</h1>')
     expect(html).toContain('<strong>Bold</strong>')
     expect(html).toContain('<em>Italic</em>')
   })
@@ -45,6 +45,70 @@ describe('renderMarkdown', () => {
 
   it('should handle empty input', () => {
     expect(renderMarkdown('')).toBe('')
+  })
+
+  it('should render strikethrough across common markdown containers', () => {
+    const markdown = `~~paragraph~~
+
+- ~~list item~~
+
+> ~~blockquote~~
+
+| col |
+| --- |
+| ~~table cell~~ |`
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<p><del>paragraph</del></p>')
+    expect(html).toContain('<li><del>list item</del></li>')
+    expect(html).toContain('<blockquote>')
+    expect(html).toContain('<p><del>blockquote</del></p>')
+    expect(html).toContain('<td><del>table cell</del></td>')
+  })
+
+  it('should autolink URL and email literals but skip code spans and fences', () => {
+    const markdown = `Visit https://example.com and www.example.com or email a@b.com.
+
+\`https://example.com a@b.com\`
+
+\`\`\`
+https://example.com
+a@b.com
+\`\`\``
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<a href="https://example.com">https://example.com</a>')
+    expect(html).toContain('<a href="http://www.example.com">www.example.com</a>')
+    expect(html).toContain('<a href="mailto:a@b.com">a@b.com</a>')
+    expect(html).toContain('<code>https://example.com a@b.com</code>')
+    expect(html).toContain('<pre><code class="hljs">')
+    expect(html).toContain('https:<span class="hljs-comment">//example.com</span>')
+    expect(html).toContain(
+      'a@<span class="hljs-selector-tag">b</span><span class="hljs-selector-class">.com</span>'
+    )
+    expect(html).not.toContain('<code><a href=')
+  })
+
+  it('should render footnotes with references, backrefs, and multi-paragraph definitions', () => {
+    const markdown = `Alpha[^1] and beta[^2] and alpha again[^1].
+
+[^1]: First footnote.
+
+    Continued paragraph.
+
+[^2]: Second footnote.`
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('class="footnote-ref"')
+    expect(html).toContain('id="fnref1"')
+    expect(html).toContain('href="#fn1"')
+    expect(html).toContain('id="fnref1:1"')
+    expect(html).toContain('id="fn1"')
+    expect(html).toContain('id="fn2"')
+    expect(html).toContain('<section class="footnotes">')
+    expect(html).toContain('class="footnote-backref"')
+    expect(html).toContain('<p>First footnote.</p>')
+    expect(html).toContain('<p>Continued paragraph.')
   })
 
   it('should render links', () => {
@@ -140,5 +204,87 @@ describe('getFirstHeading', () => {
 
   it('should handle empty input', () => {
     expect(getFirstHeading('')).toBeNull()
+  })
+})
+
+describe('extended markdown', () => {
+  it('should render TOC directive with stable nested anchors', () => {
+    const markdown = [
+      '<!-- TOC -->',
+      '# Intro',
+      '## Child',
+      '# Intro',
+      '```md',
+      '# ignored',
+      '```',
+    ].join('\n')
+
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<div class="markdown-toc" aria-label="Table of contents">')
+    expect(html).toContain('<a href="#intro">Intro</a>')
+    expect(html).toContain('<a href="#child">Child</a>')
+    expect(html).toContain('<a href="#intro-1">Intro</a>')
+    expect(html).toContain('<h1 id="intro">Intro</h1>')
+    expect(html).toContain('<h2 id="child">Child</h2>')
+    expect(html).toContain('<h1 id="intro-1">Intro</h1>')
+    expect(html).not.toContain('href="#ignored"')
+  })
+
+  it('should replace TOC directive', () => {
+    const html = renderMarkdown('<!-- TOC -->\n# Title')
+    expect(html).toContain('markdown-toc')
+  })
+
+  it('should render superscript and subscript', () => {
+    const html = renderMarkdown('19^th^ and H~2~O')
+    expect(html).toContain('<sup>th</sup>')
+    expect(html).toContain('H<sub>2</sub>O')
+  })
+
+  it('should honor escapes and code spans for superscript/subscript', () => {
+    const html = renderMarkdown('\\^keep^ `19^th^` `H~2~O`')
+    expect(html).toContain('^keep^')
+    expect(html).toContain('<code>19^th^</code>')
+    expect(html).toContain('<code>H~2~O</code>')
+  })
+
+  it('should render highlight marks and ignore code spans', () => {
+    const html = renderMarkdown('==text== `==code==`')
+    expect(html).toContain('<mark>text</mark>')
+    expect(html).toContain('<code>==code==</code>')
+  })
+
+  it('should render definition lists with single, multiple, and multi-paragraph definitions', () => {
+    const markdown = [
+      'Term 1',
+      ': Definition text with *inline* markdown',
+      '',
+      'Term 2',
+      ': Definition A',
+      ': Definition B',
+      '',
+      'Term 3',
+      ': First paragraph',
+      '',
+      '  Continued paragraph for the same definition.',
+      '',
+      '```',
+      'Term 4',
+      ': should be ignored in fence',
+      '```',
+    ].join('\n')
+
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<dl>')
+    expect(html).toContain('<dt>Term 1</dt>')
+    expect(html).toContain('<p>Definition text with <em>inline</em> markdown</p>')
+    expect(html).toContain('<dt>Term 2</dt>')
+    expect(html).toContain('<p>Definition A</p>')
+    expect(html).toContain('<p>Definition B</p>')
+    expect(html).toContain('<dt>Term 3</dt>')
+    expect(html).toContain('<p>Continued paragraph for the same definition.</p>')
+    expect(html).not.toContain('<dt>Term 4</dt>')
   })
 })

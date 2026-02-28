@@ -43,10 +43,10 @@ describe('sanitizeGithubSafeHtml', () => {
     expect(sanitized).not.toContain('onclick')
   })
 
-  it('unwraps unsupported tags while preserving safe children', () => {
-    const html = '<section><p><strong>hello</strong> world</p></section>'
+  it('preserves section tags used by footnotes', () => {
+    const html = '<section id="footnotes"><p><strong>hello</strong> world</p></section>'
     const sanitized = sanitizeGithubSafeHtml(html)
-    expect(sanitized).toBe('<p><strong>hello</strong> world</p>')
+    expect(sanitized).toBe('<section id="footnotes"><p><strong>hello</strong> world</p></section>')
   })
 
   it('removes non-checkbox input elements', () => {
@@ -54,5 +54,16 @@ describe('sanitizeGithubSafeHtml', () => {
     const sanitized = sanitizeGithubSafeHtml(html)
 
     expect(sanitized).toBe('<input type="checkbox" checked="">')
+  })
+
+  it('keeps extended markdown tags and heading ids', () => {
+    const html =
+      '<h2 id="section-a">Section A</h2><dl><dt>Term</dt><dd><mark>x</mark> H<sub>2</sub>O 19<sup>th</sup></dd></dl>'
+    const sanitized = sanitizeGithubSafeHtml(html)
+
+    expect(sanitized).toContain('<h2 id="section-a">Section A</h2>')
+    expect(sanitized).toContain(
+      '<dl><dt>Term</dt><dd><mark>x</mark> H<sub>2</sub>O 19<sup>th</sup></dd></dl>'
+    )
   })
 })

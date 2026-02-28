@@ -97,13 +97,13 @@ describe('PreviewPane', () => {
     const { rerender } = render(<PreviewPane htmlContent={renderedHtml} />)
 
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: 'Copy code block' })).toHaveLength(8)
+      expect(screen.getAllByRole('button', { name: 'Copy code block' })).toHaveLength(9)
     })
 
     rerender(<PreviewPane htmlContent={renderedHtml} />)
 
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: 'Copy code block' })).toHaveLength(8)
+      expect(screen.getAllByRole('button', { name: 'Copy code block' })).toHaveLength(9)
     })
   })
 
@@ -139,6 +139,37 @@ describe('PreviewPane', () => {
 
     await waitFor(() => {
       expect(onTaskListToggle).toHaveBeenCalledWith(0, true)
+    })
+  })
+
+  it('handles footnote hash links without mutating URL storage hash', () => {
+    const markdown = 'Alpha[^1]\n\n[^1]: Footnote content.'
+    const renderedHtml = renderMarkdown(markdown)
+    window.location.hash = 'compressed-doc-hash'
+
+    const originalScrollIntoView = Element.prototype.scrollIntoView
+    const scrollIntoViewMock = vi.fn()
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      writable: true,
+      value: scrollIntoViewMock,
+    })
+    const { container } = render(<PreviewPane htmlContent={renderedHtml} />)
+
+    const footnoteReference = container.querySelector<HTMLAnchorElement>(
+      'sup.footnote-ref a[href="#fn1"]'
+    )
+    expect(footnoteReference).toBeTruthy()
+
+    fireEvent.click(footnoteReference!)
+
+    expect(window.location.hash).toBe('#compressed-doc-hash')
+    expect(scrollIntoViewMock).toHaveBeenCalled()
+
+    Object.defineProperty(Element.prototype, 'scrollIntoView', {
+      configurable: true,
+      writable: true,
+      value: originalScrollIntoView,
     })
   })
 })

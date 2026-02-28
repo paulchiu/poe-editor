@@ -2,6 +2,9 @@ import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useVimMode } from './useVimMode'
 
+const PREFERENCES_STORAGE_KEY = 'poe-editor-preferences'
+const LEGACY_STORAGE_KEY = 'poe-editor-vim-mode'
+
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {
@@ -17,6 +20,12 @@ const localStorageMock = (() => {
     }),
   }
 })()
+
+function getStoredPreferences(): Record<string, unknown> {
+  const raw = localStorage.getItem(PREFERENCES_STORAGE_KEY)
+  if (!raw) return {}
+  return JSON.parse(raw) as Record<string, unknown>
+}
 
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
@@ -41,19 +50,21 @@ describe('useVimMode', () => {
     })
 
     expect(result.current.vimMode).toBe(true)
-    expect(localStorage.getItem('poe-editor-vim-mode')).toBe('true')
+    expect(getStoredPreferences().vimMode).toBe(true)
 
     act(() => {
       result.current.toggleVimMode()
     })
 
     expect(result.current.vimMode).toBe(false)
-    expect(localStorage.getItem('poe-editor-vim-mode')).toBe('false')
+    expect(getStoredPreferences().vimMode).toBe(false)
   })
 
-  it('should initialize from localStorage', () => {
-    localStorage.setItem('poe-editor-vim-mode', 'true')
+  it('should initialize from legacy localStorage key and migrate', () => {
+    localStorage.setItem(LEGACY_STORAGE_KEY, 'true')
     const { result } = renderHook(() => useVimMode())
     expect(result.current.vimMode).toBe(true)
+    expect(getStoredPreferences().vimMode).toBe(true)
+    expect(localStorage.getItem(LEGACY_STORAGE_KEY)).toBeNull()
   })
 })
