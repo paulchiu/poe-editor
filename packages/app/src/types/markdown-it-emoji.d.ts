@@ -7,3 +7,8 @@ declare module 'markdown-it-emoji' {
   export const light: MarkdownItEmojiPlugin
   export const full: MarkdownItEmojiPlugin
 }
+
+declare module 'markdown-it-emoji/lib/data/full.mjs' {
+  const emojiMap: Record<string, string>
+  export default emojiMap
+}

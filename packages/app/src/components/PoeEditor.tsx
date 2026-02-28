@@ -144,7 +144,14 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   )
 
   // Editor preferences
-  const { startEmpty, toggleStartEmpty, showTocPanel, toggleShowTocPanel } = useEditorPreferences()
+  const {
+    startEmpty,
+    toggleStartEmpty,
+    showTocPanel,
+    toggleShowTocPanel,
+    showEmojiPicker,
+    toggleShowEmojiPicker,
+  } = useEditorPreferences()
 
   // URL state management
   const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
@@ -595,6 +602,8 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
           toggleStartEmpty={toggleStartEmpty}
           showTocPanel={showTocPanel}
           toggleShowTocPanel={toggleShowTocPanel}
+          showEmojiPicker={showEmojiPicker}
+          toggleShowEmojiPicker={toggleShowEmojiPicker}
           documentMenuRef={documentMenuRef}
           spellCheck={spellCheck}
           toggleSpellCheck={toggleSpellCheck}
@@ -655,6 +664,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
                           onToggleLayout={handleToggleEditor}
                           spellCheck={spellCheck}
                           onSpellCheckChange={setSpellCheck}
+                          emojiPickerEnabled={showEmojiPicker}
                         />
                       </div>
                     </ResizablePanel>
@@ -726,6 +736,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
                   viewMode={activeTab === 'editor' ? 'editor' : 'preview'}
                   spellCheck={spellCheck}
                   onSpellCheckChange={setSpellCheck}
+                  emojiPickerEnabled={showEmojiPicker}
                 />
               </div>
 

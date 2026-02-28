@@ -7,6 +7,7 @@ export type EditorPreferenceKey =
   | 'showLineNumbers'
   | 'vimMode'
   | 'spellCheck'
+  | 'emojiPicker'
 
 type EditorPreferenceStore = Partial<Record<EditorPreferenceKey, boolean>>
 

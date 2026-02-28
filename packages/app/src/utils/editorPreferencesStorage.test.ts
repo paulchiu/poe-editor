@@ -38,10 +38,12 @@ describe('editorPreferencesStorage', () => {
   it('merges updates into the same consolidated preference object', () => {
     setBooleanEditorPreference('vimMode', true)
     setBooleanEditorPreference('showWordCount', true)
+    setBooleanEditorPreference('emojiPicker', false)
 
     expect(getStoredPreferences()).toEqual({
       vimMode: true,
       showWordCount: true,
+      emojiPicker: false,
     })
   })
 
