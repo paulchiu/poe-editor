@@ -1,25 +1,12 @@
 import { useEffect, useState } from 'react'
-
-const STORAGE_KEY = 'poe-editor-vim-mode'
+import {
+  getBooleanEditorPreference,
+  setBooleanEditorPreference,
+} from '@/utils/editorPreferencesStorage'
 
 interface UseVimModeReturn {
   vimMode: boolean
   toggleVimMode: () => void
-}
-
-/**
- * Gets the initial vim mode state from localStorage or defaults to false.
- */
-function getInitialVimMode(): boolean {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'true' || stored === 'false') {
-      return stored === 'true'
-    }
-  } catch {
-    // localStorage not available
-  }
-  return false
 }
 
 /**
@@ -28,19 +15,16 @@ function getInitialVimMode(): boolean {
  * @returns Current Vim mode state and toggle function
  */
 export function useVimMode(): UseVimModeReturn {
-  const [vimMode, setVimModeState] = useState<boolean>(getInitialVimMode)
+  const [vimMode, setVimModeState] = useState<boolean>(() =>
+    getBooleanEditorPreference('vimMode', false)
+  )
 
   const toggleVimMode = (): void => {
     setVimModeState((current) => !current)
   }
 
-  // Persist vim mode to localStorage whenever it changes
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, String(vimMode))
-    } catch {
-      // Silently fail if localStorage is not available
-    }
+    setBooleanEditorPreference('vimMode', vimMode)
   }, [vimMode])
 
   return {
