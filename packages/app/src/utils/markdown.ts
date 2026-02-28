@@ -275,6 +275,29 @@ function createMarkdownIt(enableExtendedMarkdown: boolean): MarkdownIt {
 
 const baseMarkdown = createMarkdownIt(false)
 const markdownRenderer = createMarkdownIt(true)
+const EMOJI_SHORTCODE_PATTERN = /:[a-zA-Z0-9_+-]+:/
+
+type MarkdownItPlugin = (markdown: MarkdownIt) => void
+
+let emojiMarkdownRendererPromise: Promise<MarkdownIt> | null = null
+
+async function getEmojiMarkdownRenderer(): Promise<MarkdownIt> {
+  if (!emojiMarkdownRendererPromise) {
+    emojiMarkdownRendererPromise = (async () => {
+      const { full } = await import('markdown-it-emoji')
+      const parser = createMarkdownIt(true)
+      parser.use(full as MarkdownItPlugin)
+      return parser
+    })()
+  }
+
+  try {
+    return await emojiMarkdownRendererPromise
+  } catch (error) {
+    emojiMarkdownRendererPromise = null
+    throw error
+  }
+}
 
 const GITHUB_CALLOUT_MARKER_TO_TYPE = {
   NOTE: 'note',
@@ -590,12 +613,7 @@ export function getTocHeadings(markdown: string): TocHeading[] {
   return collectHeadings(markdown)
 }
 
-/**
- * Renders markdown text to HTML.
- * @param markdown - The markdown text to render.
- * @returns HTML string (empty string if input is empty).
- */
-export function renderMarkdown(markdown: string): string {
+function renderMarkdownWithRenderer(markdown: string, renderer: MarkdownIt): string {
   if (!markdown) return ''
 
   const headings = collectHeadings(markdown)
@@ -605,17 +623,41 @@ export function renderMarkdown(markdown: string): string {
     referencesByLabel,
   } = parseFootnotes(markdown)
 
-  const renderedBody = markdownRenderer.render(markdownWithReferences)
+  const renderedBody = renderer.render(markdownWithReferences)
   const withHeadingIds = applyHeadingIds(renderedBody, headings)
   const withTocDirective = injectTocDirective(withHeadingIds, headings)
   const withFootnotes = `${withTocDirective}${renderFootnotes(
     definitions,
     referencesByLabel,
-    markdownRenderer
+    renderer
   )}`
   const withGithubCallouts = renderGithubCallouts(withFootnotes)
   const withTaskLists = renderTaskLists(withGithubCallouts)
   return sanitizeGithubSafeHtml(withTaskLists)
+}
+
+/**
+ * Renders markdown text to HTML.
+ * @param markdown - The markdown text to render.
+ * @returns HTML string (empty string if input is empty).
+ */
+export function renderMarkdown(markdown: string): string {
+  return renderMarkdownWithRenderer(markdown, markdownRenderer)
+}
+
+/**
+ * Renders markdown for the live preview, enabling lazy emoji shortcode support.
+ * @param markdown - The markdown text to render.
+ * @returns HTML string (empty string if input is empty).
+ */
+export async function renderMarkdownForPreview(markdown: string): Promise<string> {
+  if (!markdown) return ''
+  if (!EMOJI_SHORTCODE_PATTERN.test(markdown)) {
+    return renderMarkdownWithRenderer(markdown, markdownRenderer)
+  }
+
+  const emojiRenderer = await getEmojiMarkdownRenderer()
+  return renderMarkdownWithRenderer(markdown, emojiRenderer)
 }
 
 /**

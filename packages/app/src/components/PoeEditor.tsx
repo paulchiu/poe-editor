@@ -11,7 +11,7 @@ import { useSyncScroll } from '@/hooks/useSyncScroll'
 import { useTransformers } from '@/hooks/useTransformers'
 import { useEditorPreferences } from '@/hooks/useEditorPreferences'
 import { useSpellCheck } from '@/hooks/useSpellCheck'
-import { renderMarkdown, getTocHeadings } from '@/utils/markdown'
+import { renderMarkdown, renderMarkdownForPreview, getTocHeadings } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
 import { buildHtmlExportDocument } from '@/utils/htmlExport'
 import { applyPipelineWithIssues, getPipelineIssueSummary } from '@/utils/transformer-engine'
@@ -177,8 +177,26 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Rendered HTML for preview
   const tocHeadings = useMemo(() => getTocHeadings(content), [content])
-  const htmlContent = useMemo(() => renderMarkdown(content), [content])
+  const [htmlContent, setHtmlContent] = useState(() => renderMarkdown(content))
   const colorMode: MermaidColorMode = mounted && resolvedTheme === 'dark' ? 'dark' : 'light'
+
+  useEffect(() => {
+    let isCancelled = false
+
+    void renderMarkdownForPreview(content)
+      .then((nextHtml) => {
+        if (isCancelled) return
+        setHtmlContent(nextHtml)
+      })
+      .catch(() => {
+        if (isCancelled) return
+        setHtmlContent(renderMarkdown(content))
+      })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [content])
 
   // Formatting functions
   const handleFormatBold = useCallback((): void => {

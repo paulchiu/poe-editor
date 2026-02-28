@@ -263,6 +263,18 @@ Escaped symbols: \*literal asterisks\*, \_literal underscore\_, \`literal backti
 
 Inline code with markdown syntax inside: `**not bold inside inline code**`.
 
+Emoji shortcode rendering checks:
+
+- Should convert in normal text: :smile: :heart: :+1:
+- Escaped shortcode should stay literal: \:smile:
+- Inline code shortcode should stay literal: `:smile:`
+
+Fenced code shortcode should stay literal:
+
+```text
+:smile:
+```
+
 ## 12) Footnotes (GitHub-style)
 
 Footnote references should render as superscript links: one note[^footnote-one], another note[^footnote-two], and a repeated reference[^footnote-one].
