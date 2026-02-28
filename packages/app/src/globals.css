@@ -672,8 +672,21 @@ html:not(.dark) .markdown-body {
     padding-left: 1.4rem;
   }
 
+  .poe-editor-print-shell .poe-editor-print-markdown-body ul {
+    list-style-type: disc;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body ol {
+    list-style-type: decimal;
+  }
+
   .poe-editor-print-shell .poe-editor-print-markdown-body li {
     margin: 0.2rem 0;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body .footnotes-list {
+    list-style-type: decimal;
+    padding-left: 1.4rem;
   }
 
   .poe-editor-print-shell .poe-editor-print-markdown-body .contains-task-list {
