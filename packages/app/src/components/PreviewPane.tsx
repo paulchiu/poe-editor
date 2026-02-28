@@ -142,6 +142,20 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
           return
         }
 
+        const hashLink = target.closest<HTMLAnchorElement>('a[href^="#"]')
+        if (hashLink && root.contains(hashLink)) {
+          const targetId = decodeURIComponent(hashLink.hash.slice(1))
+          if (targetId) {
+            const anchorTarget = document.getElementById(targetId)
+            if (anchorTarget && root.contains(anchorTarget)) {
+              event.preventDefault()
+              event.stopPropagation()
+              anchorTarget.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              return
+            }
+          }
+        }
+
         const button = target.closest<HTMLButtonElement>('.preview-code-copy-button')
         if (!button || !root.contains(button)) return
 
