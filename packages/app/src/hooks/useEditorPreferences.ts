@@ -10,7 +10,8 @@ const DEFAULT_PREFERENCES: EditorPreferences = {
   startEmpty: false,
 }
 
-interface UseEditorPreferencesReturn extends EditorPreferences {
+interface UseEditorPreferencesReturn {
+  startEmpty: boolean
   toggleStartEmpty: () => void
 }
 
@@ -53,7 +54,7 @@ export function useEditorPreferences(): UseEditorPreferencesReturn {
   }, [preferences])
 
   return {
-    ...preferences,
+    startEmpty: preferences.startEmpty,
     toggleStartEmpty,
   }
 }

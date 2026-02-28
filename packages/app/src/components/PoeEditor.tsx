@@ -11,7 +11,7 @@ import { useSyncScroll } from '@/hooks/useSyncScroll'
 import { useTransformers } from '@/hooks/useTransformers'
 import { useEditorPreferences } from '@/hooks/useEditorPreferences'
 import { useSpellCheck } from '@/hooks/useSpellCheck'
-import { renderMarkdown } from '@/utils/markdown'
+import { renderMarkdown, getTocHeadings } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
 import { buildHtmlExportDocument } from '@/utils/htmlExport'
 import { applyPipelineWithIssues, getPipelineIssueSummary } from '@/utils/transformer-engine'
@@ -176,6 +176,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   })
 
   // Rendered HTML for preview
+  const tocHeadings = useMemo(() => getTocHeadings(content), [content])
   const htmlContent = useMemo(() => renderMarkdown(content), [content])
   const colorMode: MermaidColorMode = mounted && resolvedTheme === 'dark' ? 'dark' : 'light'
 
@@ -651,6 +652,8 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
                         viewMode={viewMode}
                         onToggleLayout={handleTogglePreview}
                         colorMode={colorMode}
+                        tocHeadings={tocHeadings}
+                        showTocPanel
                       />
                     </div>
                   </ResizablePanel>
@@ -715,6 +718,8 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
                   htmlContent={htmlContent}
                   onTaskListToggle={handleTaskListToggle}
                   colorMode={colorMode}
+                  tocHeadings={tocHeadings}
+                  showTocPanel
                 />
               </div>
             </div>
@@ -728,6 +733,8 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
           colorMode="print"
           printFriendly
           bodyClassName="poe-editor-print-markdown-body"
+          tocHeadings={tocHeadings}
+          showTocPanel
         />
       </div>
     </TooltipProvider>

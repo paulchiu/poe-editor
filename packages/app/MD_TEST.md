@@ -314,3 +314,47 @@ If everything is working, you should see:
 - Mermaid diagrams rendered (not raw mermaid code) in preview.
 - Clean table borders/alignment in both themes.
 - GitHub-safe HTML renders; disallowed tags/attributes are stripped.
+
+## 14) Extended Markdown
+
+### TOC directive
+
+<!-- TOC -->
+
+### TOC Level 3 Child
+
+#### TOC Level 4 Child
+
+### TOC Level 3 Sibling
+
+Superscript example: 19^th^ century
+
+Subscript example: H~2~O and CO~2~.
+
+Highlight example: ==this text is highlighted==.
+
+Definition list examples:
+
+Term One
+: Single definition line
+
+Term Two
+: First definition
+: Second definition
+
+Term Three
+: First paragraph in definition
+
+Second paragraph continuation for the same definition.
+
+Code fence edge-cases (should remain literal and **not** render as extensions):
+
+```markdown
+<!-- TOC -->
+
+19^th^
+H~2~O
+==not highlighted==
+Term In Code
+: Not a definition list
+```

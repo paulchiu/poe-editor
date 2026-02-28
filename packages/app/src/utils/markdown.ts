@@ -1,5 +1,6 @@
 import MarkdownIt from 'markdown-it'
 import highlightjs from 'markdown-it-highlightjs'
+import type Token from 'markdown-it/lib/token.mjs'
 import { sanitizeGithubSafeHtml } from '@/utils/githubSafeHtml'
 
 const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
@@ -42,6 +43,58 @@ const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
   zsh: 'Shell',
 }
 
+interface MarkdownHeading {
+  level: number
+  text: string
+  id: string
+}
+
+/**
+ * Represents a heading entry used for table-of-contents rendering.
+ */
+export interface TocHeading {
+  level: number
+  text: string
+  id: string
+}
+
+type MarkdownTokenNesting = -1 | 0 | 1
+
+interface MarkdownItInlineRuleState {
+  src: string
+  pos: number
+  posMax: number
+  push: (type: string, tag: string, nesting: MarkdownTokenNesting) => Token
+}
+
+interface MarkdownItBlockRuleState {
+  sCount: number[]
+  blkIndent: number
+  src: string
+  bMarks: number[]
+  tShift: number[]
+  eMarks: number[]
+  env: object
+  md: MarkdownIt
+  tokens: Token[]
+  line: number
+  getLines: (begin: number, end: number, indent: number, keepLastLF: boolean) => string
+  push: (type: string, tag: string, nesting: MarkdownTokenNesting) => Token
+  isEmpty: (line: number) => boolean
+}
+
+type FootnoteDefinition = {
+  index: number
+  label: string
+  content: string
+}
+
+type ParsedFootnotes = {
+  markdown: string
+  definitions: FootnoteDefinition[]
+  referencesByLabel: Map<string, string[]>
+}
+
 function toLanguageLabel(language: string): string {
   const normalized = language.toLowerCase()
   const predefined = LANGUAGE_DISPLAY_NAMES[normalized]
@@ -54,14 +107,174 @@ function toLanguageLabel(language: string): string {
     .join(' ')
 }
 
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-}).use(highlightjs)
+function applyFenceRenderer(markdown: MarkdownIt): void {
+  const defaultFenceRenderer = markdown.renderer.rules.fence?.bind(markdown.renderer.rules)
 
-md.renderer.rules.s_open = () => '<del>'
-md.renderer.rules.s_close = () => '</del>'
+  markdown.renderer.rules.fence = (tokens, idx, options, env, self): string => {
+    const language = tokens[idx].info.trim().split(/\s+/)[0]?.toLowerCase()
+    const rawCode = tokens[idx].content.replace(/\n$/, '')
+
+    const renderedFence =
+      language === 'mermaid'
+        ? `<pre><code class="hljs language-mermaid">${markdown.utils.escapeHtml(tokens[idx].content)}</code></pre>`
+        : (defaultFenceRenderer?.(tokens, idx, options, env, self) ??
+          self.renderToken(tokens, idx, options))
+
+    if (!language) return renderedFence
+
+    const escapedLanguage = markdown.utils.escapeHtml(language)
+    const escapedLabel = markdown.utils.escapeHtml(toLanguageLabel(language))
+    const dataRawCodeAttribute =
+      language === 'mermaid' ? ` data-raw-code="${markdown.utils.escapeHtml(rawCode)}"` : ''
+
+    return `<div class="code-block-with-language" data-language="${escapedLanguage}"${dataRawCodeAttribute}><div class="code-block-language-hint">${escapedLabel}</div>${renderedFence}</div>`
+  }
+}
+
+function createDelimitedInlineRule(marker: '==' | '^' | '~', tag: 'mark' | 'sup' | 'sub') {
+  return (state: MarkdownItInlineRuleState, silent: boolean): boolean => {
+    const markerLength = marker.length
+    const start = state.pos
+
+    if (state.src.slice(start, start + markerLength) !== marker) return false
+    if (marker === '~' && state.src[start + 1] === '~') return false
+    if (start > 0 && state.src[start - 1] === '\\') return false
+
+    let end = state.src.indexOf(marker, start + markerLength)
+    while (end !== -1) {
+      if (state.src[end - 1] !== '\\') break
+      end = state.src.indexOf(marker, end + markerLength)
+    }
+
+    if (end === -1 || end >= state.posMax) return false
+
+    const content = state.src.slice(start + markerLength, end)
+    if (!content || /^\s|\s$/.test(content)) return false
+    if ((marker === '^' || marker === '~') && /\s/.test(content)) return false
+
+    if (!silent) {
+      const tokenOpen = state.push(`${tag}_open`, tag, 1)
+      tokenOpen.markup = marker
+
+      const tokenText = state.push('text', '', 0)
+      tokenText.content = content
+
+      const tokenClose = state.push(`${tag}_close`, tag, -1)
+      tokenClose.markup = marker
+    }
+
+    state.pos = end + markerLength
+    return true
+  }
+}
+
+function definitionListRule(
+  state: MarkdownItBlockRuleState,
+  startLine: number,
+  endLine: number,
+  silent: boolean
+): boolean {
+  if (startLine + 1 >= endLine) return false
+  if (state.sCount[startLine] - state.blkIndent >= 4) return false
+
+  const getLine = (line: number): string =>
+    state.src.slice(state.bMarks[line] + state.tShift[line], state.eMarks[line])
+
+  const isDefinitionMarker = (line: number): boolean => /^:\s+/.test(getLine(line))
+
+  const firstTerm = state.getLines(startLine, startLine + 1, 0, false).trim()
+  if (!firstTerm || firstTerm.startsWith(':') || !isDefinitionMarker(startLine + 1)) return false
+  if (silent) return true
+
+  const dlOpen = state.push('dl_open', 'dl', 1)
+  dlOpen.map = [startLine, 0]
+
+  let line = startLine
+  while (line < endLine) {
+    const term = state.getLines(line, line + 1, 0, false).trim()
+    if (!term || term.startsWith(':') || line + 1 >= endLine || !isDefinitionMarker(line + 1)) break
+
+    const dtOpen = state.push('dt_open', 'dt', 1)
+    dtOpen.map = [line, line + 1]
+
+    const dtInline = state.push('inline', '', 0)
+    dtInline.content = term
+    dtInline.children = []
+
+    state.push('dt_close', 'dt', -1)
+
+    line += 1
+    while (line < endLine && isDefinitionMarker(line)) {
+      const definitionLines: string[] = [getLine(line).replace(/^:\s+/, '')]
+      const ddStart = line
+      line += 1
+
+      while (line < endLine) {
+        const rawLine = getLine(line)
+        const fullRawLine = state.src.slice(state.bMarks[line], state.eMarks[line])
+        if (isDefinitionMarker(line)) break
+
+        if (!rawLine.trim()) {
+          definitionLines.push('')
+          line += 1
+          continue
+        }
+
+        if (/^\s{2,}\S/.test(fullRawLine)) {
+          definitionLines.push(fullRawLine.replace(/^\s{2,}/, ''))
+          line += 1
+          continue
+        }
+
+        break
+      }
+
+      const ddOpen = state.push('dd_open', 'dd', 1)
+      ddOpen.map = [ddStart, line]
+
+      const innerTokens: Token[] = []
+      state.md.block.parse(definitionLines.join('\n'), state.md, state.env, innerTokens)
+      for (const token of innerTokens) {
+        state.tokens.push(token)
+      }
+
+      state.push('dd_close', 'dd', -1)
+    }
+
+    while (line < endLine && state.isEmpty(line)) {
+      line += 1
+    }
+  }
+
+  const dlClose = state.push('dl_close', 'dl', -1)
+  dlClose.map = [startLine, line]
+  state.line = line
+  return true
+}
+
+function createMarkdownIt(enableExtendedMarkdown: boolean): MarkdownIt {
+  const parser = new MarkdownIt({
+    html: true,
+    linkify: true,
+    typographer: true,
+  }).use(highlightjs)
+
+  parser.renderer.rules.s_open = () => '<del>'
+  parser.renderer.rules.s_close = () => '</del>'
+
+  if (enableExtendedMarkdown) {
+    parser.inline.ruler.after('emphasis', 'poe_mark', createDelimitedInlineRule('==', 'mark'))
+    parser.inline.ruler.after('emphasis', 'poe_sup', createDelimitedInlineRule('^', 'sup'))
+    parser.inline.ruler.after('emphasis', 'poe_sub', createDelimitedInlineRule('~', 'sub'))
+    parser.block.ruler.before('paragraph', 'poe_deflist', definitionListRule)
+  }
+
+  applyFenceRenderer(parser)
+  return parser
+}
+
+const baseMarkdown = createMarkdownIt(false)
+const markdownRenderer = createMarkdownIt(true)
 
 const GITHUB_CALLOUT_MARKER_TO_TYPE = {
   NOTE: 'note',
@@ -172,18 +385,6 @@ function renderTaskLists(html: string): string {
   return document.body.innerHTML
 }
 
-type FootnoteDefinition = {
-  index: number
-  label: string
-  content: string
-}
-
-type ParsedFootnotes = {
-  markdown: string
-  definitions: FootnoteDefinition[]
-  referencesByLabel: Map<string, string[]>
-}
-
 function parseFootnotes(markdown: string): ParsedFootnotes {
   const lines = markdown.split('\n')
   const keptLines: string[] = []
@@ -261,13 +462,14 @@ function parseFootnotes(markdown: string): ParsedFootnotes {
 
 function renderFootnotes(
   definitions: FootnoteDefinition[],
-  referencesByLabel: Map<string, string[]>
+  referencesByLabel: Map<string, string[]>,
+  markdownRenderer: MarkdownIt
 ): string {
   if (definitions.length === 0) return ''
 
   const items = definitions
     .map((definition) => {
-      const renderedContent = md.render(definition.content).trim()
+      const renderedContent = markdownRenderer.render(definition.content).trim()
       const backrefs = (referencesByLabel.get(definition.label) ?? [])
         .map((referenceId) => `<a href="#${referenceId}" class="footnote-backref">↩︎</a>`)
         .join(' ')
@@ -279,62 +481,155 @@ function renderFootnotes(
   return `<hr class="footnotes-sep"><section class="footnotes"><ol class="footnotes-list">${items}</ol></section>`
 }
 
-const defaultFenceRenderer = md.renderer.rules.fence?.bind(md.renderer.rules)
+function slugifyHeading(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N}\s-]/gu, '')
+    .replace(/\s+/g, '-')
+}
 
-md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
-  const language = tokens[idx].info.trim().split(/\s+/)[0]?.toLowerCase()
-  const rawCode = tokens[idx].content.replace(/\n$/, '')
+function createHeadingIdFactory(): (headingText: string) => string {
+  const seenSlugs = new Map<string, number>()
+  return (headingText: string): string => {
+    const baseSlug = slugifyHeading(headingText) || 'section'
+    const count = seenSlugs.get(baseSlug) ?? 0
+    seenSlugs.set(baseSlug, count + 1)
+    return count === 0 ? baseSlug : `${baseSlug}-${count}`
+  }
+}
 
-  const renderedFence =
-    language === 'mermaid'
-      ? `<pre><code class="hljs language-mermaid">${md.utils.escapeHtml(tokens[idx].content)}</code></pre>`
-      : (defaultFenceRenderer?.(tokens, idx, options, env, self) ??
-        self.renderToken(tokens, idx, options))
+function collectHeadings(markdown: string): MarkdownHeading[] {
+  const tokens = baseMarkdown.parse(markdown, {})
+  const nextHeadingId = createHeadingIdFactory()
+  const headings: MarkdownHeading[] = []
 
-  if (!language) return renderedFence
+  for (let index = 0; index < tokens.length; index += 1) {
+    if (tokens[index].type !== 'heading_open') continue
+    const headingContent = tokens[index + 1]
+    if (!headingContent || headingContent.type !== 'inline') continue
 
-  const escapedLanguage = md.utils.escapeHtml(language)
-  const escapedLabel = md.utils.escapeHtml(toLanguageLabel(language))
-  const dataRawCodeAttribute =
-    language === 'mermaid' ? ` data-raw-code="${md.utils.escapeHtml(rawCode)}"` : ''
+    const level = Number.parseInt(tokens[index].tag.slice(1), 10)
+    const text = headingContent.content.trim()
+    if (!text) continue
 
-  return `<div class="code-block-with-language" data-language="${escapedLanguage}"${dataRawCodeAttribute}><div class="code-block-language-hint">${escapedLabel}</div>${renderedFence}</div>`
+    headings.push({ level, text, id: nextHeadingId(text) })
+  }
+
+  return headings
+}
+
+function applyHeadingIds(html: string, headings: MarkdownHeading[]): string {
+  if (!html || typeof DOMParser === 'undefined') return html
+
+  const parser = new DOMParser()
+  const document = parser.parseFromString(`<body>${html}</body>`, 'text/html')
+  const headingElements = Array.from(document.body.querySelectorAll('h1,h2,h3,h4,h5,h6'))
+
+  for (let index = 0; index < headingElements.length; index += 1) {
+    const heading = headings[index]
+    if (!heading) break
+    headingElements[index].setAttribute('id', heading.id)
+  }
+
+  return document.body.innerHTML
+}
+
+function generateTocHtml(headings: MarkdownHeading[]): string {
+  if (!headings.length) return ''
+
+  const parts: string[] = ['<div class="markdown-toc" aria-label="Table of contents"><ul>']
+  const stack: number[] = [headings[0].level]
+
+  for (let index = 0; index < headings.length; index += 1) {
+    const heading = headings[index]
+    const previousLevel = index === 0 ? heading.level : headings[index - 1].level
+
+    if (index > 0 && heading.level > previousLevel) {
+      for (let level = previousLevel; level < heading.level; level += 1) {
+        parts.push('<ul>')
+        stack.push(level + 1)
+      }
+    } else if (heading.level < previousLevel) {
+      for (let level = previousLevel; level > heading.level; level -= 1) {
+        parts.push('</li></ul>')
+        stack.pop()
+      }
+      parts.push('</li>')
+    } else if (index > 0) {
+      parts.push('</li>')
+    }
+
+    const escapedText = baseMarkdown.utils.escapeHtml(heading.text)
+    const escapedId = baseMarkdown.utils.escapeHtml(heading.id)
+    parts.push(`<li><a href="#${escapedId}">${escapedText}</a>`)
+  }
+
+  while (stack.length > 1) {
+    parts.push('</li></ul>')
+    stack.pop()
+  }
+
+  parts.push('</li></ul></div>')
+  return parts.join('')
+}
+
+function injectTocDirective(html: string, headings: MarkdownHeading[]): string {
+  if (!/<!--\s*TOC\s*-->/.test(html)) return html
+  return html.replace(/<!--\s*TOC\s*-->/g, generateTocHtml(headings))
 }
 
 /**
- * Renders markdown text to HTML
- * @param markdown - The markdown text to render
- * @returns HTML string (empty string if input is empty)
+ * Gets table-of-contents headings from markdown.
+ * @param markdown - Markdown source content.
+ * @returns Ordered heading entries with stable ids.
+ */
+export function getTocHeadings(markdown: string): TocHeading[] {
+  if (!markdown) return []
+  return collectHeadings(markdown)
+}
+
+/**
+ * Renders markdown text to HTML.
+ * @param markdown - The markdown text to render.
+ * @returns HTML string (empty string if input is empty).
  */
 export function renderMarkdown(markdown: string): string {
   if (!markdown) return ''
+
+  const headings = collectHeadings(markdown)
   const {
     markdown: markdownWithReferences,
     definitions,
     referencesByLabel,
   } = parseFootnotes(markdown)
-  const html = `${md.render(markdownWithReferences)}${renderFootnotes(definitions, referencesByLabel)}`
-  const withGithubCallouts = renderGithubCallouts(html)
+
+  const renderedBody = markdownRenderer.render(markdownWithReferences)
+  const withHeadingIds = applyHeadingIds(renderedBody, headings)
+  const withTocDirective = injectTocDirective(withHeadingIds, headings)
+  const withFootnotes = `${withTocDirective}${renderFootnotes(
+    definitions,
+    referencesByLabel,
+    markdownRenderer
+  )}`
+  const withGithubCallouts = renderGithubCallouts(withFootnotes)
   const withTaskLists = renderTaskLists(withGithubCallouts)
   return sanitizeGithubSafeHtml(withTaskLists)
 }
 
 /**
- * Extracts the first heading from markdown text
- * @param markdown - The markdown text to parse
- * @returns The text content of the first heading, or null if none found
+ * Extracts the first heading from markdown text.
+ * @param markdown - The markdown text to parse.
+ * @returns The text content of the first heading, or null if none found.
  */
 export function getFirstHeading(markdown: string): string | null {
   if (!markdown) return null
 
-  // Use a fresh instance to avoid side effects or state issues,
-  // though parse() is generally stateless.
-  // We can reuse the exported md instance if we want to share config.
-  const tokens = md.parse(markdown, {})
+  const tokens = baseMarkdown.parse(markdown, {})
 
-  for (let i = 0; i < tokens.length; i++) {
+  for (let i = 0; i < tokens.length; i += 1) {
     if (tokens[i].type === 'heading_open') {
-      // The next token should be inline content
       const nextToken = tokens[i + 1]
       if (nextToken && nextToken.type === 'inline') {
         return nextToken.content

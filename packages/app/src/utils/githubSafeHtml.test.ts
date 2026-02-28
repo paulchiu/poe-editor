@@ -55,4 +55,15 @@ describe('sanitizeGithubSafeHtml', () => {
 
     expect(sanitized).toBe('<input type="checkbox" checked="">')
   })
+
+  it('keeps extended markdown tags and heading ids', () => {
+    const html =
+      '<h2 id="section-a">Section A</h2><dl><dt>Term</dt><dd><mark>x</mark> H<sub>2</sub>O 19<sup>th</sup></dd></dl>'
+    const sanitized = sanitizeGithubSafeHtml(html)
+
+    expect(sanitized).toContain('<h2 id="section-a">Section A</h2>')
+    expect(sanitized).toContain(
+      '<dl><dt>Term</dt><dd><mark>x</mark> H<sub>2</sub>O 19<sup>th</sup></dd></dl>'
+    )
+  })
 })

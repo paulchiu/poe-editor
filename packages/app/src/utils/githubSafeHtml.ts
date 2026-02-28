@@ -3,7 +3,10 @@ const ALLOWED_TAGS = new Set([
   'blockquote',
   'br',
   'code',
+  'dd',
   'del',
+  'dl',
+  'dt',
   'details',
   'div',
   'em',
@@ -51,6 +54,12 @@ const GLOBAL_ALLOWED_ATTRIBUTES = new Set([
   'title',
 ])
 const TAG_ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {
+  h1: new Set(['id']),
+  h2: new Set(['id']),
+  h3: new Set(['id']),
+  h4: new Set(['id']),
+  h5: new Set(['id']),
+  h6: new Set(['id']),
   a: new Set(['href', 'title']),
   details: new Set(['open']),
   img: new Set(['align', 'alt', 'height', 'src', 'title', 'width']),

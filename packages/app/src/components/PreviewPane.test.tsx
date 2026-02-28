@@ -97,13 +97,13 @@ describe('PreviewPane', () => {
     const { rerender } = render(<PreviewPane htmlContent={renderedHtml} />)
 
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: 'Copy code block' })).toHaveLength(8)
+      expect(screen.getAllByRole('button', { name: 'Copy code block' })).toHaveLength(9)
     })
 
     rerender(<PreviewPane htmlContent={renderedHtml} />)
 
     await waitFor(() => {
-      expect(screen.getAllByRole('button', { name: 'Copy code block' })).toHaveLength(8)
+      expect(screen.getAllByRole('button', { name: 'Copy code block' })).toHaveLength(9)
     })
   })
 

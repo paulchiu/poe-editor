@@ -8,6 +8,7 @@ import { copyToClipboard, stripHtml } from '@/utils/clipboard'
 import { splitHtmlAtMermaid } from '@/utils/splitHtmlAtMermaid'
 import { MermaidDiagram } from '@/components/MermaidDiagram'
 import type { MermaidColorMode } from '@/utils/mermaidTheme'
+import type { TocHeading } from '@/utils/markdown'
 
 interface PreviewPaneProps {
   htmlContent: string
@@ -17,6 +18,8 @@ interface PreviewPaneProps {
   colorMode?: MermaidColorMode
   printFriendly?: boolean
   bodyClassName?: string
+  tocHeadings?: TocHeading[]
+  showTocPanel?: boolean
 }
 
 const CLIPBOARD_FAILURE_HINT =
@@ -36,6 +39,8 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
       colorMode = 'light',
       printFriendly = false,
       bodyClassName = 'markdown-body',
+      tocHeadings = [],
+      showTocPanel = false,
     },
     ref
   ): ReactElement => {
@@ -295,6 +300,24 @@ export const PreviewPane = forwardRef<HTMLDivElement, PreviewPaneProps>(
                 </TooltipContent>
               </Tooltip>
             </div>
+          )}
+
+          {showTocPanel && tocHeadings.length > 0 && (
+            <nav
+              className="mb-6 rounded-md border border-border/60 bg-muted/20 p-4"
+              aria-label="Table of contents"
+            >
+              <p className="mb-2 text-sm font-semibold">Table of Contents</p>
+              <ul className="space-y-1 text-sm">
+                {tocHeadings.map((heading) => (
+                  <li key={heading.id} style={{ marginLeft: `${(heading.level - 1) * 0.75}rem` }}>
+                    <a href={`#${heading.id}`} className="text-primary hover:underline">
+                      {heading.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           )}
 
           {segments.map((segment, i) =>
