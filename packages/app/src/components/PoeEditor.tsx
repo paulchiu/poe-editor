@@ -144,7 +144,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   )
 
   // Editor preferences
-  const { startEmpty, toggleStartEmpty } = useEditorPreferences()
+  const { startEmpty, toggleStartEmpty, showTocPanel, toggleShowTocPanel } = useEditorPreferences()
 
   // URL state management
   const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
@@ -575,6 +575,8 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
           toggleLineNumbers={toggleLineNumbers}
           startEmpty={startEmpty}
           toggleStartEmpty={toggleStartEmpty}
+          showTocPanel={showTocPanel}
+          toggleShowTocPanel={toggleShowTocPanel}
           documentMenuRef={documentMenuRef}
           spellCheck={spellCheck}
           toggleSpellCheck={toggleSpellCheck}
@@ -653,7 +655,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
                         onToggleLayout={handleTogglePreview}
                         colorMode={colorMode}
                         tocHeadings={tocHeadings}
-                        showTocPanel
+                        showTocPanel={showTocPanel}
                       />
                     </div>
                   </ResizablePanel>
@@ -719,7 +721,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
                   onTaskListToggle={handleTaskListToggle}
                   colorMode={colorMode}
                   tocHeadings={tocHeadings}
-                  showTocPanel
+                  showTocPanel={showTocPanel}
                 />
               </div>
             </div>
@@ -734,7 +736,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
           printFriendly
           bodyClassName="poe-editor-print-markdown-body"
           tocHeadings={tocHeadings}
-          showTocPanel
+          showTocPanel={showTocPanel}
         />
       </div>
     </TooltipProvider>

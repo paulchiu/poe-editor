@@ -4,15 +4,19 @@ const STORAGE_KEY = 'poe-editor-preferences'
 
 interface EditorPreferences {
   startEmpty: boolean
+  showTocPanel: boolean
 }
 
 const DEFAULT_PREFERENCES: EditorPreferences = {
   startEmpty: false,
+  showTocPanel: false,
 }
 
 interface UseEditorPreferencesReturn {
   startEmpty: boolean
+  showTocPanel: boolean
   toggleStartEmpty: () => void
+  toggleShowTocPanel: () => void
 }
 
 /**
@@ -44,6 +48,13 @@ export function useEditorPreferences(): UseEditorPreferencesReturn {
     }))
   }
 
+  const toggleShowTocPanel = (): void => {
+    setPreferences((current) => ({
+      ...current,
+      showTocPanel: !current.showTocPanel,
+    }))
+  }
+
   // Persist preferences to localStorage whenever they change
   useEffect(() => {
     try {
@@ -55,6 +66,8 @@ export function useEditorPreferences(): UseEditorPreferencesReturn {
 
   return {
     startEmpty: preferences.startEmpty,
+    showTocPanel: preferences.showTocPanel,
     toggleStartEmpty,
+    toggleShowTocPanel,
   }
 }

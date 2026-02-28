@@ -289,6 +289,8 @@ interface EditorToolbarProps {
   toggleLineNumbers?: () => void
   startEmpty?: boolean
   toggleStartEmpty?: () => void
+  showTocPanel?: boolean
+  toggleShowTocPanel?: () => void
   documentMenuRef?: RefObject<HTMLButtonElement | null>
   spellCheck?: boolean
   toggleSpellCheck?: () => void
@@ -342,6 +344,8 @@ export function EditorToolbar({
   toggleLineNumbers,
   startEmpty,
   toggleStartEmpty,
+  showTocPanel,
+  toggleShowTocPanel,
   documentMenuRef,
   spellCheck,
   toggleSpellCheck,
@@ -799,6 +803,10 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={toggleStartEmpty}>
               <File className="size-4" />
               {startEmpty ? 'Start with Default Content' : 'Start with Empty Editor'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleShowTocPanel}>
+              <AlignLeft className="size-4" />
+              {showTocPanel ? 'Hide TOC Panel' : 'Show TOC Panel'}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenImportExport}>
               <ArrowRightLeft className="size-4" />
