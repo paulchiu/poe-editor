@@ -7,8 +7,10 @@ import {
 interface UseEditorPreferencesReturn {
   startEmpty: boolean
   showTocPanel: boolean
+  showEmojiPicker: boolean
   toggleStartEmpty: () => void
   toggleShowTocPanel: () => void
+  toggleShowEmojiPicker: () => void
 }
 
 /**
@@ -22,6 +24,9 @@ export function useEditorPreferences(): UseEditorPreferencesReturn {
   const [showTocPanel, setShowTocPanel] = useState<boolean>(() =>
     getBooleanEditorPreference('showTocPanel', false)
   )
+  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(() =>
+    getBooleanEditorPreference('emojiPicker', true)
+  )
 
   const toggleStartEmpty = (): void => {
     setStartEmpty((current) => !current)
@@ -29,6 +34,10 @@ export function useEditorPreferences(): UseEditorPreferencesReturn {
 
   const toggleShowTocPanel = (): void => {
     setShowTocPanel((current) => !current)
+  }
+
+  const toggleShowEmojiPicker = (): void => {
+    setShowEmojiPicker((current) => !current)
   }
 
   useEffect(() => {
@@ -39,10 +48,16 @@ export function useEditorPreferences(): UseEditorPreferencesReturn {
     setBooleanEditorPreference('showTocPanel', showTocPanel)
   }, [showTocPanel])
 
+  useEffect(() => {
+    setBooleanEditorPreference('emojiPicker', showEmojiPicker)
+  }, [showEmojiPicker])
+
   return {
     startEmpty,
     showTocPanel,
+    showEmojiPicker,
     toggleStartEmpty,
     toggleShowTocPanel,
+    toggleShowEmojiPicker,
   }
 }

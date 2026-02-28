@@ -46,11 +46,13 @@ describe('EditorToolbar', () => {
     toggleLineNumbers: vi.fn(),
     toggleStartEmpty: vi.fn(),
     toggleShowTocPanel: vi.fn(),
+    toggleShowEmojiPicker: vi.fn(),
     toggleSpellCheck: vi.fn(),
     showWordCount: false,
     showLineNumbers: false,
     startEmpty: false,
     showTocPanel: false,
+    showEmojiPicker: true,
     spellCheck: false,
   })
 
@@ -201,6 +203,10 @@ describe('EditorToolbar', () => {
     await user.click(screen.getByRole('button', { name: 'Menu' }))
     await user.click(await screen.findByText('Show TOC Panel'))
     expect(props.toggleShowTocPanel).toHaveBeenCalledTimes(1)
+
+    await user.click(screen.getByRole('button', { name: 'Menu' }))
+    await user.click(await screen.findByText('Disable Emoji Picker'))
+    expect(props.toggleShowEmojiPicker).toHaveBeenCalledTimes(1)
 
     await user.click(screen.getByRole('button', { name: 'Menu' }))
     await user.click(await screen.findByText('Import/Export Transformers'))

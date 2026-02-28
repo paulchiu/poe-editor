@@ -12,6 +12,10 @@ export function buildEditorOptions(
   return {
     wordWrap: 'on',
     minimap: { enabled: false },
+    quickSuggestions: false,
+    suggestOnTriggerCharacters: false,
+    wordBasedSuggestions: 'off',
+    inlineSuggest: { enabled: false },
     lineNumbers: showLineNumbers ? 'on' : 'off',
     fontSize: 14,
     lineHeight: 22,

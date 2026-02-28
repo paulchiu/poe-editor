@@ -87,6 +87,7 @@ import {
   Rows,
   SpellCheck,
   Check,
+  Smile,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/transformer/constants'
 import { cn } from '@/utils/classnames'
@@ -291,6 +292,8 @@ interface EditorToolbarProps {
   toggleStartEmpty?: () => void
   showTocPanel?: boolean
   toggleShowTocPanel?: () => void
+  showEmojiPicker?: boolean
+  toggleShowEmojiPicker?: () => void
   documentMenuRef?: RefObject<HTMLButtonElement | null>
   spellCheck?: boolean
   toggleSpellCheck?: () => void
@@ -346,6 +349,8 @@ export function EditorToolbar({
   toggleStartEmpty,
   showTocPanel,
   toggleShowTocPanel,
+  showEmojiPicker,
+  toggleShowEmojiPicker,
   documentMenuRef,
   spellCheck,
   toggleSpellCheck,
@@ -807,6 +812,10 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={toggleShowTocPanel}>
               <AlignLeft className="size-4" />
               {showTocPanel ? 'Hide TOC Panel' : 'Show TOC Panel'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggleShowEmojiPicker}>
+              <Smile className="size-4" />
+              {showEmojiPicker ? 'Disable Emoji Picker' : 'Enable Emoji Picker'}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenImportExport}>
               <ArrowRightLeft className="size-4" />

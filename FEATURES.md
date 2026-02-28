@@ -18,7 +18,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 ### Document and Session
 
 | Feature                                    | Notes                                                                                       |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------- |
+|--------------------------------------------|---------------------------------------------------------------------------------------------|
 | URL-based document persistence             | Content is compressed into the URL hash; no login or backend storage required.              |
 | Share links with readable metadata         | Shared URLs include a title/snippet path plus compressed hash payload.                      |
 | Share preview hero images                  | Social previews can use `?hero=<image-url>`; when multiple doc images exist, first is used. |
@@ -30,16 +30,17 @@ Poe includes standard Markdown editor functionality and a set of unique features
 ### Preview and Rendering
 
 | Feature                            | Notes                                                                                                                                                                                                                         |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Mermaid diagram rendering          | Mermaid code blocks render as diagrams in preview.                                                                                                                                                                            |
 | Print-friendly preview/export      | Browser print renders styled, non-interactive output (black-on-white), expands toggles, and forces Mermaid diagram legibility.                                                                                                |
 | Code fence language headers        | Fenced code blocks with a language show a header label.                                                                                                                                                                       |
+| Interactive task list checkboxes   | Markdown task items (`- [ ]` / `- [x]`) render as clickable checkboxes in preview and update source markdown state.                                                                                                           |
 | GitHub-safe HTML tag rendering     | Preview supports a sanitized subset of common GitHub-safe HTML tags (e.g., `details`, `kbd`, tables, and images).                                                                                                             |
 | GitHub callout rendering           | GitHub alert syntax blockquotes (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`) render with `markdown-alert` styling.                                                                                       |
-| Interactive task list checkboxes   | Markdown task items (`- [ ]` / `- [x]`) render as clickable checkboxes in preview and update source markdown state.                                                                                                           |
 | GitHub-style strikethrough         | Tilde-wrapped text (`~~text~~`) renders with strikethrough semantics across paragraphs, lists, blockquotes, and table cells.                                                                                                  |
 | GitHub-style autolink literals     | Bare URL/email literals are auto-linked in preview, excluding inline/fenced code.                                                                                                                                             |
 | GitHub-style footnotes             | Footnote references and definitions (`[^1]`) render as superscript links with a grouped footnotes section and backreferences.                                                                                                 |
+| GitHub-style emoji shortcodes      | Emoji shortcodes like `:smile:` render as Unicode in preview; emoji support is loaded on-demand only when shortcode patterns are detected.                                                                                    |
 | Extended markdown pack             | Built-in non-GFM enhancements include `<!-- TOC -->` directive, superscript/subscript (`^...^`, `~...~`), highlight (`==...==`), and definition lists (`dl/dt/dd`); preview TOC panel visibility is configurable in settings. |
 | Synchronized editor/preview scroll | Scroll sync uses ratio-based matching between Monaco and preview.                                                                                                                                                             |
 | Preview rich-text copy             | Copy supports both HTML and plain text where browser APIs allow.                                                                                                                                                              |
@@ -49,19 +50,19 @@ Poe includes standard Markdown editor functionality and a set of unique features
 ### Editing and Input
 
 | Feature                                 | Notes                                                                                                                                                                                                                                   |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Editor auto-focus on load               | When the editor pane is visible at startup, Monaco receives focus automatically so typing can begin immediately.                                                                                                                        |
+|-----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Enhanced Vim mode (Monaco)              | Includes wrapped-line motions, custom bracket/quote/fence matching, `%` jumps between opening and closing sets, and reliable `H/M/L` high-middle-low cursor jumps (document-relative when file fits view, viewport-relative otherwise). |
-| Vim viewport centering (`zz`)           | In Vim mode, `zz` centers the cursor line in the editor viewport.                                                                                                                                                                           |
-| Browser-aware Vim clipboard behavior    | Vim yank writes to system clipboard + register; visual-mode yank restores cursor to selection start; visual-char mode renders cursor at Vim head position; `p/P` stays register-based (due to browser limitations).                     |
+| Vim viewport centering (`zz`)           | In Vim mode, `zz` centers the cursor line in the editor viewport.                                                                                                                                                                       |
 | Vim spell and wrap options              | Supports Vim `:set spell` sync and `:set wrap`/`:set nowrap` behavior.                                                                                                                                                                  |
 | Spell check with dictionary integration | Monaco spellcheck uses `typo-js` dictionary data.                                                                                                                                                                                       |
+| Browser-aware Vim clipboard behavior    | Vim yank writes to system clipboard + register; visual-mode yank restores cursor to selection start; visual-char mode renders cursor at Vim head position; `p/P` stays register-based (due to browser limitations).                     |
+| Emoji shortcode picker                  | Typing `:` in the editor opens a searchable picker near the cursor that inserts GitHub-style shortcode text (e.g., `:smile:`/`:+1:`); shortcode data is lazy-loaded on first trigger and the picker can be disabled in settings.        |
 | Auto-continue lists and blockquotes     | Enter key continues or exits list/quote prefixes intelligently, including preserving task list checked state for new items.                                                                                                             |
 
 ### Markdown Table
 
 | Feature                         | Notes                                                       |
-| ------------------------------- | ----------------------------------------------------------- |
+|---------------------------------|-------------------------------------------------------------|
 | Markdown table editing toolkit  | Insert/delete rows and columns, plus a format-table action. |
 | Table keyboard navigation       | `Tab` / `Shift+Tab` navigate table cells in-editor.         |
 | CJK/emoji-aware table alignment | Table formatter accounts for wide character display width.  |
@@ -71,7 +72,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 Full operation details are listed in [Built-In Transformer Operations](#built-in-transformer-operations).
 
 | Feature                               | Notes                                                                    |
-| ------------------------------------- | ------------------------------------------------------------------------ |
+|---------------------------------------|--------------------------------------------------------------------------|
 | Transformer pipelines (27 operations) | Build reusable pipelines and apply them to selected text.                |
 | Pipeline drag-and-drop reorder        | Reorder pipeline buttons in the toolbar and steps in the workbench.      |
 | Transformer GUI + JSON editing modes  | Switch between visual builder and JSON mode with schema validation.      |
