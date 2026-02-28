@@ -23,6 +23,7 @@ const ALLOWED_TAGS = new Set([
   'ol',
   'p',
   'pre',
+  'section',
   'span',
   'strong',
   'sub',
@@ -46,6 +47,7 @@ const GLOBAL_ALLOWED_ATTRIBUTES = new Set([
   'data-language',
   'data-task-index',
   'data-raw-code',
+  'id',
   'title',
 ])
 const TAG_ALLOWED_ATTRIBUTES: Record<string, Set<string>> = {

@@ -47,6 +47,70 @@ describe('renderMarkdown', () => {
     expect(renderMarkdown('')).toBe('')
   })
 
+  it('should render strikethrough across common markdown containers', () => {
+    const markdown = `~~paragraph~~
+
+- ~~list item~~
+
+> ~~blockquote~~
+
+| col |
+| --- |
+| ~~table cell~~ |`
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<p><del>paragraph</del></p>')
+    expect(html).toContain('<li><del>list item</del></li>')
+    expect(html).toContain('<blockquote>')
+    expect(html).toContain('<p><del>blockquote</del></p>')
+    expect(html).toContain('<td><del>table cell</del></td>')
+  })
+
+  it('should autolink URL and email literals but skip code spans and fences', () => {
+    const markdown = `Visit https://example.com and www.example.com or email a@b.com.
+
+\`https://example.com a@b.com\`
+
+\`\`\`
+https://example.com
+a@b.com
+\`\`\``
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<a href="https://example.com">https://example.com</a>')
+    expect(html).toContain('<a href="http://www.example.com">www.example.com</a>')
+    expect(html).toContain('<a href="mailto:a@b.com">a@b.com</a>')
+    expect(html).toContain('<code>https://example.com a@b.com</code>')
+    expect(html).toContain('<pre><code class="hljs">')
+    expect(html).toContain('https:<span class="hljs-comment">//example.com</span>')
+    expect(html).toContain(
+      'a@<span class="hljs-selector-tag">b</span><span class="hljs-selector-class">.com</span>'
+    )
+    expect(html).not.toContain('<code><a href=')
+  })
+
+  it('should render footnotes with references, backrefs, and multi-paragraph definitions', () => {
+    const markdown = `Alpha[^1] and beta[^2] and alpha again[^1].
+
+[^1]: First footnote.
+
+    Continued paragraph.
+
+[^2]: Second footnote.`
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('class="footnote-ref"')
+    expect(html).toContain('id="fnref1"')
+    expect(html).toContain('href="#fn1"')
+    expect(html).toContain('id="fnref1:1"')
+    expect(html).toContain('id="fn1"')
+    expect(html).toContain('id="fn2"')
+    expect(html).toContain('<section class="footnotes">')
+    expect(html).toContain('class="footnote-backref"')
+    expect(html).toContain('<p>First footnote.</p>')
+    expect(html).toContain('<p>Continued paragraph.')
+  })
+
   it('should render links', () => {
     const markdown = '[link](https://example.com)'
     const html = renderMarkdown(markdown)

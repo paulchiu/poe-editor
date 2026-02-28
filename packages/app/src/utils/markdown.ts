@@ -60,6 +60,9 @@ const md = new MarkdownIt({
   typographer: true,
 }).use(highlightjs)
 
+md.renderer.rules.s_open = () => '<del>'
+md.renderer.rules.s_close = () => '</del>'
+
 const GITHUB_CALLOUT_MARKER_TO_TYPE = {
   NOTE: 'note',
   TIP: 'tip',
@@ -169,6 +172,113 @@ function renderTaskLists(html: string): string {
   return document.body.innerHTML
 }
 
+type FootnoteDefinition = {
+  index: number
+  label: string
+  content: string
+}
+
+type ParsedFootnotes = {
+  markdown: string
+  definitions: FootnoteDefinition[]
+  referencesByLabel: Map<string, string[]>
+}
+
+function parseFootnotes(markdown: string): ParsedFootnotes {
+  const lines = markdown.split('\n')
+  const keptLines: string[] = []
+  const definitionsByLabel = new Map<string, FootnoteDefinition>()
+  const definitionOrder: FootnoteDefinition[] = []
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const definitionMatch = lines[index].match(/^\[\^([^\]]+)\]:\s?(.*)$/)
+    if (!definitionMatch) {
+      keptLines.push(lines[index])
+      continue
+    }
+
+    const label = definitionMatch[1]
+    const contentLines = [definitionMatch[2]]
+
+    while (index + 1 < lines.length) {
+      const nextLine = lines[index + 1]
+      if (nextLine.startsWith('    ') || nextLine.startsWith('\t')) {
+        contentLines.push(nextLine.replace(/^(?: {4}|\t)/, ''))
+        index += 1
+        continue
+      }
+
+      if (nextLine.trim().length === 0) {
+        contentLines.push('')
+        index += 1
+        continue
+      }
+
+      break
+    }
+
+    const existing = definitionsByLabel.get(label)
+    if (existing) {
+      existing.content = contentLines.join('\n').trim()
+      continue
+    }
+
+    const definition: FootnoteDefinition = {
+      index: definitionOrder.length + 1,
+      label,
+      content: contentLines.join('\n').trim(),
+    }
+
+    definitionsByLabel.set(label, definition)
+    definitionOrder.push(definition)
+  }
+
+  const referenceCounts = new Map<string, number>()
+  const referencesByLabel = new Map<string, string[]>()
+  const markdownWithReferences = keptLines
+    .join('\n')
+    .replace(/\[\^([^\]]+)\]/g, (match, label: string) => {
+      const definition = definitionsByLabel.get(label)
+      if (!definition) return match
+
+      const currentCount = referenceCounts.get(label) ?? 0
+      const referenceId =
+        currentCount === 0 ? `fnref${definition.index}` : `fnref${definition.index}:${currentCount}`
+      const references = referencesByLabel.get(label) ?? []
+      references.push(referenceId)
+      referencesByLabel.set(label, references)
+      referenceCounts.set(label, currentCount + 1)
+
+      return `<sup class="footnote-ref"><a href="#fn${definition.index}" id="${referenceId}">[${definition.index}]</a></sup>`
+    })
+
+  return {
+    markdown: markdownWithReferences,
+    definitions: definitionOrder,
+    referencesByLabel,
+  }
+}
+
+function renderFootnotes(
+  definitions: FootnoteDefinition[],
+  referencesByLabel: Map<string, string[]>
+): string {
+  if (definitions.length === 0) return ''
+
+  const items = definitions
+    .map((definition) => {
+      const renderedContent = md.render(definition.content).trim()
+      const backrefs = (referencesByLabel.get(definition.label) ?? [])
+        .map((referenceId) => `<a href="#${referenceId}" class="footnote-backref">↩︎</a>`)
+        .join(' ')
+
+      return `<li id="fn${definition.index}" class="footnote-item">${renderedContent}<p>${backrefs}</p></li>`
+    })
+    .join('')
+
+  return `<hr class="footnotes-sep"><section class="footnotes"><ol class="footnotes-list">${items}</ol></section>`
+}
+
 const defaultFenceRenderer = md.renderer.rules.fence?.bind(md.renderer.rules)
 
 md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
@@ -198,7 +308,12 @@ md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
  */
 export function renderMarkdown(markdown: string): string {
   if (!markdown) return ''
-  const html = md.render(markdown)
+  const {
+    markdown: markdownWithReferences,
+    definitions,
+    referencesByLabel,
+  } = parseFootnotes(markdown)
+  const html = `${md.render(markdownWithReferences)}${renderFootnotes(definitions, referencesByLabel)}`
   const withGithubCallouts = renderGithubCallouts(html)
   const withTaskLists = renderTaskLists(withGithubCallouts)
   return sanitizeGithubSafeHtml(withTaskLists)

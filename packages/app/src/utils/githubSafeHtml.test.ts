@@ -43,10 +43,10 @@ describe('sanitizeGithubSafeHtml', () => {
     expect(sanitized).not.toContain('onclick')
   })
 
-  it('unwraps unsupported tags while preserving safe children', () => {
-    const html = '<section><p><strong>hello</strong> world</p></section>'
+  it('preserves section tags used by footnotes', () => {
+    const html = '<section id="footnotes"><p><strong>hello</strong> world</p></section>'
     const sanitized = sanitizeGithubSafeHtml(html)
-    expect(sanitized).toBe('<p><strong>hello</strong> world</p>')
+    expect(sanitized).toBe('<section id="footnotes"><p><strong>hello</strong> world</p></section>')
   })
 
   it('removes non-checkbox input elements', () => {
