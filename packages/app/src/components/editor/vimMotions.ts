@@ -5,11 +5,7 @@ import {
   findStandardBracketTarget,
 } from './vimBracketHelpers'
 import { isDisplayLineEnabledForEditor } from './vimDisplayLine'
-import {
-  type CursorHead,
-  type VisibleLineBounds,
-  vimMotionLineUtils,
-} from './vimMotionLineUtils'
+import { type CursorHead, type VisibleLineBounds, vimMotionLineUtils } from './vimMotionLineUtils'
 import { findMarkdownParagraphTargetLine } from './vimMotionParagraphUtils'
 
 const runRepeatedEditorCommandMotion = (
@@ -108,7 +104,10 @@ export const moveToHighDocumentPositionMotion = (
   }
 
   const repeat = motionArgs.repeat || 1
-  const targetLineNumber = vimMotionLineUtils.clampLineNumber(bounds.startLineNumber + repeat - 1, bounds)
+  const targetLineNumber = vimMotionLineUtils.clampLineNumber(
+    bounds.startLineNumber + repeat - 1,
+    bounds
+  )
   const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
 
   return { line: targetLineNumber - 1, ch: targetColumn - 1 }
@@ -158,7 +157,10 @@ export const moveToLowDocumentPositionMotion = (
   }
 
   const repeat = motionArgs.repeat || 1
-  const targetLineNumber = vimMotionLineUtils.clampLineNumber(bounds.endLineNumber - repeat + 1, bounds)
+  const targetLineNumber = vimMotionLineUtils.clampLineNumber(
+    bounds.endLineNumber - repeat + 1,
+    bounds
+  )
   const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
 
   return { line: targetLineNumber - 1, ch: targetColumn - 1 }

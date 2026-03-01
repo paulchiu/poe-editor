@@ -34,7 +34,10 @@ export function TransformerWorkbenchGuiPane({
     <ScrollArea className="flex-1">
       <div
         ref={setNodeRef}
-        className={cn('p-4 flex flex-col gap-3 min-h-[500px] transition-colors', isOver && 'bg-primary/5')}
+        className={cn(
+          'p-4 flex flex-col gap-3 min-h-[500px] transition-colors',
+          isOver && 'bg-primary/5'
+        )}
       >
         {steps.length === 0 ? (
           <div

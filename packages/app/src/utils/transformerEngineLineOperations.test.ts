@@ -19,7 +19,11 @@ describe('transformerEngineLineOperations', () => {
   })
 
   it('filters empty and whitespace-only lines based on trim flag', () => {
-    const defaultFilter = applyLineOperationStep('a\n\n  \nb', createStep('filter-lines'), createContext())
+    const defaultFilter = applyLineOperationStep(
+      'a\n\n  \nb',
+      createStep('filter-lines'),
+      createContext()
+    )
     const trimFilter = applyLineOperationStep(
       'a\n\n  \nb',
       createStep('filter-lines', { trim: true }),
@@ -244,7 +248,11 @@ describe('transformerEngineLineOperations', () => {
   })
 
   it('returns null for unsupported line operations', () => {
-    const result = applyLineOperationStep('hello', createStep('change-case', { mode: 'upper' }), createContext())
+    const result = applyLineOperationStep(
+      'hello',
+      createStep('change-case', { mode: 'upper' }),
+      createContext()
+    )
     expect(result).toBeNull()
   })
 })

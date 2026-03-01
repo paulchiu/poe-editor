@@ -29,9 +29,7 @@ describe('transformer-engine', () => {
   })
 
   it('collects issues when using applyPipelineWithIssues', () => {
-    const pipeline = createPipeline([
-      createStep('format-json', { lines: true }, true, 'json-step'),
-    ])
+    const pipeline = createPipeline([createStep('format-json', { lines: true }, true, 'json-step')])
 
     const result = applyPipelineWithIssues('{"ok":1}\n{"bad":}', pipeline)
 

@@ -40,7 +40,9 @@ export function EditorPaneActionButtons({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            <p className="text-xs">{viewMode === 'split' ? 'Expand Editor' : 'Restore Split View'}</p>
+            <p className="text-xs">
+              {viewMode === 'split' ? 'Expand Editor' : 'Restore Split View'}
+            </p>
           </TooltipContent>
         </Tooltip>
       )}

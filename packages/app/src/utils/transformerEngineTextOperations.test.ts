@@ -4,8 +4,16 @@ import { createContext, createStep } from '@/utils/transformerEngineTestUtils'
 
 describe('transformerEngineTextOperations', () => {
   it('changes case for standard modes', () => {
-    const upper = applyTextOperationStep('hello', createStep('change-case', { mode: 'upper' }), createContext())
-    const lower = applyTextOperationStep('HELLO', createStep('change-case', { mode: 'lower' }), createContext())
+    const upper = applyTextOperationStep(
+      'hello',
+      createStep('change-case', { mode: 'upper' }),
+      createContext()
+    )
+    const lower = applyTextOperationStep(
+      'HELLO',
+      createStep('change-case', { mode: 'lower' }),
+      createContext()
+    )
     const title = applyTextOperationStep(
       'hello world',
       createStep('change-case', { mode: 'title' }),

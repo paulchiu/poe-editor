@@ -121,11 +121,14 @@ describe('formatting utils', () => {
       expect(replaceSelectionMock).toHaveBeenCalledWith(selectedResult)
     })
 
-    it.each(cases)('inserts template when selection is empty for $name', ({ formatter, insertedTemplate }) => {
-      getSelectionMock.mockReturnValue('')
-      formatter(mockEditor)
-      expect(insertTextMock).toHaveBeenCalledWith(insertedTemplate)
-    })
+    it.each(cases)(
+      'inserts template when selection is empty for $name',
+      ({ formatter, insertedTemplate }) => {
+        getSelectionMock.mockReturnValue('')
+        formatter(mockEditor)
+        expect(insertTextMock).toHaveBeenCalledWith(insertedTemplate)
+      }
+    )
   })
 
   describe('formatCodeBlock', () => {

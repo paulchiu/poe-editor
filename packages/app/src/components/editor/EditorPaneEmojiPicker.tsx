@@ -63,7 +63,10 @@ export function EditorPaneEmojiPicker({
                 key={entry.shortcode}
                 type="button"
                 variant="ghost"
-                className={cn('w-full justify-start gap-2', index === selectedIndex && 'bg-accent text-foreground')}
+                className={cn(
+                  'w-full justify-start gap-2',
+                  index === selectedIndex && 'bg-accent text-foreground'
+                )}
                 aria-label={`Insert :${entry.shortcode}:`}
                 aria-selected={index === selectedIndex}
                 onMouseEnter={() => onHoverIndex(index)}
