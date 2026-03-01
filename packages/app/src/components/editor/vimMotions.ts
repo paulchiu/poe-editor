@@ -5,185 +5,27 @@ import {
   findStandardBracketTarget,
 } from './vimBracketHelpers'
 import { isDisplayLineEnabledForEditor } from './vimDisplayLine'
+import {
+  type CursorHead,
+  type VisibleLineBounds,
+  vimMotionLineUtils,
+} from './vimMotionLineUtils'
+import { findMarkdownParagraphTargetLine } from './vimMotionParagraphUtils'
 
-interface VisibleLineBounds {
-  startLineNumber: number
-  endLineNumber: number
-}
-
-const PARAGRAPH_SEPARATOR_PATTERN = /^\s*$/
-const MARKDOWN_BLOCK_START_PATTERN =
-  /^\s{0,3}(?:#{1,6}\s+|>+\s?|(?:[-*+]\s+|\d+\.\s+)|(?:```|~~~)|(?:[-*_]\s*){3,})/
-
-const clampLineNumber = (lineNumber: number, bounds: VisibleLineBounds): number =>
-  Math.min(Math.max(lineNumber, bounds.startLineNumber), bounds.endLineNumber)
-
-const getFirstNonWhitespaceColumn = (cm: CodeMirrorAdapter, lineNumber: number): number => {
-  const model = cm.editor.getModel()
-  if (!model) {
-    return 1
-  }
-
-  const firstNonWhitespaceColumn = model.getLineFirstNonWhitespaceColumn(lineNumber)
-  return firstNonWhitespaceColumn > 0 ? firstNonWhitespaceColumn : 1
-}
-
-const getTargetLineBounds = (cm: CodeMirrorAdapter): VisibleLineBounds | null => {
-  const model = cm.editor.getModel()
-  if (!model) {
-    return null
-  }
-
-  const visibleRanges = cm.editor.getVisibleRanges()
-  const visibleRange = visibleRanges[0]
-  if (!visibleRange) {
-    return null
-  }
-
-  const totalLineCount = model.getLineCount()
-  const visibleLineCount = visibleRange.endLineNumber - visibleRange.startLineNumber + 1
-
-  if (totalLineCount <= visibleLineCount) {
-    return { startLineNumber: 1, endLineNumber: totalLineCount }
-  }
-
-  return {
-    startLineNumber: visibleRange.startLineNumber,
-    endLineNumber: visibleRange.endLineNumber,
-  }
-}
-
-const getModelLineBounds = (cm: CodeMirrorAdapter): VisibleLineBounds | null => {
-  const model = cm.editor.getModel()
-  if (!model) {
-    return null
-  }
-
-  return {
-    startLineNumber: 1,
-    endLineNumber: model.getLineCount(),
-  }
-}
-
-const withRepeatAdjustedHead = (
+const runRepeatedEditorCommandMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
-  repeat?: number
-): { line: number; ch: number } => {
-  if (!repeat || repeat <= 1) {
-    return head
+  head: CursorHead,
+  repeat: number,
+  command: string,
+  payload: Record<string, unknown>
+): CursorHead => {
+  cm.editor.setPosition(vimMotionLineUtils.toMonacoPosition(head))
+
+  for (let i = 0; i < repeat; i++) {
+    cm.editor.trigger('vim', command, payload)
   }
 
-  const bounds = getModelLineBounds(cm)
-  if (!bounds) {
-    return head
-  }
-
-  const targetLineNumber = clampLineNumber(head.line + repeat, bounds)
-  return {
-    line: targetLineNumber - 1,
-    ch: head.ch,
-  }
-}
-
-const isParagraphSeparatorLine = (lineContent: string): boolean =>
-  PARAGRAPH_SEPARATOR_PATTERN.test(lineContent)
-
-const isMarkdownBlockStartLine = (lineContent: string): boolean =>
-  MARKDOWN_BLOCK_START_PATTERN.test(lineContent)
-
-const findParagraphContentStart = (
-  model: { getLineContent: (lineNumber: number) => string },
-  line: number
-): number => {
-  let currentLine = line
-
-  while (currentLine > 1) {
-    const previousLine = model.getLineContent(currentLine - 1)
-    if (isParagraphSeparatorLine(previousLine)) {
-      break
-    }
-    if (isMarkdownBlockStartLine(previousLine)) {
-      return currentLine - 1
-    }
-    currentLine -= 1
-  }
-
-  return currentLine
-}
-
-const findNextParagraphStart = (
-  model: { getLineContent: (lineNumber: number) => string; getLineCount: () => number },
-  currentLine: number
-): number => {
-  const lineCount = model.getLineCount()
-  let line = Math.min(Math.max(currentLine, 1), lineCount)
-
-  while (line <= lineCount) {
-    const lineContent = model.getLineContent(line)
-
-    if (isMarkdownBlockStartLine(lineContent)) {
-      return line
-    }
-
-    if (isParagraphSeparatorLine(lineContent)) {
-      while (line <= lineCount && isParagraphSeparatorLine(model.getLineContent(line))) {
-        line += 1
-      }
-      if (line > lineCount) {
-        return lineCount
-      }
-      return isMarkdownBlockStartLine(model.getLineContent(line))
-        ? line
-        : findParagraphContentStart(model, line)
-    }
-
-    line += 1
-  }
-
-  return lineCount
-}
-
-const findPreviousParagraphStart = (
-  model: { getLineContent: (lineNumber: number) => string; getLineCount: () => number },
-  currentLine: number
-): number => {
-  const lineCount = model.getLineCount()
-  let line = Math.min(Math.max(currentLine, 1), lineCount)
-
-  while (line >= 1) {
-    const lineContent = model.getLineContent(line)
-
-    if (isMarkdownBlockStartLine(lineContent)) {
-      return line
-    }
-
-    if (isParagraphSeparatorLine(lineContent)) {
-      while (line >= 1 && isParagraphSeparatorLine(model.getLineContent(line))) {
-        line -= 1
-      }
-      if (line < 1) {
-        return 1
-      }
-      return isMarkdownBlockStartLine(model.getLineContent(line))
-        ? line
-        : findParagraphContentStart(model, line)
-    }
-
-    line -= 1
-  }
-
-  return 1
-}
-
-const getLogicalLineEndColumn = (cm: CodeMirrorAdapter, lineNumber: number): number => {
-  const model = cm.editor.getModel()
-  if (!model) {
-    return 1
-  }
-
-  const lineMaxColumn = model.getLineMaxColumn(lineNumber)
-  return lineMaxColumn > 1 ? lineMaxColumn - 1 : 1
+  return vimMotionLineUtils.toHeadPosition(cm.editor.getPosition(), head)
 }
 
 /**
@@ -195,24 +37,13 @@ const getLogicalLineEndColumn = (cm: CodeMirrorAdapter, lineNumber: number): num
  */
 export const moveByDisplayLinesMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
+  head: CursorHead,
   motionArgs: VimMotionArgs
-): { line: number; ch: number } => {
-  // Line/ch are 0-indexed in CM, 1-indexed in Monaco
-  const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
-  cm.editor.setPosition(startPos)
-
+): CursorHead => {
   const repeat = motionArgs.repeat || 1
   const command = motionArgs.forward ? 'cursorDown' : 'cursorUp'
 
-  for (let i = 0; i < repeat; i++) {
-    cm.editor.trigger('vim', command, {})
-  }
-
-  const newPos = cm.editor.getPosition()
-  if (!newPos) return { line: head.line, ch: head.ch }
-
-  return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+  return runRepeatedEditorCommandMotion(cm, head, repeat, command, {})
 }
 
 /**
@@ -224,23 +55,17 @@ export const moveByDisplayLinesMotion = (
  */
 export const moveByLogicalLinesMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
+  head: CursorHead,
   motionArgs: VimMotionArgs
-): { line: number; ch: number } => {
-  const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
-  cm.editor.setPosition(startPos)
-
+): CursorHead => {
   const repeat = motionArgs.repeat || 1
   const to = motionArgs.forward ? 'down' : 'up'
 
-  for (let i = 0; i < repeat; i++) {
-    cm.editor.trigger('vim', 'cursorMove', { to, by: 'line', value: 1 })
-  }
-
-  const newPos = cm.editor.getPosition()
-  if (!newPos) return { line: head.line, ch: head.ch }
-
-  return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+  return runRepeatedEditorCommandMotion(cm, head, repeat, 'cursorMove', {
+    to,
+    by: 'line',
+    value: 1,
+  })
 }
 
 /**
@@ -253,9 +78,9 @@ export const moveByLogicalLinesMotion = (
  */
 export const moveByConfigurableLinesMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
+  head: CursorHead,
   motionArgs: VimMotionArgs
-): { line: number; ch: number } => {
+): CursorHead => {
   if (isDisplayLineEnabledForEditor(cm.editor)) {
     return moveByDisplayLinesMotion(cm, head, motionArgs)
   }
@@ -274,17 +99,17 @@ export const moveByConfigurableLinesMotion = (
  */
 export const moveToHighDocumentPositionMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
+  head: CursorHead,
   motionArgs: VimMotionArgs
-): { line: number; ch: number } => {
-  const bounds = getTargetLineBounds(cm)
+): CursorHead => {
+  const bounds = vimMotionLineUtils.getTargetLineBounds(cm)
   if (!bounds) {
     return { line: head.line, ch: head.ch }
   }
 
   const repeat = motionArgs.repeat || 1
-  const targetLineNumber = clampLineNumber(bounds.startLineNumber + repeat - 1, bounds)
-  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+  const targetLineNumber = vimMotionLineUtils.clampLineNumber(bounds.startLineNumber + repeat - 1, bounds)
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
 
   return { line: targetLineNumber - 1, ch: targetColumn - 1 }
 }
@@ -299,16 +124,16 @@ export const moveToHighDocumentPositionMotion = (
  */
 export const moveToMiddleDocumentPositionMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
-  const bounds = getTargetLineBounds(cm)
+  head: CursorHead
+): CursorHead => {
+  const bounds = vimMotionLineUtils.getTargetLineBounds(cm)
   if (!bounds) {
     return { line: head.line, ch: head.ch }
   }
 
   const targetLineNumber =
     bounds.startLineNumber + Math.floor((bounds.endLineNumber - bounds.startLineNumber) / 2)
-  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
 
   return { line: targetLineNumber - 1, ch: targetColumn - 1 }
 }
@@ -324,17 +149,17 @@ export const moveToMiddleDocumentPositionMotion = (
  */
 export const moveToLowDocumentPositionMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
+  head: CursorHead,
   motionArgs: VimMotionArgs
-): { line: number; ch: number } => {
-  const bounds = getTargetLineBounds(cm)
+): CursorHead => {
+  const bounds = vimMotionLineUtils.getTargetLineBounds(cm)
   if (!bounds) {
     return { line: head.line, ch: head.ch }
   }
 
   const repeat = motionArgs.repeat || 1
-  const targetLineNumber = clampLineNumber(bounds.endLineNumber - repeat + 1, bounds)
-  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+  const targetLineNumber = vimMotionLineUtils.clampLineNumber(bounds.endLineNumber - repeat + 1, bounds)
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
 
   return { line: targetLineNumber - 1, ch: targetColumn - 1 }
 }
@@ -348,23 +173,26 @@ export const moveToLowDocumentPositionMotion = (
  */
 export const moveToMatchingBracketMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
+  head: CursorHead
+): CursorHead => {
   const model = cm.editor.getModel()
-  if (!model) return { line: head.line, ch: head.ch }
+  if (!model) {
+    return { line: head.line, ch: head.ch }
+  }
 
-  const position = { lineNumber: head.line + 1, column: head.ch + 1 }
+  const position = vimMotionLineUtils.toMonacoPosition(head)
   const lineContent = model.getLineContent(position.lineNumber)
 
-  // 1. Try Markdown Fences
   const fenceTarget = findMarkdownFenceTarget(model, position, lineContent)
-  if (fenceTarget) return fenceTarget
+  if (fenceTarget) {
+    return fenceTarget
+  }
 
-  // 2. Try Quotes
   const quoteTarget = findQuoteTarget(lineContent, head)
-  if (quoteTarget) return quoteTarget
+  if (quoteTarget) {
+    return quoteTarget
+  }
 
-  // 3. Fallback to standard bracket jumping
   return findStandardBracketTarget(cm, position, head)
 }
 
@@ -377,19 +205,12 @@ export const moveToMatchingBracketMotion = (
  */
 export const moveToStartOfDisplayLineMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
-  // Sync Monaco position
-  const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
-  cm.editor.setPosition(startPos)
-
-  // Trigger 'cursorHome' which usually handles display lines
+  head: CursorHead
+): CursorHead => {
+  cm.editor.setPosition(vimMotionLineUtils.toMonacoPosition(head))
   cm.editor.trigger('vim', 'cursorHome', {})
 
-  // Return new position
-  const newPos = cm.editor.getPosition()
-  if (!newPos) return { line: head.line, ch: head.ch }
-  return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+  return vimMotionLineUtils.toHeadPosition(cm.editor.getPosition(), head)
 }
 
 /**
@@ -401,28 +222,17 @@ export const moveToStartOfDisplayLineMotion = (
  */
 export const moveToEndOfDisplayLineMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
-  // Sync Monaco position
-  const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
-  cm.editor.setPosition(startPos)
-
-  // Trigger 'cursorEnd' which usually handles display lines
+  head: CursorHead
+): CursorHead => {
+  cm.editor.setPosition(vimMotionLineUtils.toMonacoPosition(head))
   cm.editor.trigger('vim', 'cursorEnd', {})
 
-  // cursorEnd moves to the position *after* the last character of the visual line.
-  // In Vim, $ (and g$) usually places the cursor *on* the last character.
-  // If we don't move left, the selection includes the character after the line end
-  // (which might be the start of the next visual line or the newline).
   const endPos = cm.editor.getPosition()
   if (endPos && endPos.column > 1) {
     cm.editor.trigger('vim', 'cursorLeft', {})
   }
 
-  // Return new position
-  const newPos = cm.editor.getPosition()
-  if (!newPos) return { line: head.line, ch: head.ch }
-  return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+  return vimMotionLineUtils.toHeadPosition(cm.editor.getPosition(), head)
 }
 
 /**
@@ -433,8 +243,8 @@ export const moveToEndOfDisplayLineMotion = (
  */
 export const moveToStartOfLogicalLineMotion = (
   _cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => ({
+  head: CursorHead
+): CursorHead => ({
   line: head.line,
   ch: 0,
 })
@@ -447,9 +257,9 @@ export const moveToStartOfLogicalLineMotion = (
  */
 export const moveToFirstNonWhitespaceLogicalLineMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
-  const targetColumn = getFirstNonWhitespaceColumn(cm, head.line + 1)
+  head: CursorHead
+): CursorHead => {
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, head.line + 1)
   return {
     line: head.line,
     ch: targetColumn - 1,
@@ -466,12 +276,12 @@ export const moveToFirstNonWhitespaceLogicalLineMotion = (
  */
 export const moveToEndOfLogicalLineMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
+  head: CursorHead,
   motionArgs: VimMotionArgs = {}
-): { line: number; ch: number } => {
-  const repeatAdjustedHead = withRepeatAdjustedHead(cm, head, motionArgs.repeat)
+): CursorHead => {
+  const repeatAdjustedHead = vimMotionLineUtils.withRepeatAdjustedHead(cm, head, motionArgs.repeat)
   const targetLineNumber = repeatAdjustedHead.line + 1
-  const targetColumn = getLogicalLineEndColumn(cm, targetLineNumber)
+  const targetColumn = vimMotionLineUtils.getLogicalLineEndColumn(cm, targetLineNumber)
 
   return {
     line: repeatAdjustedHead.line,
@@ -487,8 +297,8 @@ export const moveToEndOfLogicalLineMotion = (
  */
 export const moveToStartOfConfigurableLineMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
+  head: CursorHead
+): CursorHead => {
   if (isDisplayLineEnabledForEditor(cm.editor)) {
     return moveToStartOfDisplayLineMotion(cm, head)
   }
@@ -505,8 +315,8 @@ export const moveToStartOfConfigurableLineMotion = (
  */
 export const moveToFirstNonWhitespaceConfigurableLineMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
+  head: CursorHead
+): CursorHead => {
   if (isDisplayLineEnabledForEditor(cm.editor)) {
     return moveToStartOfDisplayLineMotion(cm, head)
   }
@@ -523,10 +333,10 @@ export const moveToFirstNonWhitespaceConfigurableLineMotion = (
  */
 export const moveToEndOfConfigurableLineMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
+  head: CursorHead,
   motionArgs: VimMotionArgs
-): { line: number; ch: number } => {
-  const repeatAdjustedHead = withRepeatAdjustedHead(cm, head, motionArgs.repeat)
+): CursorHead => {
+  const repeatAdjustedHead = vimMotionLineUtils.withRepeatAdjustedHead(cm, head, motionArgs.repeat)
 
   if (isDisplayLineEnabledForEditor(cm.editor)) {
     return moveToEndOfDisplayLineMotion(cm, repeatAdjustedHead)
@@ -544,9 +354,9 @@ export const moveToEndOfConfigurableLineMotion = (
  */
 export const moveToRelativeLineStartMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
+  head: CursorHead,
   motionArgs: VimMotionArgs
-): { line: number; ch: number } => {
+): CursorHead => {
   const model = cm.editor.getModel()
   if (!model) {
     return { line: head.line, ch: head.ch }
@@ -559,8 +369,8 @@ export const moveToRelativeLineStartMotion = (
     startLineNumber: 1,
     endLineNumber: model.getLineCount(),
   }
-  const targetLineNumber = clampLineNumber(head.line + 1 + lineDelta, bounds)
-  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+  const targetLineNumber = vimMotionLineUtils.clampLineNumber(head.line + 1 + lineDelta, bounds)
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
 
   return {
     line: targetLineNumber - 1,
@@ -578,9 +388,9 @@ export const moveToRelativeLineStartMotion = (
  */
 export const moveByMarkdownParagraphMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
+  head: CursorHead,
   motionArgs: VimMotionArgs
-): { line: number; ch: number } => {
+): CursorHead => {
   const model = cm.editor.getModel()
   if (!model) {
     return { line: head.line, ch: head.ch }
@@ -588,21 +398,11 @@ export const moveByMarkdownParagraphMotion = (
 
   const repeat = Math.max(motionArgs.repeat || 1, 1)
   const moveForward = motionArgs.forward !== false
-  const lineCount = model.getLineCount()
-
-  let targetLine = head.line + 1
-
-  for (let i = 0; i < repeat; i++) {
-    targetLine = moveForward
-      ? findNextParagraphStart(model, targetLine + 1)
-      : findPreviousParagraphStart(model, targetLine - 1)
-  }
-
-  const clampedTargetLine = Math.min(Math.max(targetLine, 1), lineCount)
-  const targetColumn = getFirstNonWhitespaceColumn(cm, clampedTargetLine)
+  const targetLine = findMarkdownParagraphTargetLine(model, head.line + 1, repeat, moveForward)
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLine)
 
   return {
-    line: clampedTargetLine - 1,
+    line: targetLine - 1,
     ch: targetColumn - 1,
   }
 }
