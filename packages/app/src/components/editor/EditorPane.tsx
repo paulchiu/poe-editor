@@ -30,6 +30,7 @@ interface EditorPaneProps {
   onFormat?: (type: 'bold' | 'italic' | 'link' | 'code') => void
   onCodeBlock?: () => void
   vimMode?: boolean
+  displayLineMotion?: boolean
   showWordCount?: boolean
   showLineNumbers?: boolean
   viewMode?: 'editor' | 'preview' | 'split'
@@ -115,6 +116,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       onFormat,
       onCodeBlock,
       vimMode,
+      displayLineMotion = false,
       showWordCount,
       showLineNumbers,
       viewMode,
@@ -394,7 +396,14 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       })
     }
 
-    useEditorVim({ editorInstance, editorRef, vimInstanceRef, statusBarRef, vimMode })
+    useEditorVim({
+      editorInstance,
+      editorRef,
+      vimInstanceRef,
+      statusBarRef,
+      vimMode,
+      displayLineMotion,
+    })
     useEditorSpellCheck({
       editorRef,
       monacoRef,

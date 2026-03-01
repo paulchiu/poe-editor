@@ -88,6 +88,7 @@ import {
   SpellCheck,
   Check,
   Smile,
+  WrapText,
 } from 'lucide-react'
 import { ICON_MAP } from '@/components/transformer/constants'
 import { cn } from '@/utils/classnames'
@@ -297,6 +298,8 @@ interface EditorToolbarProps {
   documentMenuRef?: RefObject<HTMLButtonElement | null>
   spellCheck?: boolean
   toggleSpellCheck?: () => void
+  displayLineMotion?: boolean
+  toggleDisplayLineMotion?: () => void
 }
 
 /**
@@ -354,6 +357,8 @@ export function EditorToolbar({
   documentMenuRef,
   spellCheck,
   toggleSpellCheck,
+  displayLineMotion,
+  toggleDisplayLineMotion,
 }: EditorToolbarProps): ReactElement {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false)
   const [pipelineToDelete, setPipelineToDelete] = useState<TransformationPipeline | null>(null)
@@ -797,17 +802,13 @@ export function EditorToolbar({
               <WholeWord className="size-4" />
               {showWordCount ? 'Hide Word Count' : 'Show Word Count'}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={toggleSpellCheck}>
-              <SpellCheck className="size-4" />
-              {spellCheck ? 'Disable Spell Check' : 'Enable Spell Check'}
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={toggleLineNumbers}>
               <Hash className="size-4" />
               {showLineNumbers ? 'Hide Line Numbers' : 'Show Line Numbers'}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={toggleStartEmpty}>
-              <File className="size-4" />
-              {startEmpty ? 'Start with Default Content' : 'Start with Empty Editor'}
+            <DropdownMenuItem onClick={toggleSpellCheck}>
+              <SpellCheck className="size-4" />
+              {spellCheck ? 'Disable Spell Check' : 'Enable Spell Check'}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={toggleShowTocPanel}>
               <AlignLeft className="size-4" />
@@ -816,6 +817,16 @@ export function EditorToolbar({
             <DropdownMenuItem onClick={toggleShowEmojiPicker}>
               <Smile className="size-4" />
               {showEmojiPicker ? 'Disable Emoji Picker' : 'Enable Emoji Picker'}
+            </DropdownMenuItem>
+            {vimModeEnabled && (
+              <DropdownMenuItem onClick={toggleDisplayLineMotion}>
+                <WrapText className="size-4" />
+                {displayLineMotion ? 'Logical Line Boundaries' : 'Display Line Boundaries'}
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={toggleStartEmpty}>
+              <File className="size-4" />
+              {startEmpty ? 'Start with Default Content' : 'Start with Empty Editor'}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenImportExport}>
               <ArrowRightLeft className="size-4" />

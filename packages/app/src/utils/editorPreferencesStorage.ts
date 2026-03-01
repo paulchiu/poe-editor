@@ -6,6 +6,7 @@ export type EditorPreferenceKey =
   | 'showWordCount'
   | 'showLineNumbers'
   | 'vimMode'
+  | 'displayLineMotion'
   | 'spellCheck'
   | 'emojiPicker'
 

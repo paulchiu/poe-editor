@@ -2,14 +2,22 @@ import type { editor } from 'monaco-editor'
 import { describe, it, expect, vi } from 'vitest'
 import type { CodeMirrorAdapter } from './vimTypes'
 import {
+  moveByConfigurableLinesMotion,
   moveByDisplayLinesMotion,
+  moveByLogicalLinesMotion,
+  moveByMarkdownParagraphMotion,
+  moveToEndOfConfigurableLineMotion,
   moveToEndOfDisplayLineMotion,
+  moveToFirstNonWhitespaceConfigurableLineMotion,
   moveToHighDocumentPositionMotion,
   moveToLowDocumentPositionMotion,
   moveToMiddleDocumentPositionMotion,
   moveToMatchingBracketMotion,
+  moveToRelativeLineStartMotion,
+  moveToStartOfConfigurableLineMotion,
   moveToStartOfDisplayLineMotion,
 } from './vimMotions'
+import { setDisplayLineEnabledForEditor } from './vimDisplayLine'
 
 interface Position {
   lineNumber: number
@@ -20,6 +28,7 @@ interface MockTextModel {
   getLineContent: (lineNumber: number) => string
   getLineCount: () => number
   getLineFirstNonWhitespaceColumn: (lineNumber: number) => number
+  getLineMaxColumn: (lineNumber: number) => number
 }
 
 const createModel = (lines: string[]): editor.ITextModel =>
@@ -30,6 +39,10 @@ const createModel = (lines: string[]): editor.ITextModel =>
       const line = lines[lineNumber - 1] ?? ''
       const firstNonWhitespaceIndex = line.search(/\S/)
       return firstNonWhitespaceIndex === -1 ? 0 : firstNonWhitespaceIndex + 1
+    },
+    getLineMaxColumn: (lineNumber: number) => {
+      const line = lines[lineNumber - 1] ?? ''
+      return line.length + 1
     },
   }) as unknown as editor.ITextModel
 
@@ -50,7 +63,7 @@ const createCodeMirrorAdapter = ({
     setPosition: vi.fn((next: Position) => {
       currentPosition = next
     }),
-    trigger: vi.fn((_source: string, command: string) => {
+    trigger: vi.fn((_source: string, command: string, payload?: { to?: string; by?: string }) => {
       if (command === 'cursorDown') {
         currentPosition = { ...currentPosition, lineNumber: currentPosition.lineNumber + 1 }
       }
@@ -71,6 +84,17 @@ const createCodeMirrorAdapter = ({
       }
       if (command === 'editor.action.jumpToBracket') {
         currentPosition = { lineNumber: currentPosition.lineNumber, column: 9 }
+      }
+      if (command === 'cursorMove' && payload?.by === 'line') {
+        if (payload.to === 'down') {
+          currentPosition = { ...currentPosition, lineNumber: currentPosition.lineNumber + 1 }
+        }
+        if (payload.to === 'up') {
+          currentPosition = {
+            ...currentPosition,
+            lineNumber: Math.max(1, currentPosition.lineNumber - 1),
+          }
+        }
       }
     }),
     getPosition: vi.fn(() => currentPosition),
@@ -116,6 +140,34 @@ describe('vimMotions', () => {
 
     const target = moveByDisplayLinesMotion(cm, { line: 1, ch: 1 }, { forward: true })
     expect(target).toEqual({ line: 1, ch: 1 })
+  })
+
+  it('moves by logical model lines', () => {
+    const cm = createCodeMirrorAdapter({ position: { lineNumber: 3, column: 5 } })
+    const target = moveByLogicalLinesMotion(cm, { line: 2, ch: 4 }, { repeat: 2, forward: true })
+    expect(target).toEqual({ line: 4, ch: 4 })
+    expect(cm.editor.trigger).toHaveBeenCalledWith('vim', 'cursorMove', {
+      to: 'down',
+      by: 'line',
+      value: 1,
+    })
+  })
+
+  it('switches j/k movement between logical and display lines based on displayline state', () => {
+    const cm = createCodeMirrorAdapter({ position: { lineNumber: 3, column: 5 } })
+
+    setDisplayLineEnabledForEditor(cm.editor, false)
+    moveByConfigurableLinesMotion(cm, { line: 2, ch: 4 }, { repeat: 1, forward: true })
+    expect(cm.editor.trigger).toHaveBeenCalledWith('vim', 'cursorMove', {
+      to: 'down',
+      by: 'line',
+      value: 1,
+    })
+
+    vi.mocked(cm.editor.trigger).mockClear()
+    setDisplayLineEnabledForEditor(cm.editor, true)
+    moveByConfigurableLinesMotion(cm, { line: 2, ch: 4 }, { repeat: 1, forward: true })
+    expect(cm.editor.trigger).toHaveBeenCalledWith('vim', 'cursorDown', {})
   })
 
   it('moves to high/middle/low using the full document when it fits in view', () => {
@@ -297,5 +349,96 @@ describe('vimMotions', () => {
     vi.mocked(endAdapter.editor.getPosition).mockReturnValue(null)
 
     expect(moveToEndOfDisplayLineMotion(endAdapter, { line: 5, ch: 1 })).toEqual({ line: 5, ch: 1 })
+  })
+
+  it('switches 0/^/$ behavior between logical and display lines based on displayline state', () => {
+    const model = createModel(['  first line'])
+    const adapter = createCodeMirrorAdapter({
+      position: { lineNumber: 1, column: 8 },
+      model,
+    })
+
+    setDisplayLineEnabledForEditor(adapter.editor, false)
+    expect(moveToStartOfConfigurableLineMotion(adapter, { line: 0, ch: 7 })).toEqual({
+      line: 0,
+      ch: 0,
+    })
+    expect(moveToFirstNonWhitespaceConfigurableLineMotion(adapter, { line: 0, ch: 7 })).toEqual({
+      line: 0,
+      ch: 2,
+    })
+    expect(moveToEndOfConfigurableLineMotion(adapter, { line: 0, ch: 0 }, { repeat: 1 })).toEqual({
+      line: 0,
+      ch: 11,
+    })
+
+    setDisplayLineEnabledForEditor(adapter.editor, true)
+    expect(moveToStartOfConfigurableLineMotion(adapter, { line: 0, ch: 7 })).toEqual({
+      line: 0,
+      ch: 0,
+    })
+    expect(moveToFirstNonWhitespaceConfigurableLineMotion(adapter, { line: 0, ch: 7 })).toEqual({
+      line: 0,
+      ch: 0,
+    })
+    expect(moveToEndOfConfigurableLineMotion(adapter, { line: 0, ch: 0 }, { repeat: 1 })).toEqual({
+      line: 0,
+      ch: 10,
+    })
+  })
+
+  it('supports +, -, and _ logical line-start motions with repeat counts', () => {
+    const model = createModel(['line one', '  line two', '   line three', 'line four'])
+    const adapter = createCodeMirrorAdapter({
+      position: { lineNumber: 2, column: 3 },
+      model,
+    })
+
+    expect(moveToRelativeLineStartMotion(adapter, { line: 1, ch: 2 }, { direction: 1 })).toEqual({
+      line: 2,
+      ch: 3,
+    })
+    expect(moveToRelativeLineStartMotion(adapter, { line: 2, ch: 3 }, { direction: -1 })).toEqual({
+      line: 1,
+      ch: 2,
+    })
+    expect(
+      moveToRelativeLineStartMotion(adapter, { line: 1, ch: 2 }, { anchorCurrent: true })
+    ).toEqual({
+      line: 1,
+      ch: 2,
+    })
+    expect(
+      moveToRelativeLineStartMotion(adapter, { line: 1, ch: 2 }, { anchorCurrent: true, repeat: 2 })
+    ).toEqual({
+      line: 2,
+      ch: 3,
+    })
+  })
+
+  it('moves by markdown-aware paragraph boundaries', () => {
+    const model = createModel([
+      'first paragraph line',
+      'still first paragraph',
+      '',
+      '## Heading',
+      'heading content',
+      '',
+      '- list item',
+      'another line',
+    ])
+    const adapter = createCodeMirrorAdapter({
+      position: { lineNumber: 1, column: 1 },
+      model,
+    })
+
+    expect(moveByMarkdownParagraphMotion(adapter, { line: 0, ch: 0 }, { forward: true })).toEqual({
+      line: 3,
+      ch: 0,
+    })
+    expect(moveByMarkdownParagraphMotion(adapter, { line: 6, ch: 0 }, { forward: false })).toEqual({
+      line: 3,
+      ch: 0,
+    })
   })
 })

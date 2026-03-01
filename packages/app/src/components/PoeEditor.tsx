@@ -11,6 +11,7 @@ import { useSyncScroll } from '@/hooks/useSyncScroll'
 import { useTransformers } from '@/hooks/useTransformers'
 import { useEditorPreferences } from '@/hooks/useEditorPreferences'
 import { useSpellCheck } from '@/hooks/useSpellCheck'
+import { useDisplayLineMotion } from '@/hooks/useDisplayLineMotion'
 import { renderMarkdown, renderMarkdownForPreview, getTocHeadings } from '@/utils/markdown'
 import { downloadFile } from '@/utils/download'
 import { buildHtmlExportDocument } from '@/utils/htmlExport'
@@ -163,6 +164,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   // Vim mode management
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
+  const { displayLineMotion, toggleDisplayLineMotion } = useDisplayLineMotion()
 
   // Word count management
   const { showWordCount, toggleWordCount } = useWordCount()
@@ -607,6 +609,8 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
           documentMenuRef={documentMenuRef}
           spellCheck={spellCheck}
           toggleSpellCheck={toggleSpellCheck}
+          displayLineMotion={displayLineMotion}
+          toggleDisplayLineMotion={toggleDisplayLineMotion}
         />
 
         <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
@@ -658,6 +662,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
                           onFormat={handleFormat}
                           onCodeBlock={handleFormatCodeBlock}
                           vimMode={vimModeEnabled}
+                          displayLineMotion={displayLineMotion}
                           showWordCount={showWordCount}
                           showLineNumbers={showLineNumbers}
                           viewMode={viewMode}
@@ -731,6 +736,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
                   onFormat={handleFormat}
                   onCodeBlock={handleFormatCodeBlock}
                   vimMode={vimModeEnabled}
+                  displayLineMotion={displayLineMotion}
                   showWordCount={showWordCount}
                   showLineNumbers={showLineNumbers}
                   viewMode={activeTab === 'editor' ? 'editor' : 'preview'}
