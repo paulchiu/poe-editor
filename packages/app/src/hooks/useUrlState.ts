@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { getFirstHeading } from '@/utils/markdown'
-import { extractFirstEmoji } from '@/utils/emoji'
+import { extractFirstEmojiToken, isEmojiShortcodeToken } from '@/utils/emoji'
+import { getEmojiForShortcode } from '@/utils/emojiShortcodes'
 import {
   compressDocumentToHash,
   decompressDocumentFromHash,
@@ -34,7 +35,7 @@ interface FaviconState {
 
 interface ResolvedTitleState {
   title: string
-  emoji: string | null
+  emojiToken: string | null
 }
 
 /**
@@ -109,22 +110,22 @@ function resolveDocumentTitle(
   const heading = getFirstHeading(content)
 
   if (heading) {
-    const emoji = extractFirstEmoji(heading)
-    const headingTitle = emoji ? heading.replace(emoji, '').trim() : heading
+    const emojiToken = extractFirstEmojiToken(heading)
+    const headingTitle = emojiToken ? heading.replace(emojiToken, '').trim() : heading
 
     if (headingTitle) {
-      return { title: headingTitle, emoji }
+      return { title: headingTitle, emojiToken }
     }
 
     return {
       title: resolveFallbackTitle(documentName, defaultName, pathname),
-      emoji,
+      emojiToken,
     }
   }
 
   return {
     title: resolveFallbackTitle(documentName, defaultName, pathname),
-    emoji: null,
+    emojiToken: null,
   }
 }
 
@@ -202,24 +203,56 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
   const contentRef = useRef(content)
   const documentNameRef = useRef(documentName)
   const originalFaviconsRef = useRef<FaviconState[] | null>(null)
+  const faviconUpdateRequestRef = useRef(0)
+
+  const applyDocumentChrome = useCallback(
+    (nextContent: string, nextDocumentName: string): void => {
+      const { title, emojiToken } = resolveDocumentTitle(
+        nextContent,
+        nextDocumentName,
+        defaultName,
+        window.location.pathname
+      )
+      document.title = title
+
+      const requestId = faviconUpdateRequestRef.current + 1
+      faviconUpdateRequestRef.current = requestId
+
+      const applyFaviconIfLatest = (emoji: string | null): void => {
+        if (faviconUpdateRequestRef.current !== requestId) return
+        updateFavicon(emoji, originalFaviconsRef)
+      }
+
+      if (!emojiToken) {
+        applyFaviconIfLatest(null)
+        return
+      }
+
+      if (!isEmojiShortcodeToken(emojiToken)) {
+        applyFaviconIfLatest(emojiToken)
+        return
+      }
+
+      void getEmojiForShortcode(emojiToken)
+        .then((emoji) => {
+          applyFaviconIfLatest(emoji)
+        })
+        .catch(() => {
+          applyFaviconIfLatest(null)
+        })
+    },
+    [defaultName]
+  )
 
   // Initialize title and favicon on mount
   const initializedRef = useRef(false)
   useEffect(() => {
     if (!initializedRef.current) {
-      const { title, emoji } = resolveDocumentTitle(
-        content,
-        documentName,
-        defaultName,
-        window.location.pathname
-      )
-
-      updateFavicon(emoji, originalFaviconsRef)
-      document.title = title
+      applyDocumentChrome(content, documentName)
 
       initializedRef.current = true
     }
-  }, [content, defaultName, documentName])
+  }, [applyDocumentChrome, content, documentName])
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -243,14 +276,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       }
 
       // Update document title and favicon from first heading
-      const { title, emoji } = resolveDocumentTitle(
-        contentRef.current,
-        documentNameRef.current,
-        defaultName,
-        window.location.pathname
-      )
-      updateFavicon(emoji, originalFaviconsRef)
-      document.title = title
+      applyDocumentChrome(contentRef.current, documentNameRef.current)
 
       const compressed = compressDocumentToHash(docData)
       const overLimit = compressed.length > maxLength
@@ -284,7 +310,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       // We use replaceState to update the URL without adding a new history entry for every keystroke
       window.history.replaceState(null, '', newUrl.toString())
     }, debounceMs)
-  }, [debounceMs, defaultName, maxLength, onLengthWarning])
+  }, [applyDocumentChrome, debounceMs, maxLength, onLengthWarning])
 
   // Handle external hash changes (e.g., back/forward navigation)
   useEffect(() => {
@@ -294,14 +320,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       const updateStateAndTitle = (newContent: string, newName: string) => {
         setContentState(newContent)
         setDocumentNameState(newName)
-        const { title, emoji } = resolveDocumentTitle(
-          newContent,
-          newName,
-          defaultName,
-          window.location.pathname
-        )
-        updateFavicon(emoji, originalFaviconsRef)
-        document.title = title
+        applyDocumentChrome(newContent, newName)
       }
 
       if (!hash) {
@@ -330,7 +349,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [defaultContent, defaultName, onError])
+  }, [applyDocumentChrome, defaultContent, defaultName, onError])
 
   const setContent = useCallback(
     (newContent: string) => {
