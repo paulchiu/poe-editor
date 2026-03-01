@@ -1,18 +1,35 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   formatBold,
-  formatItalic,
-  formatLink,
+  formatBulletList,
   formatCode,
   formatCodeBlock,
   formatHeading,
-  formatQuote,
-  formatBulletList,
+  formatItalic,
+  formatLink,
   formatNumberedList,
+  formatQuote,
   formatTaskList,
+  getAutoContinueEdit,
   toggleTaskListItem,
 } from './formatting'
 import type { EditorPaneHandle } from '@/components/editor'
+
+interface MockRange {
+  startLineNumber: number
+  endLineNumber: number
+  startColumn: number
+  endColumn: number
+}
+
+type InlineFormatter = (editor: EditorPaneHandle | null) => void
+
+interface InlineFormattingCase {
+  name: string
+  formatter: InlineFormatter
+  selectedResult: string
+  insertedTemplate: string
+}
 
 describe('formatting utils', () => {
   let mockEditor: EditorPaneHandle
@@ -22,6 +39,35 @@ describe('formatting utils', () => {
   let getSelectionRangeMock: ReturnType<typeof vi.fn>
   let getLineContentMock: ReturnType<typeof vi.fn>
   let setSelectionMock: ReturnType<typeof vi.fn>
+
+  const setRange = (range: MockRange): void => {
+    getSelectionRangeMock.mockReturnValue(range)
+  }
+
+  const setLineMap = (lines: string[]): void => {
+    getLineContentMock.mockImplementation((lineNumber: number) => lines[lineNumber - 1] ?? '')
+  }
+
+  const setSingleLine = (line: string): void => {
+    setRange({
+      startLineNumber: 1,
+      endLineNumber: 1,
+      startColumn: 1,
+      endColumn: 1,
+    })
+    getLineContentMock.mockReturnValue(line)
+  }
+
+  const setMultilineInput = (input: string): void => {
+    const lines = input.split('\n')
+    setRange({
+      startLineNumber: 1,
+      endLineNumber: lines.length,
+      startColumn: 1,
+      endColumn: 1,
+    })
+    setLineMap(lines)
+  }
 
   beforeEach(() => {
     getSelectionMock = vi.fn()
@@ -41,65 +87,50 @@ describe('formatting utils', () => {
     } as unknown as EditorPaneHandle
   })
 
-  describe('formatBold', () => {
-    it('should wrap selection with **', () => {
+  describe('inline formatters', () => {
+    const cases: InlineFormattingCase[] = [
+      {
+        name: 'formatBold',
+        formatter: formatBold,
+        selectedResult: '**text**',
+        insertedTemplate: '****',
+      },
+      {
+        name: 'formatItalic',
+        formatter: formatItalic,
+        selectedResult: '*text*',
+        insertedTemplate: '**',
+      },
+      {
+        name: 'formatLink',
+        formatter: formatLink,
+        selectedResult: '[text](url)',
+        insertedTemplate: '[](url)',
+      },
+      {
+        name: 'formatCode',
+        formatter: formatCode,
+        selectedResult: '`text`',
+        insertedTemplate: '``',
+      },
+    ]
+
+    it.each(cases)('wraps selected text for $name', ({ formatter, selectedResult }) => {
       getSelectionMock.mockReturnValue('text')
-      formatBold(mockEditor)
-      expect(replaceSelectionMock).toHaveBeenCalledWith('**text**')
+      formatter(mockEditor)
+      expect(replaceSelectionMock).toHaveBeenCalledWith(selectedResult)
     })
 
-    it('should insert **bold** if no selection', () => {
+    it.each(cases)('inserts template when selection is empty for $name', ({ formatter, insertedTemplate }) => {
       getSelectionMock.mockReturnValue('')
-      formatBold(mockEditor)
-      expect(insertTextMock).toHaveBeenCalledWith('****')
-    })
-  })
-
-  describe('formatItalic', () => {
-    it('should wrap selection with *', () => {
-      getSelectionMock.mockReturnValue('text')
-      formatItalic(mockEditor)
-      expect(replaceSelectionMock).toHaveBeenCalledWith('*text*')
-    })
-
-    it('should insert *italic* if no selection', () => {
-      getSelectionMock.mockReturnValue('')
-      formatItalic(mockEditor)
-      expect(insertTextMock).toHaveBeenCalledWith('**')
-    })
-  })
-
-  describe('formatLink', () => {
-    it('should wrap selection with link syntax', () => {
-      getSelectionMock.mockReturnValue('text')
-      formatLink(mockEditor)
-      expect(replaceSelectionMock).toHaveBeenCalledWith('[text](url)')
-    })
-
-    it('should insert link syntax if no selection', () => {
-      getSelectionMock.mockReturnValue('')
-      formatLink(mockEditor)
-      expect(insertTextMock).toHaveBeenCalledWith('[](url)')
-    })
-  })
-
-  describe('formatCode', () => {
-    it('should wrap selection with backticks', () => {
-      getSelectionMock.mockReturnValue('text')
-      formatCode(mockEditor)
-      expect(replaceSelectionMock).toHaveBeenCalledWith('`text`')
-    })
-
-    it('should insert code if no selection', () => {
-      getSelectionMock.mockReturnValue('')
-      formatCode(mockEditor)
-      expect(insertTextMock).toHaveBeenCalledWith('``')
+      formatter(mockEditor)
+      expect(insertTextMock).toHaveBeenCalledWith(insertedTemplate)
     })
   })
 
   describe('formatCodeBlock', () => {
-    it('should wrap selection with triple backticks', () => {
-      getSelectionRangeMock.mockReturnValue({
+    it('wraps selected line with code fence', () => {
+      setRange({
         startLineNumber: 1,
         endLineNumber: 1,
         startColumn: 1,
@@ -110,17 +141,16 @@ describe('formatting utils', () => {
       formatCodeBlock(mockEditor)
 
       expect(replaceSelectionMock).toHaveBeenCalledWith('```\ntext\n```')
-      expect(setSelectionMock).toHaveBeenCalled()
+      expect(setSelectionMock).toHaveBeenCalledWith({
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: 1,
+        endColumn: 5,
+      })
     })
 
-    it('should insert code block if no selection', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 1,
-        startColumn: 1,
-        endColumn: 1,
-      })
-      getLineContentMock.mockReturnValue('')
+    it('inserts empty code block on empty line', () => {
+      setSingleLine('')
 
       formatCodeBlock(mockEditor)
 
@@ -129,22 +159,17 @@ describe('formatting utils', () => {
   })
 
   describe('formatHeading', () => {
-    it('should insert heading placeholder if on empty line', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 1,
-        startColumn: 1,
-        endColumn: 1,
-      })
-      getLineContentMock.mockReturnValue('')
+    it('inserts heading placeholder on empty line', () => {
+      setSingleLine('')
 
       formatHeading(mockEditor, 1)
+
       expect(insertTextMock).toHaveBeenCalledWith('# ')
       expect(replaceSelectionMock).not.toHaveBeenCalled()
     })
 
-    it('should apply heading to current line if has text (no selection)', () => {
-      getSelectionRangeMock.mockReturnValue({
+    it('applies heading to non-empty current line', () => {
+      setRange({
         startLineNumber: 1,
         endLineNumber: 1,
         startColumn: 5,
@@ -158,43 +183,21 @@ describe('formatting utils', () => {
         startLineNumber: 1,
         startColumn: 1,
         endLineNumber: 1,
-        endColumn: 9, // length + 1
+        endColumn: 9,
       })
       expect(replaceSelectionMock).toHaveBeenCalledWith('# My Title')
     })
 
-    it('should apply heading to all spanned lines if multiple lines selected', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 5,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return 'Title 1'
-        if (line === 2) return 'Title 2'
-        return ''
-      })
+    it('applies heading to all selected lines', () => {
+      setMultilineInput('Title 1\nTitle 2')
 
       formatHeading(mockEditor, 1)
 
-      expect(setSelectionMock).toHaveBeenCalledWith({
-        startLineNumber: 1,
-        startColumn: 1,
-        endLineNumber: 2,
-        endColumn: 8, // length of last line (7) + 1
-      })
       expect(replaceSelectionMock).toHaveBeenCalledWith('# Title 1\n# Title 2')
     })
 
-    it('should replace existing heading level', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 1,
-        startColumn: 1,
-        endColumn: 1,
-      })
-      getLineContentMock.mockReturnValue('## Title')
+    it('replaces existing heading level', () => {
+      setSingleLine('## Title')
 
       formatHeading(mockEditor, 1)
 
@@ -203,32 +206,16 @@ describe('formatting utils', () => {
   })
 
   describe('formatQuote', () => {
-    it('should prefix lines with >', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 7,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return 'line 1'
-        if (line === 2) return 'line 2'
-        return ''
-      })
+    it('prefixes each selected line with quote marker', () => {
+      setMultilineInput('line 1\nline 2')
 
       formatQuote(mockEditor)
 
       expect(replaceSelectionMock).toHaveBeenCalledWith('> line 1\n> line 2')
     })
 
-    it('should insert quote placeholder if no selection', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 1,
-        startColumn: 1,
-        endColumn: 1,
-      })
-      getLineContentMock.mockReturnValue('')
+    it('inserts quote marker on empty line', () => {
+      setSingleLine('')
 
       formatQuote(mockEditor)
 
@@ -236,417 +223,194 @@ describe('formatting utils', () => {
     })
   })
 
-  describe('formatBulletList', () => {
-    it('should prefix lines with - ', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 7,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return 'item 1'
-        if (line === 2) return 'item 2'
-        return ''
-      })
+  describe('list formatters', () => {
+    it.each([
+      {
+        name: 'formatBulletList prefixes plain lines',
+        formatter: formatBulletList,
+        input: 'item 1\nitem 2',
+        expected: '- item 1\n- item 2',
+      },
+      {
+        name: 'formatBulletList toggles existing bullet list',
+        formatter: formatBulletList,
+        input: '- item 1\n- item 2',
+        expected: 'item 1\nitem 2',
+      },
+      {
+        name: 'formatBulletList converts numbered list',
+        formatter: formatBulletList,
+        input: '1. item 1\n2. item 2',
+        expected: '- item 1\n- item 2',
+      },
+      {
+        name: 'formatBulletList converts task list',
+        formatter: formatBulletList,
+        input: '- [ ] item 1\n- [x] item 2',
+        expected: '- item 1\n- item 2',
+      },
+      {
+        name: 'formatNumberedList prefixes plain lines',
+        formatter: formatNumberedList,
+        input: 'item 1\nitem 2',
+        expected: '1. item 1\n2. item 2',
+      },
+      {
+        name: 'formatNumberedList toggles numbered list',
+        formatter: formatNumberedList,
+        input: '1. item 1\n2. item 2',
+        expected: 'item 1\nitem 2',
+      },
+      {
+        name: 'formatNumberedList converts bullet list',
+        formatter: formatNumberedList,
+        input: '- item 1\n- item 2',
+        expected: '1. item 1\n2. item 2',
+      },
+      {
+        name: 'formatNumberedList converts task list',
+        formatter: formatNumberedList,
+        input: '- [ ] item 1\n- [x] item 2',
+        expected: '1. item 1\n2. item 2',
+      },
+      {
+        name: 'formatTaskList prefixes plain lines',
+        formatter: formatTaskList,
+        input: 'item 1\nitem 2',
+        expected: '- [ ] item 1\n- [ ] item 2',
+      },
+      {
+        name: 'formatTaskList converts bullet list',
+        formatter: formatTaskList,
+        input: '- item 1\n* item 2',
+        expected: '- [ ] item 1\n- [ ] item 2',
+      },
+      {
+        name: 'formatTaskList converts numbered list',
+        formatter: formatTaskList,
+        input: '1. item 1\n2. item 2',
+        expected: '- [ ] item 1\n- [ ] item 2',
+      },
+      {
+        name: 'formatTaskList toggles task markers',
+        formatter: formatTaskList,
+        input: '- [ ] item 1\n- [x] item 2',
+        expected: 'item 1\nitem 2',
+      },
+    ])('$name', ({ formatter, input, expected }) => {
+      setMultilineInput(input)
 
-      formatBulletList(mockEditor)
+      formatter(mockEditor)
 
-      expect(replaceSelectionMock).toHaveBeenCalledWith('- item 1\n- item 2')
+      expect(replaceSelectionMock).toHaveBeenCalledWith(expected)
     })
 
-    it('should toggle off bullet list', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 9,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return '- item 1'
-        if (line === 2) return '- item 2'
-        return ''
-      })
+    it.each([
+      {
+        name: 'formatBulletList inserts placeholder on empty line',
+        formatter: formatBulletList,
+        expectedPlaceholder: '- ',
+      },
+      {
+        name: 'formatNumberedList inserts placeholder on empty line',
+        formatter: formatNumberedList,
+        expectedPlaceholder: '1. ',
+      },
+      {
+        name: 'formatTaskList inserts placeholder on empty line',
+        formatter: formatTaskList,
+        expectedPlaceholder: '- [ ] ',
+      },
+    ])('$name', ({ formatter, expectedPlaceholder }) => {
+      setSingleLine('')
 
-      formatBulletList(mockEditor)
+      formatter(mockEditor)
 
-      expect(replaceSelectionMock).toHaveBeenCalledWith('item 1\nitem 2')
-    })
-
-    it('should convert numbered list to bullet list', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 10,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return '1. item 1'
-        if (line === 2) return '2. item 2'
-        return ''
-      })
-
-      formatBulletList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('- item 1\n- item 2')
-    })
-
-    it('should convert task list to bullet list', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 13,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return '- [ ] item 1'
-        if (line === 2) return '- [x] item 2'
-        return ''
-      })
-
-      formatBulletList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('- item 1\n- item 2')
-    })
-
-    it('should insert bullet list item if no selection', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 1,
-        startColumn: 1,
-        endColumn: 1,
-      })
-      getLineContentMock.mockReturnValue('')
-
-      formatBulletList(mockEditor)
-
-      expect(insertTextMock).toHaveBeenCalledWith('- ')
-    })
-  })
-
-  describe('formatNumberedList', () => {
-    it('should prefix lines with numbers', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 7,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return 'item 1'
-        if (line === 2) return 'item 2'
-        return ''
-      })
-
-      formatNumberedList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('1. item 1\n2. item 2')
-    })
-
-    it('should toggle off numbered list', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 10,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return '1. item 1'
-        if (line === 2) return '2. item 2'
-        return ''
-      })
-
-      formatNumberedList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('item 1\nitem 2')
-    })
-
-    it('should convert bullet list to numbered list', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 9,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return '- item 1'
-        if (line === 2) return '- item 2'
-        return ''
-      })
-
-      formatNumberedList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('1. item 1\n2. item 2')
-    })
-
-    it('should convert task list to numbered list without checkbox markers', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 13,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return '- [ ] item 1'
-        if (line === 2) return '- [x] item 2'
-        return ''
-      })
-
-      formatNumberedList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('1. item 1\n2. item 2')
-    })
-
-    it('should insert numbered list item if no selection', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 1,
-        startColumn: 1,
-        endColumn: 1,
-      })
-      getLineContentMock.mockReturnValue('')
-
-      formatNumberedList(mockEditor)
-
-      expect(insertTextMock).toHaveBeenCalledWith('1. ')
+      expect(insertTextMock).toHaveBeenCalledWith(expectedPlaceholder)
     })
   })
 
-  describe('formatTaskList', () => {
-    it('should prefix lines with unchecked task markers', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 7,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return 'item 1'
-        if (line === 2) return 'item 2'
-        return ''
-      })
-
-      formatTaskList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('- [ ] item 1\n- [ ] item 2')
-    })
-
-    it('should convert bullet list to task list', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 9,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return '- item 1'
-        if (line === 2) return '* item 2'
-        return ''
-      })
-
-      formatTaskList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('- [ ] item 1\n- [ ] item 2')
-    })
-
-    it('should convert numbered list to task list', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 10,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return '1. item 1'
-        if (line === 2) return '2. item 2'
-        return ''
-      })
-
-      formatTaskList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('- [ ] item 1\n- [ ] item 2')
-    })
-
-    it('should toggle off task list markers', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 2,
-        startColumn: 1,
-        endColumn: 12,
-      })
-      getLineContentMock.mockImplementation((line) => {
-        if (line === 1) return '- [ ] item 1'
-        if (line === 2) return '- [x] item 2'
-        return ''
-      })
-
-      formatTaskList(mockEditor)
-
-      expect(replaceSelectionMock).toHaveBeenCalledWith('item 1\nitem 2')
-    })
-
-    it('should insert task list marker on empty line', () => {
-      getSelectionRangeMock.mockReturnValue({
-        startLineNumber: 1,
-        endLineNumber: 1,
-        startColumn: 1,
-        endColumn: 1,
-      })
-      getLineContentMock.mockReturnValue('')
-
-      formatTaskList(mockEditor)
-
-      expect(insertTextMock).toHaveBeenCalledWith('- [ ] ')
-    })
-  })
-
-  it('should do nothing if editor is null', () => {
+  it('does nothing when editor is null', () => {
     formatBold(null)
-    // Expect no errors
+    formatItalic(null)
+    formatLink(null)
+    formatCode(null)
+    formatCodeBlock(null)
+    formatHeading(null, 1)
+    formatQuote(null)
+    formatBulletList(null)
+    formatNumberedList(null)
+    formatTaskList(null)
   })
 })
 
-import { getAutoContinueEdit, type AutoContinueResult } from './formatting'
-
 describe('toggleTaskListItem', () => {
-  it('updates matching task marker to checked', () => {
-    const input = '- [ ] first\n- [x] second'
-    expect(toggleTaskListItem(input, 0, true)).toBe('- [x] first\n- [x] second')
-  })
-
-  it('updates matching task marker to unchecked', () => {
-    const input = '- [x] first\n- [x] second'
-    expect(toggleTaskListItem(input, 1, false)).toBe('- [x] first\n- [ ] second')
-  })
-
-  it('returns original markdown when index does not exist', () => {
-    const input = '- [ ] first'
-    expect(toggleTaskListItem(input, 3, true)).toBe(input)
+  it.each([
+    {
+      name: 'checks the targeted task',
+      input: '- [ ] first\n- [x] second',
+      index: 0,
+      checked: true,
+      expected: '- [x] first\n- [x] second',
+    },
+    {
+      name: 'unchecks the targeted task',
+      input: '- [x] first\n- [x] second',
+      index: 1,
+      checked: false,
+      expected: '- [x] first\n- [ ] second',
+    },
+    {
+      name: 'leaves markdown unchanged when index is missing',
+      input: '- [ ] first',
+      index: 3,
+      checked: true,
+      expected: '- [ ] first',
+    },
+  ])('$name', ({ input, index, checked, expected }) => {
+    expect(toggleTaskListItem(input, index, checked)).toBe(expected)
   })
 })
 
 describe('getAutoContinueEdit', () => {
-  it('should return null if no pattern matches', () => {
+  it('returns null when no pattern matches', () => {
     expect(getAutoContinueEdit('Just some text', 15)).toBeNull()
   })
 
-  it('should return exit action for empty unordered list', () => {
-    const result = getAutoContinueEdit('- ', 3)
-    expect(result).toEqual<AutoContinueResult>({
+  it.each([
+    { name: 'empty unordered list', line: '- ', column: 3 },
+    { name: 'empty ordered list', line: '1. ', column: 4 },
+    { name: 'empty quote', line: '> ', column: 3 },
+    { name: 'empty task list', line: '- [ ] ', column: 7 },
+  ])('returns exit action for $name', ({ line, column }) => {
+    expect(getAutoContinueEdit(line, column)).toEqual({
       action: 'exit',
       range: {
         startColumn: 1,
-        endColumn: 3,
+        endColumn: column,
       },
     })
   })
 
-  it('should return exit action for empty ordered list', () => {
-    const result = getAutoContinueEdit('1. ', 4)
-    expect(result).toEqual<AutoContinueResult>({
-      action: 'exit',
-      range: {
-        startColumn: 1,
-        endColumn: 4,
-      },
-    })
-  })
-
-  it('should return exit action for empty quote', () => {
-    const result = getAutoContinueEdit('> ', 3)
-    expect(result).toEqual<AutoContinueResult>({
-      action: 'exit',
-      range: {
-        startColumn: 1,
-        endColumn: 3,
-      },
-    })
-  })
-
-  it('should continue unordered list', () => {
-    const result = getAutoContinueEdit('- Item 1', 9)
-    expect(result).toEqual<AutoContinueResult>({
+  it.each([
+    { name: 'unordered list', line: '- Item 1', column: 9, text: '\n- ' },
+    { name: 'unchecked task list', line: '- [ ] todo', column: 11, text: '\n- [ ] ' },
+    { name: 'checked task list', line: '- [x] done', column: 11, text: '\n- [x] ' },
+    { name: 'unordered list with asterisk', line: '* Item 1', column: 9, text: '\n* ' },
+    { name: 'ordered list increments number', line: '1. Item 1', column: 10, text: '\n2. ' },
+    { name: 'quote line', line: '> Quote me', column: 11, text: '\n> ' },
+  ])('returns continue action for $name', ({ line, column, text }) => {
+    expect(getAutoContinueEdit(line, column)).toEqual({
       action: 'continue',
-      text: '\n- ',
+      text,
       range: {
-        startColumn: 9,
-        endColumn: 9,
+        startColumn: column,
+        endColumn: column,
       },
     })
   })
 
-  it('should return exit action for empty task list item', () => {
-    const result = getAutoContinueEdit('- [ ] ', 7)
-    expect(result).toEqual<AutoContinueResult>({
-      action: 'exit',
-      range: {
-        startColumn: 1,
-        endColumn: 7,
-      },
-    })
-  })
-
-  it('should continue unchecked task list', () => {
-    const result = getAutoContinueEdit('- [ ] todo', 11)
-    expect(result).toEqual<AutoContinueResult>({
-      action: 'continue',
-      text: '\n- [ ] ',
-      range: {
-        startColumn: 11,
-        endColumn: 11,
-      },
-    })
-  })
-
-  it('should continue checked task list', () => {
-    const result = getAutoContinueEdit('- [x] done', 11)
-    expect(result).toEqual<AutoContinueResult>({
-      action: 'continue',
-      text: '\n- [x] ',
-      range: {
-        startColumn: 11,
-        endColumn: 11,
-      },
-    })
-  })
-
-  it('should continue unordered list with asterisk', () => {
-    const result = getAutoContinueEdit('* Item 1', 9)
-    expect(result).toEqual<AutoContinueResult>({
-      action: 'continue',
-      text: '\n* ',
-      range: {
-        startColumn: 9,
-        endColumn: 9,
-      },
-    })
-  })
-
-  it('should continue ordered list and increment number', () => {
-    const result = getAutoContinueEdit('1. Item 1', 10)
-    expect(result).toEqual<AutoContinueResult>({
-      action: 'continue',
-      text: '\n2. ',
-      range: {
-        startColumn: 10,
-        endColumn: 10,
-      },
-    })
-  })
-
-  it('should continue quote', () => {
-    const result = getAutoContinueEdit('> Quote me', 11)
-    expect(result).toEqual<AutoContinueResult>({
-      action: 'continue',
-      text: '\n> ',
-      range: {
-        startColumn: 11,
-        endColumn: 11,
-      },
-    })
-  })
-
-  it('should ignore if cursor is before the prefix', () => {
+  it('returns null when cursor is before list prefix content', () => {
     expect(getAutoContinueEdit('- Item 1', 2)).toBeNull()
   })
 })
