@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { extractFirstEmoji } from './emoji'
+import { extractFirstEmoji, extractFirstEmojiToken, isEmojiShortcodeToken } from './emoji'
 
 describe('extractFirstEmoji', () => {
   it('should return null for empty string/null/undefined', () => {
@@ -47,5 +47,37 @@ describe('extractFirstEmoji', () => {
 
     // Test base emoji
     expect(extractFirstEmoji('👍')).toBe('👍')
+  })
+})
+
+describe('extractFirstEmojiToken', () => {
+  it('returns first unicode emoji token', () => {
+    expect(extractFirstEmojiToken('Hello 🚀 world')).toBe('🚀')
+  })
+
+  it('returns first shortcode token', () => {
+    expect(extractFirstEmojiToken('Hello :smile: world')).toBe(':smile:')
+  })
+
+  it('returns whichever token appears first', () => {
+    expect(extractFirstEmojiToken(':smile: and 🚀')).toBe(':smile:')
+    expect(extractFirstEmojiToken('🚀 and :smile:')).toBe('🚀')
+  })
+
+  it('returns null when no token exists', () => {
+    expect(extractFirstEmojiToken('plain heading')).toBeNull()
+  })
+})
+
+describe('isEmojiShortcodeToken', () => {
+  it('detects valid shortcode tokens', () => {
+    expect(isEmojiShortcodeToken(':smile:')).toBe(true)
+    expect(isEmojiShortcodeToken(':+1:')).toBe(true)
+  })
+
+  it('rejects invalid shortcode tokens', () => {
+    expect(isEmojiShortcodeToken('smile')).toBe(false)
+    expect(isEmojiShortcodeToken(':smile')).toBe(false)
+    expect(isEmojiShortcodeToken('smile:')).toBe(false)
   })
 })

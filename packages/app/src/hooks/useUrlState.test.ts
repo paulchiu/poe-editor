@@ -2,10 +2,15 @@ import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useUrlState } from './useUrlState'
 import * as compression from '../utils/compression'
+import * as emojiShortcodes from '@/utils/emojiShortcodes'
 
 vi.mock('../utils/compression', () => ({
   compressDocumentToHash: vi.fn(),
   decompressDocumentFromHash: vi.fn(),
+}))
+
+vi.mock('@/utils/emojiShortcodes', () => ({
+  getEmojiForShortcode: vi.fn(),
 }))
 
 describe('useUrlState', () => {
@@ -16,6 +21,7 @@ describe('useUrlState', () => {
 
     // Mock window.scrollTo to avoid jsdom errors if any
     window.scrollTo = vi.fn()
+    vi.mocked(emojiShortcodes.getEmojiForShortcode).mockResolvedValue(null)
   })
 
   it('should initialize with default content', () => {
@@ -204,6 +210,62 @@ describe('useUrlState', () => {
     // originalFavicons stores sizes: ''
     // if (sizes) check fails for empty string, so removeAttribute called
     expect(mockLinks[1].removeAttribute).toHaveBeenCalledWith('sizes')
+
+    vi.useRealTimers()
+    querySelectorAllSpy.mockRestore()
+  })
+
+  it('should resolve heading emoji shortcodes for favicon updates', async () => {
+    vi.useFakeTimers()
+    vi.mocked(emojiShortcodes.getEmojiForShortcode).mockResolvedValue('😄')
+
+    const mockLinks = [
+      {
+        href: '/favicon-32x32.png',
+        rel: 'icon',
+        type: 'image/png',
+        sizes: { value: '32x32' },
+        setAttribute: vi.fn(),
+        removeAttribute: vi.fn(),
+      },
+      {
+        href: '/favicon.ico',
+        rel: 'icon',
+        type: 'image/x-icon',
+        sizes: { value: '' },
+        setAttribute: vi.fn(),
+        removeAttribute: vi.fn(),
+      },
+    ] as unknown as HTMLLinkElement[]
+
+    const querySelectorAllSpy = vi
+      .spyOn(document, 'querySelectorAll')
+      .mockReturnValue(mockLinks as unknown as NodeListOf<HTMLLinkElement>)
+
+    const { result } = renderHook(() => useUrlState())
+    vi.mocked(compression.compressDocumentToHash).mockReturnValue('hash')
+
+    act(() => {
+      result.current.setContent('# :smile: foo\nContent')
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(emojiShortcodes.getEmojiForShortcode).toHaveBeenCalledWith(':smile:')
+    expect(document.title).toBe('foo')
+
+    mockLinks.forEach((link) => {
+      expect(link.href).toMatch(/^data:image\/svg\+xml/)
+      expect(decodeURIComponent(link.href)).toContain('😄')
+      expect(link.type).toBe('image/svg+xml')
+      expect(link.removeAttribute).toHaveBeenCalledWith('sizes')
+    })
 
     vi.useRealTimers()
     querySelectorAllSpy.mockRestore()

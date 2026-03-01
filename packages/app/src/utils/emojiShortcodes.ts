@@ -11,6 +11,23 @@ export interface EmojiShortcodeEntry {
 }
 
 let emojiShortcodeEntriesPromise: Promise<EmojiShortcodeEntry[]> | null = null
+let emojiShortcodeMapPromise: Promise<EmojiShortcodeMap> | null = null
+
+async function getEmojiShortcodeMap(): Promise<EmojiShortcodeMap> {
+  if (!emojiShortcodeMapPromise) {
+    emojiShortcodeMapPromise = (async () => {
+      const module = await import('markdown-it-emoji/lib/data/full.mjs')
+      return module.default as EmojiShortcodeMap
+    })()
+  }
+
+  try {
+    return await emojiShortcodeMapPromise
+  } catch (error) {
+    emojiShortcodeMapPromise = null
+    throw error
+  }
+}
 
 /**
  * Lazily loads emoji shortcodes from the markdown-it emoji dataset.
@@ -19,8 +36,7 @@ let emojiShortcodeEntriesPromise: Promise<EmojiShortcodeEntry[]> | null = null
 export async function getEmojiShortcodeEntries(): Promise<EmojiShortcodeEntry[]> {
   if (!emojiShortcodeEntriesPromise) {
     emojiShortcodeEntriesPromise = (async () => {
-      const module = await import('markdown-it-emoji/lib/data/full.mjs')
-      const shortcodeMap = module.default as EmojiShortcodeMap
+      const shortcodeMap = await getEmojiShortcodeMap()
 
       return Object.entries(shortcodeMap)
         .map(([shortcode, emoji]) => ({ shortcode, emoji }))
@@ -34,6 +50,21 @@ export async function getEmojiShortcodeEntries(): Promise<EmojiShortcodeEntry[]>
     emojiShortcodeEntriesPromise = null
     throw error
   }
+}
+
+/**
+ * Resolves a GitHub-style shortcode token to its unicode emoji.
+ * @param shortcodeToken - Shortcode token (for example `:smile:`).
+ * @returns Unicode emoji when found, otherwise `null`.
+ */
+export async function getEmojiForShortcode(shortcodeToken: string): Promise<string | null> {
+  const normalized = shortcodeToken.trim().replace(/^:/, '').replace(/:$/, '')
+  if (!normalized) {
+    return null
+  }
+
+  const shortcodeMap = await getEmojiShortcodeMap()
+  return shortcodeMap[normalized] ?? null
 }
 
 /**
@@ -77,4 +108,5 @@ export function filterEmojiShortcodeEntries(
  */
 export function resetEmojiShortcodeCacheForTests(): void {
   emojiShortcodeEntriesPromise = null
+  emojiShortcodeMapPromise = null
 }

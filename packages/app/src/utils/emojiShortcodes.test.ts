@@ -60,4 +60,21 @@ describe('getEmojiShortcodeEntries', () => {
     expect(first).toEqual(second)
     expect(first.map((entry) => entry.shortcode)).toEqual(['+1', 'smile'])
   })
+
+  it('resolves shortcode tokens to emoji', async () => {
+    const emojiDataFactory = vi.fn(() => ({
+      default: {
+        smile: '😄',
+      },
+    }))
+
+    vi.doMock('markdown-it-emoji/lib/data/full.mjs', emojiDataFactory)
+    const { getEmojiForShortcode, resetEmojiShortcodeCacheForTests } =
+      await import('./emojiShortcodes')
+    resetEmojiShortcodeCacheForTests()
+
+    await expect(getEmojiForShortcode(':smile:')).resolves.toBe('😄')
+    await expect(getEmojiForShortcode(':missing:')).resolves.toBeNull()
+    expect(emojiDataFactory).toHaveBeenCalledTimes(1)
+  })
 })
