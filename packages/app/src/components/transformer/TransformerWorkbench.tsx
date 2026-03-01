@@ -1,20 +1,16 @@
 import { type ReactElement, useState, useRef, useEffect } from 'react'
-import { Plus, Sparkles, Code, FileJson, AlertTriangle } from 'lucide-react'
 import { useDroppable } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import Editor, { type OnMount } from '@monaco-editor/react'
+import { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import { useTheme } from 'next-themes'
 import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
-import { TransformerStep } from './TransformerStep'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import type { PipelineStep, TransformerOperation } from './types'
 import { PipelineStepsArraySchema } from './toolbarSchema'
-import { cn } from '@/utils/classnames'
 import { toast } from '@/hooks/useToast'
 import { z } from 'zod'
+import { TransformerWorkbenchHeader } from './TransformerWorkbenchHeader'
+import { TransformerWorkbenchJsonPane } from './TransformerWorkbenchJsonPane'
+import { TransformerWorkbenchGuiPane } from './TransformerWorkbenchGuiPane'
 
 interface TransformerWorkbenchProps {
   steps: PipelineStep[]
@@ -363,162 +359,37 @@ export function TransformerWorkbench({
 
   return (
     <div className="flex flex-col h-full bg-muted/5 relative">
-      <div className="p-4 border-b bg-background flex justify-between items-center shrink-0">
-        <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" />
-          Pipeline
-          <span className="text-xs font-normal normal-case bg-muted px-2 py-0.5 rounded-full text-foreground">
-            {steps.length} steps
-          </span>
-        </h3>
-
-        {onSetSteps && (
-          <div className="flex items-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="inline-block">
-                  {' '}
-                  {/* Wrapper to allow tooltip on 'disabled' style button */}
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={handleModeToggle}
-                    className={cn(
-                      'h-8 w-8',
-                      mode === 'json'
-                        ? !isValidJson
-                          ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
-                          : 'bg-primary/10 text-primary hover:bg-primary/20'
-                        : 'text-muted-foreground'
-                    )}
-                  >
-                    {mode === 'gui' ? (
-                      <FileJson className="w-4 h-4" />
-                    ) : (
-                      <Code className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                {mode === 'gui'
-                  ? 'Edit as JSON'
-                  : !isValidJson
-                    ? 'Fix schema errors to switch view'
-                    : 'Switch to GUI'}
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
-      </div>
+      <TransformerWorkbenchHeader
+        stepCount={steps.length}
+        mode={mode}
+        isValidJson={isValidJson}
+        canToggleMode={!!onSetSteps}
+        onModeToggle={handleModeToggle}
+      />
 
       {mode === 'json' ? (
-        <div
-          ref={setNodeRef}
-          className={cn(
-            'flex-1 relative min-h-0 flex flex-col transition-colors',
-            isOver && 'bg-primary/5 ring-2 ring-primary/20 ring-inset'
-          )}
-        >
-          <div className="flex-1">
-            <Editor
-              height="100%"
-              language="json"
-              value={jsonValue}
-              onChange={handleJsonChange}
-              onMount={handleEditorDidMount}
-              theme={resolvedTheme === 'dark' ? 'vs-dark' : 'vs-light'}
-              options={{
-                minimap: { enabled: false },
-                lineNumbers: 'on',
-                fontSize: 13,
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                padding: { top: 16, bottom: 16 },
-                formatOnPaste: true,
-                formatOnType: true,
-              }}
-            />
-          </div>
-
-          <div className="flex flex-col shrink-0">
-            {!isValidJson && (
-              <div className="bg-destructive/10 text-destructive text-xs p-2 border-t border-destructive/20 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4" />
-                <span>{validationError || 'Invalid JSON'}</span>
-              </div>
-            )}
-            {vimMode && (
-              <div
-                ref={statusBarRef}
-                className="vim-status-bar h-6 border-t border-border bg-background font-mono text-xs flex items-center overflow-hidden px-2"
-                style={{
-                  fontFamily: "'SF Mono', 'Monaco', 'Menlo', 'Consolas', 'Courier New', monospace",
-                }}
-              />
-            )}
-          </div>
-        </div>
+        <TransformerWorkbenchJsonPane
+          setNodeRef={setNodeRef}
+          isOver={isOver}
+          jsonValue={jsonValue}
+          onJsonChange={handleJsonChange}
+          onEditorMount={handleEditorDidMount}
+          theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+          isValidJson={isValidJson}
+          validationError={validationError}
+          vimMode={vimMode}
+          statusBarRef={statusBarRef}
+        />
       ) : (
-        <ScrollArea className="flex-1">
-          <div
-            ref={setNodeRef}
-            className={cn(
-              'p-4 flex flex-col gap-3 min-h-[500px] transition-colors',
-              isOver && 'bg-primary/5'
-            )}
-          >
-            {steps.length === 0 ? (
-              <div
-                className={cn(
-                  'flex-1 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-xl m-4 text-center p-8 transition-colors',
-                  onAddRequest ? 'hover:border-primary/40 hover:bg-primary/5 cursor-pointer' : ''
-                )}
-                onClick={onAddRequest}
-              >
-                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-                  <Plus className="w-6 h-6 text-muted-foreground" />
-                </div>
-                <h4 className="font-medium text-foreground mb-1">Build your pipeline</h4>
-                <p className="text-sm text-muted-foreground max-w-[200px]">
-                  {onAddRequest
-                    ? 'Tap here to add your first step.'
-                    : 'Drag items from the toolbox on the left to start building.'}
-                </p>
-              </div>
-            ) : (
-              <SortableContext items={steps} strategy={verticalListSortingStrategy}>
-                {steps.map((step, index) => (
-                  <div key={step.id} className="relative">
-                    {/* Connector Line */}
-                    {index < steps.length - 1 && (
-                      <div className="absolute left-6 top-full h-3 w-0.5 bg-border -ml-px z-0" />
-                    )}
-
-                    <TransformerStep
-                      step={step}
-                      index={index}
-                      onUpdate={onUpdateStep}
-                      onRemove={onRemoveStep}
-                      onToggle={onToggleStep}
-                    />
-                  </div>
-                ))}
-              </SortableContext>
-            )}
-            {steps.length > 0 && onAddRequest && (
-              <div className="pt-2 flex justify-center">
-                <button
-                  onClick={onAddRequest}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-medium"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add Step
-                </button>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+        <TransformerWorkbenchGuiPane
+          setNodeRef={setNodeRef}
+          isOver={isOver}
+          steps={steps}
+          onUpdateStep={onUpdateStep}
+          onRemoveStep={onRemoveStep}
+          onToggleStep={onToggleStep}
+          onAddRequest={onAddRequest}
+        />
       )}
     </div>
   )

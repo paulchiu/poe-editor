@@ -48,12 +48,14 @@ describe('EditorToolbar', () => {
     toggleShowTocPanel: vi.fn(),
     toggleShowEmojiPicker: vi.fn(),
     toggleSpellCheck: vi.fn(),
+    toggleDisplayLineMotion: vi.fn(),
     showWordCount: false,
     showLineNumbers: false,
     startEmpty: false,
     showTocPanel: false,
     showEmojiPicker: true,
     spellCheck: false,
+    displayLineMotion: false,
   })
 
   const renderToolbar = (overrides = {}) => {
@@ -228,4 +230,14 @@ describe('EditorToolbar', () => {
     await user.click(await screen.findByText('Show Splash'))
     expect(props.setShowSplash).toHaveBeenCalledWith(true)
   }, 10000)
+
+  it('toggles Vim display-line boundary mode from overflow menu', async () => {
+    const user = userEvent.setup()
+    const props = renderToolbar({ vimModeEnabled: true, displayLineMotion: false })
+
+    await user.click(screen.getByRole('button', { name: 'Menu' }))
+    await user.click(await screen.findByText('Display Line Boundaries'))
+
+    expect(props.toggleDisplayLineMotion).toHaveBeenCalledTimes(1)
+  })
 })

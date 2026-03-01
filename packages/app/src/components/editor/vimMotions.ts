@@ -1,51 +1,27 @@
-import type { CodeMirrorAdapter } from './vimTypes'
+import type { CodeMirrorAdapter, VimMotionArgs } from './vimTypes'
 import {
   findMarkdownFenceTarget,
   findQuoteTarget,
   findStandardBracketTarget,
 } from './vimBracketHelpers'
+import { isDisplayLineEnabledForEditor } from './vimDisplayLine'
+import { type CursorHead, type VisibleLineBounds, vimMotionLineUtils } from './vimMotionLineUtils'
+import { findMarkdownParagraphTargetLine } from './vimMotionParagraphUtils'
 
-interface VisibleLineBounds {
-  startLineNumber: number
-  endLineNumber: number
-}
+const runRepeatedEditorCommandMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead,
+  repeat: number,
+  command: string,
+  payload: Record<string, unknown>
+): CursorHead => {
+  cm.editor.setPosition(vimMotionLineUtils.toMonacoPosition(head))
 
-const clampLineNumber = (lineNumber: number, bounds: VisibleLineBounds): number =>
-  Math.min(Math.max(lineNumber, bounds.startLineNumber), bounds.endLineNumber)
-
-const getFirstNonWhitespaceColumn = (cm: CodeMirrorAdapter, lineNumber: number): number => {
-  const model = cm.editor.getModel()
-  if (!model) {
-    return 1
+  for (let i = 0; i < repeat; i++) {
+    cm.editor.trigger('vim', command, payload)
   }
 
-  const firstNonWhitespaceColumn = model.getLineFirstNonWhitespaceColumn(lineNumber)
-  return firstNonWhitespaceColumn > 0 ? firstNonWhitespaceColumn : 1
-}
-
-const getTargetLineBounds = (cm: CodeMirrorAdapter): VisibleLineBounds | null => {
-  const model = cm.editor.getModel()
-  if (!model) {
-    return null
-  }
-
-  const visibleRanges = cm.editor.getVisibleRanges()
-  const visibleRange = visibleRanges[0]
-  if (!visibleRange) {
-    return null
-  }
-
-  const totalLineCount = model.getLineCount()
-  const visibleLineCount = visibleRange.endLineNumber - visibleRange.startLineNumber + 1
-
-  if (totalLineCount <= visibleLineCount) {
-    return { startLineNumber: 1, endLineNumber: totalLineCount }
-  }
-
-  return {
-    startLineNumber: visibleRange.startLineNumber,
-    endLineNumber: visibleRange.endLineNumber,
-  }
+  return vimMotionLineUtils.toHeadPosition(cm.editor.getPosition(), head)
 }
 
 /**
@@ -57,24 +33,55 @@ const getTargetLineBounds = (cm: CodeMirrorAdapter): VisibleLineBounds | null =>
  */
 export const moveByDisplayLinesMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
-  motionArgs: { repeat?: number; forward?: boolean }
-): { line: number; ch: number } => {
-  // Line/ch are 0-indexed in CM, 1-indexed in Monaco
-  const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
-  cm.editor.setPosition(startPos)
-
+  head: CursorHead,
+  motionArgs: VimMotionArgs
+): CursorHead => {
   const repeat = motionArgs.repeat || 1
   const command = motionArgs.forward ? 'cursorDown' : 'cursorUp'
 
-  for (let i = 0; i < repeat; i++) {
-    cm.editor.trigger('vim', command, {})
+  return runRepeatedEditorCommandMotion(cm, head, repeat, command, {})
+}
+
+/**
+ * Vim motion that moves the cursor by logical model lines (not wrapped display lines).
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @param motionArgs - Motion arguments including repeat count and direction
+ * @returns The 0-indexed target position
+ */
+export const moveByLogicalLinesMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead,
+  motionArgs: VimMotionArgs
+): CursorHead => {
+  const repeat = motionArgs.repeat || 1
+  const to = motionArgs.forward ? 'down' : 'up'
+
+  return runRepeatedEditorCommandMotion(cm, head, repeat, 'cursorMove', {
+    to,
+    by: 'line',
+    value: 1,
+  })
+}
+
+/**
+ * Vim motion that follows displayline option for vertical movement.
+ * Uses display lines when enabled, otherwise logical model lines.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @param motionArgs - Motion arguments including repeat count and direction
+ * @returns The 0-indexed target position
+ */
+export const moveByConfigurableLinesMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead,
+  motionArgs: VimMotionArgs
+): CursorHead => {
+  if (isDisplayLineEnabledForEditor(cm.editor)) {
+    return moveByDisplayLinesMotion(cm, head, motionArgs)
   }
 
-  const newPos = cm.editor.getPosition()
-  if (!newPos) return { line: head.line, ch: head.ch }
-
-  return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+  return moveByLogicalLinesMotion(cm, head, motionArgs)
 }
 
 /**
@@ -88,17 +95,20 @@ export const moveByDisplayLinesMotion = (
  */
 export const moveToHighDocumentPositionMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
-  motionArgs: { repeat?: number }
-): { line: number; ch: number } => {
-  const bounds = getTargetLineBounds(cm)
+  head: CursorHead,
+  motionArgs: VimMotionArgs
+): CursorHead => {
+  const bounds = vimMotionLineUtils.getTargetLineBounds(cm)
   if (!bounds) {
     return { line: head.line, ch: head.ch }
   }
 
   const repeat = motionArgs.repeat || 1
-  const targetLineNumber = clampLineNumber(bounds.startLineNumber + repeat - 1, bounds)
-  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+  const targetLineNumber = vimMotionLineUtils.clampLineNumber(
+    bounds.startLineNumber + repeat - 1,
+    bounds
+  )
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
 
   return { line: targetLineNumber - 1, ch: targetColumn - 1 }
 }
@@ -113,16 +123,16 @@ export const moveToHighDocumentPositionMotion = (
  */
 export const moveToMiddleDocumentPositionMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
-  const bounds = getTargetLineBounds(cm)
+  head: CursorHead
+): CursorHead => {
+  const bounds = vimMotionLineUtils.getTargetLineBounds(cm)
   if (!bounds) {
     return { line: head.line, ch: head.ch }
   }
 
   const targetLineNumber =
     bounds.startLineNumber + Math.floor((bounds.endLineNumber - bounds.startLineNumber) / 2)
-  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
 
   return { line: targetLineNumber - 1, ch: targetColumn - 1 }
 }
@@ -138,17 +148,20 @@ export const moveToMiddleDocumentPositionMotion = (
  */
 export const moveToLowDocumentPositionMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number },
-  motionArgs: { repeat?: number }
-): { line: number; ch: number } => {
-  const bounds = getTargetLineBounds(cm)
+  head: CursorHead,
+  motionArgs: VimMotionArgs
+): CursorHead => {
+  const bounds = vimMotionLineUtils.getTargetLineBounds(cm)
   if (!bounds) {
     return { line: head.line, ch: head.ch }
   }
 
   const repeat = motionArgs.repeat || 1
-  const targetLineNumber = clampLineNumber(bounds.endLineNumber - repeat + 1, bounds)
-  const targetColumn = getFirstNonWhitespaceColumn(cm, targetLineNumber)
+  const targetLineNumber = vimMotionLineUtils.clampLineNumber(
+    bounds.endLineNumber - repeat + 1,
+    bounds
+  )
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
 
   return { line: targetLineNumber - 1, ch: targetColumn - 1 }
 }
@@ -162,23 +175,26 @@ export const moveToLowDocumentPositionMotion = (
  */
 export const moveToMatchingBracketMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
+  head: CursorHead
+): CursorHead => {
   const model = cm.editor.getModel()
-  if (!model) return { line: head.line, ch: head.ch }
+  if (!model) {
+    return { line: head.line, ch: head.ch }
+  }
 
-  const position = { lineNumber: head.line + 1, column: head.ch + 1 }
+  const position = vimMotionLineUtils.toMonacoPosition(head)
   const lineContent = model.getLineContent(position.lineNumber)
 
-  // 1. Try Markdown Fences
   const fenceTarget = findMarkdownFenceTarget(model, position, lineContent)
-  if (fenceTarget) return fenceTarget
+  if (fenceTarget) {
+    return fenceTarget
+  }
 
-  // 2. Try Quotes
   const quoteTarget = findQuoteTarget(lineContent, head)
-  if (quoteTarget) return quoteTarget
+  if (quoteTarget) {
+    return quoteTarget
+  }
 
-  // 3. Fallback to standard bracket jumping
   return findStandardBracketTarget(cm, position, head)
 }
 
@@ -191,19 +207,12 @@ export const moveToMatchingBracketMotion = (
  */
 export const moveToStartOfDisplayLineMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
-  // Sync Monaco position
-  const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
-  cm.editor.setPosition(startPos)
-
-  // Trigger 'cursorHome' which usually handles display lines
+  head: CursorHead
+): CursorHead => {
+  cm.editor.setPosition(vimMotionLineUtils.toMonacoPosition(head))
   cm.editor.trigger('vim', 'cursorHome', {})
 
-  // Return new position
-  const newPos = cm.editor.getPosition()
-  if (!newPos) return { line: head.line, ch: head.ch }
-  return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+  return vimMotionLineUtils.toHeadPosition(cm.editor.getPosition(), head)
 }
 
 /**
@@ -215,26 +224,187 @@ export const moveToStartOfDisplayLineMotion = (
  */
 export const moveToEndOfDisplayLineMotion = (
   cm: CodeMirrorAdapter,
-  head: { line: number; ch: number }
-): { line: number; ch: number } => {
-  // Sync Monaco position
-  const startPos = { lineNumber: head.line + 1, column: head.ch + 1 }
-  cm.editor.setPosition(startPos)
-
-  // Trigger 'cursorEnd' which usually handles display lines
+  head: CursorHead
+): CursorHead => {
+  cm.editor.setPosition(vimMotionLineUtils.toMonacoPosition(head))
   cm.editor.trigger('vim', 'cursorEnd', {})
 
-  // cursorEnd moves to the position *after* the last character of the visual line.
-  // In Vim, $ (and g$) usually places the cursor *on* the last character.
-  // If we don't move left, the selection includes the character after the line end
-  // (which might be the start of the next visual line or the newline).
   const endPos = cm.editor.getPosition()
   if (endPos && endPos.column > 1) {
     cm.editor.trigger('vim', 'cursorLeft', {})
   }
 
-  // Return new position
-  const newPos = cm.editor.getPosition()
-  if (!newPos) return { line: head.line, ch: head.ch }
-  return { line: newPos.lineNumber - 1, ch: newPos.column - 1 }
+  return vimMotionLineUtils.toHeadPosition(cm.editor.getPosition(), head)
+}
+
+/**
+ * Vim motion that moves the cursor to the logical start of the current line.
+ * @param _cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @returns The 0-indexed target position
+ */
+export const moveToStartOfLogicalLineMotion = (
+  _cm: CodeMirrorAdapter,
+  head: CursorHead
+): CursorHead => ({
+  line: head.line,
+  ch: 0,
+})
+
+/**
+ * Vim motion that moves the cursor to the first non-whitespace character of the logical line.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @returns The 0-indexed target position
+ */
+export const moveToFirstNonWhitespaceLogicalLineMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead
+): CursorHead => {
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, head.line + 1)
+  return {
+    line: head.line,
+    ch: targetColumn - 1,
+  }
+}
+
+/**
+ * Vim motion that moves the cursor to the logical end of the line.
+ * Supports Vim-style counts by applying the motion to a line below the cursor.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @param motionArgs - Motion arguments including optional repeat count
+ * @returns The 0-indexed target position
+ */
+export const moveToEndOfLogicalLineMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead,
+  motionArgs: VimMotionArgs = {}
+): CursorHead => {
+  const repeatAdjustedHead = vimMotionLineUtils.withRepeatAdjustedHead(cm, head, motionArgs.repeat)
+  const targetLineNumber = repeatAdjustedHead.line + 1
+  const targetColumn = vimMotionLineUtils.getLogicalLineEndColumn(cm, targetLineNumber)
+
+  return {
+    line: repeatAdjustedHead.line,
+    ch: targetColumn - 1,
+  }
+}
+
+/**
+ * Vim motion that conditionally targets logical or display line start based on the displayline option.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @returns The 0-indexed target position
+ */
+export const moveToStartOfConfigurableLineMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead
+): CursorHead => {
+  if (isDisplayLineEnabledForEditor(cm.editor)) {
+    return moveToStartOfDisplayLineMotion(cm, head)
+  }
+
+  return moveToStartOfLogicalLineMotion(cm, head)
+}
+
+/**
+ * Vim motion that conditionally targets logical or display first non-blank column based on displayline.
+ * When displayline is enabled, it aligns with display-line start behavior.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @returns The 0-indexed target position
+ */
+export const moveToFirstNonWhitespaceConfigurableLineMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead
+): CursorHead => {
+  if (isDisplayLineEnabledForEditor(cm.editor)) {
+    return moveToStartOfDisplayLineMotion(cm, head)
+  }
+
+  return moveToFirstNonWhitespaceLogicalLineMotion(cm, head)
+}
+
+/**
+ * Vim motion that conditionally targets logical or display line end based on the displayline option.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @param motionArgs - Motion arguments including optional repeat count
+ * @returns The 0-indexed target position
+ */
+export const moveToEndOfConfigurableLineMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead,
+  motionArgs: VimMotionArgs
+): CursorHead => {
+  const repeatAdjustedHead = vimMotionLineUtils.withRepeatAdjustedHead(cm, head, motionArgs.repeat)
+
+  if (isDisplayLineEnabledForEditor(cm.editor)) {
+    return moveToEndOfDisplayLineMotion(cm, repeatAdjustedHead)
+  }
+
+  return moveToEndOfLogicalLineMotion(cm, repeatAdjustedHead)
+}
+
+/**
+ * Vim motion used for +, -, and _ to move by logical lines and land on first non-whitespace.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @param motionArgs - Motion arguments including repeat count and direction controls
+ * @returns The 0-indexed target position
+ */
+export const moveToRelativeLineStartMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead,
+  motionArgs: VimMotionArgs
+): CursorHead => {
+  const model = cm.editor.getModel()
+  if (!model) {
+    return { line: head.line, ch: head.ch }
+  }
+
+  const repeat = Math.max(motionArgs.repeat || 1, 1)
+  const direction = motionArgs.direction || 0
+  const lineDelta = motionArgs.anchorCurrent ? repeat - 1 : direction * repeat
+  const bounds: VisibleLineBounds = {
+    startLineNumber: 1,
+    endLineNumber: model.getLineCount(),
+  }
+  const targetLineNumber = vimMotionLineUtils.clampLineNumber(head.line + 1 + lineDelta, bounds)
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLineNumber)
+
+  return {
+    line: targetLineNumber - 1,
+    ch: targetColumn - 1,
+  }
+}
+
+/**
+ * Vim motion that moves to previous/next markdown-aware paragraph boundaries.
+ * Recognizes blank lines and markdown block starts as paragraph transitions.
+ * @param cm - The CodeMirror adapter wrapping the Monaco editor
+ * @param head - The 0-indexed cursor position
+ * @param motionArgs - Motion arguments including repeat count and direction
+ * @returns The 0-indexed target position
+ */
+export const moveByMarkdownParagraphMotion = (
+  cm: CodeMirrorAdapter,
+  head: CursorHead,
+  motionArgs: VimMotionArgs
+): CursorHead => {
+  const model = cm.editor.getModel()
+  if (!model) {
+    return { line: head.line, ch: head.ch }
+  }
+
+  const repeat = Math.max(motionArgs.repeat || 1, 1)
+  const moveForward = motionArgs.forward !== false
+  const targetLine = findMarkdownParagraphTargetLine(model, head.line + 1, repeat, moveForward)
+  const targetColumn = vimMotionLineUtils.getFirstNonWhitespaceColumn(cm, targetLine)
+
+  return {
+    line: targetLine - 1,
+    ch: targetColumn - 1,
+  }
 }

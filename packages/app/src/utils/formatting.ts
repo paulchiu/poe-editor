@@ -10,6 +10,15 @@ interface LineFormattingOptions {
   }
 }
 
+const TASK_LIST_PATTERN = /^(\s*)[-*+]\s+\[[ xX]\]\s*$/
+const TASK_LIST_CONTENT_PATTERN = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.+)/
+const UNORDERED_LIST_PATTERN = /^(\s*)[-*+]\s+$/
+const UNORDERED_LIST_CONTENT_PATTERN = /^(\s*)([-*+])\s+(.+)/
+const ORDERED_LIST_PATTERN = /^(\s*)(\d+)\.\s+$/
+const ORDERED_LIST_CONTENT_PATTERN = /^(\s*)(\d+)\.\s+(.+)/
+const QUOTE_PATTERN = /^(\s*)>\s?$/
+const QUOTE_CONTENT_PATTERN = /^(\s*)>\s(.+)/
+
 function insertTemplate(editor: EditorPaneHandle, prefix: string, suffix: string) {
   editor.insertText(prefix + suffix)
   const range = editor.getSelectionRange()
@@ -394,22 +403,12 @@ export function getAutoContinueEdit(
   // text before cursor
   const beforeCursor = lineContent.substring(0, cursorColumn - 1)
 
-  // Patterns
-  const taskListPattern = /^(\s*)[-*+]\s+\[[ xX]\]\s*$/
-  const taskListContentPattern = /^(\s*)([-*+])\s+\[([ xX])\]\s+(.+)/
-  const unorderedListPattern = /^(\s*)[-*+]\s+$/
-  const unorderedListContentPattern = /^(\s*)([-*+])\s+(.+)/
-  const orderedListPattern = /^(\s*)(\d+)\.\s+$/
-  const orderedListContentPattern = /^(\s*)(\d+)\.\s+(.+)/
-  const quotePattern = /^(\s*)>\s?$/
-  const quoteContentPattern = /^(\s*)>\s(.+)/
-
   // Check for empty list/quote (to exit)
   if (
-    taskListPattern.test(beforeCursor) ||
-    unorderedListPattern.test(beforeCursor) ||
-    orderedListPattern.test(beforeCursor) ||
-    quotePattern.test(beforeCursor)
+    TASK_LIST_PATTERN.test(beforeCursor) ||
+    UNORDERED_LIST_PATTERN.test(beforeCursor) ||
+    ORDERED_LIST_PATTERN.test(beforeCursor) ||
+    QUOTE_PATTERN.test(beforeCursor)
   ) {
     return {
       action: 'exit',
@@ -421,7 +420,7 @@ export function getAutoContinueEdit(
   }
 
   // Check for content (to continue)
-  const taskListMatch = beforeCursor.match(taskListContentPattern)
+  const taskListMatch = beforeCursor.match(TASK_LIST_CONTENT_PATTERN)
   if (taskListMatch) {
     const indent = taskListMatch[1]
     const prefix = taskListMatch[2]
@@ -436,7 +435,7 @@ export function getAutoContinueEdit(
     }
   }
 
-  const ulMatch = beforeCursor.match(unorderedListContentPattern)
+  const ulMatch = beforeCursor.match(UNORDERED_LIST_CONTENT_PATTERN)
   if (ulMatch) {
     const indent = ulMatch[1]
     const prefix = ulMatch[2] // Capture the exact bullet used
@@ -450,7 +449,7 @@ export function getAutoContinueEdit(
     }
   }
 
-  const olMatch = beforeCursor.match(orderedListContentPattern)
+  const olMatch = beforeCursor.match(ORDERED_LIST_CONTENT_PATTERN)
   if (olMatch) {
     const indent = olMatch[1]
     const number = parseInt(olMatch[2], 10)
@@ -464,7 +463,7 @@ export function getAutoContinueEdit(
     }
   }
 
-  const quoteMatch = beforeCursor.match(quoteContentPattern)
+  const quoteMatch = beforeCursor.match(QUOTE_CONTENT_PATTERN)
   if (quoteMatch) {
     const indent = quoteMatch[1]
     return {

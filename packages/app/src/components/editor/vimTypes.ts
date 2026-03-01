@@ -33,6 +33,13 @@ export interface VimOperatorArgs {
   after?: boolean
 }
 
+export interface VimMotionArgs {
+  repeat?: number
+  forward?: boolean
+  direction?: number
+  anchorCurrent?: boolean
+}
+
 export interface VimAPI {
   defineOperator: (
     name: string,
@@ -61,7 +68,7 @@ export interface VimAPI {
     fn: (
       cm: CodeMirrorAdapter,
       head: { line: number; ch: number },
-      motionArgs: { repeat?: number; forward?: boolean }
+      motionArgs: VimMotionArgs
     ) => { line: number; ch: number } | void
   ) => void
   defineOption: (
@@ -70,6 +77,12 @@ export interface VimAPI {
     type: string,
     aliases?: string[],
     callback?: (value: string | number | boolean | undefined, cm: CodeMirrorAdapter) => void
+  ) => void
+  setOption?: (
+    name: string,
+    value: string | number | boolean | undefined,
+    cm?: CodeMirrorAdapter,
+    cfg?: Record<string, unknown>
   ) => void
 }
 

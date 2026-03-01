@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react'
 import type { editor } from 'monaco-editor'
 import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
 import { toast } from '@/hooks/useToast'
-import { setupVim } from '../vim'
+import type { CodeMirrorAdapter } from '../vimTypes'
+import { setVimDisplayLineOption, setupVim } from '../vim'
+import { clearDisplayLineEnabledForEditor } from '../vimDisplayLine'
 
 const VISUAL_CURSOR_CLASS = 'vim-visual-head-cursor'
 const VISUAL_CURSOR_ACTIVE_CLASS = 'vim-visual-char-active'
@@ -55,6 +57,9 @@ const getVisualHead = (vim: VimAdapter): VimCursor | null => {
   const head = maybeState.state?.vim?.sel?.head
   return isVimCursor(head) ? head : null
 }
+
+const toCodeMirrorAdapter = (vim: VimAdapter): CodeMirrorAdapter =>
+  vim as unknown as CodeMirrorAdapter
 
 const attachVisualCursorSync = (
   editor: editor.IStandaloneCodeEditor,
@@ -156,6 +161,7 @@ interface UseEditorVimParams {
   vimInstanceRef: React.MutableRefObject<VimAdapter | null>
   statusBarRef: React.RefObject<HTMLDivElement | null>
   vimMode?: boolean
+  displayLineMotion?: boolean
 }
 
 /**
@@ -171,6 +177,7 @@ export function useEditorVim({
   vimInstanceRef,
   statusBarRef,
   vimMode,
+  displayLineMotion = false,
 }: UseEditorVimParams): void {
   const visualCursorCleanupRef = useRef<(() => void) | null>(null)
   const visualCursorEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
@@ -182,6 +189,10 @@ export function useEditorVim({
       visualCursorEditorRef.current = null
 
       if (vimInstanceRef.current) {
+        const activeEditor = editorInstance ?? editorRef.current
+        if (activeEditor) {
+          clearDisplayLineEnabledForEditor(activeEditor)
+        }
         vimInstanceRef.current.dispose()
         vimInstanceRef.current = null
       }
@@ -202,6 +213,7 @@ export function useEditorVim({
     }
 
     if (vimInstanceRef.current) {
+      setVimDisplayLineOption(toCodeMirrorAdapter(vimInstanceRef.current), displayLineMotion)
       if (!visualCursorCleanupRef.current) {
         visualCursorCleanupRef.current = attachVisualCursorSync(ed, vimInstanceRef.current)
         visualCursorEditorRef.current = ed
@@ -217,6 +229,7 @@ export function useEditorVim({
         try {
           setupVim()
           vimInstanceRef.current = initVimMode(currentEditor, currentStatusBar)
+          setVimDisplayLineOption(toCodeMirrorAdapter(vimInstanceRef.current), displayLineMotion)
           visualCursorCleanupRef.current = attachVisualCursorSync(
             currentEditor,
             vimInstanceRef.current
@@ -234,7 +247,7 @@ export function useEditorVim({
     return () => {
       clearTimeout(timer)
     }
-  }, [vimMode, editorInstance, editorRef, vimInstanceRef, statusBarRef])
+  }, [vimMode, editorInstance, editorRef, vimInstanceRef, statusBarRef, displayLineMotion])
 
   useEffect(
     () => () => {
@@ -242,10 +255,14 @@ export function useEditorVim({
       visualCursorCleanupRef.current = null
       visualCursorEditorRef.current = null
       if (vimInstanceRef.current) {
+        const activeEditor = editorInstance ?? editorRef.current
+        if (activeEditor) {
+          clearDisplayLineEnabledForEditor(activeEditor)
+        }
         vimInstanceRef.current.dispose()
         vimInstanceRef.current = null
       }
     },
-    [vimInstanceRef]
+    [editorInstance, editorRef, vimInstanceRef]
   )
 }

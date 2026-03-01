@@ -3,14 +3,9 @@ import Editor, { type OnMount } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
 import * as monaco from 'monaco-editor'
 import type { VimMode as VimAdapter } from 'monaco-vim'
-import { Copy, Check, Maximize2, Minimize2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from '@/hooks/useToast'
 import { copyToClipboard } from '@/utils/clipboard'
 import { getAutoContinueEdit } from '@/utils/formatting'
-import { cn } from '@/utils/classnames'
 import { filterEmojiShortcodeEntries, getEmojiShortcodeEntries } from '@/utils/emojiShortcodes'
 
 import { getTableAtCursor } from './table'
@@ -20,83 +15,11 @@ import { useEditorSpellCheck } from './hooks/useEditorSpellCheck'
 import { useEditorHandle } from './hooks/useEditorHandle'
 import { buildEditorOptions } from './editorOptions'
 import { countWords } from './countWords'
-import { getEmojiShortcodeQueryAtCursor, type EmojiShortcodeMatch } from './emojiPickerQuery'
-
-interface EditorPaneProps {
-  value: string
-  onChange: (value: string) => void
-  onCursorChange?: (position: { lineNumber: number; column: number; isInTable: boolean }) => void
-  theme?: 'light' | 'dark'
-  onFormat?: (type: 'bold' | 'italic' | 'link' | 'code') => void
-  onCodeBlock?: () => void
-  vimMode?: boolean
-  showWordCount?: boolean
-  showLineNumbers?: boolean
-  viewMode?: 'editor' | 'preview' | 'split'
-  onToggleLayout?: () => void
-  spellCheck?: boolean
-  onSpellCheckChange?: (enabled: boolean) => void
-  emojiPickerEnabled?: boolean
-}
-
-export type TableAction =
-  | 'insert-table'
-  | 'insert-row-above'
-  | 'insert-row-below'
-  | 'insert-col-left'
-  | 'insert-col-right'
-  | 'delete-row'
-  | 'delete-col'
-  | 'format-table'
-
-interface EmojiPickerState extends EmojiShortcodeMatch {
-  top: number
-  left: number
-}
-
-/**
- * Handle interface for controlling the editor imperatively
- */
-export interface EditorPaneHandle {
-  /** Insert text at current cursor position */
-  insertText: (text: string) => void
-  /** Get currently selected text */
-  getSelection: () => string | undefined
-  /** Replace currently selected text */
-  replaceSelection: (text: string) => void
-  /** Get the current selection range */
-  getSelectionRange: () => {
-    startLineNumber: number
-    startColumn: number
-    endLineNumber: number
-    endColumn: number
-  } | null
-  /** Get content of a specific line */
-  getLineContent: (lineNumber: number) => string | undefined
-  /** Set the cursor selection */
-  setSelection: (range: {
-    startLineNumber: number
-    startColumn: number
-    endLineNumber: number
-    endColumn: number
-  }) => void
-  /** Get current scroll top */
-  getScrollTop: () => number
-  /** Set scroll top */
-  setScrollTop: (scrollTop: number) => void
-  /** Get scroll height */
-  getScrollHeight: () => number
-  /** Get client height (visible height) */
-  getClientHeight: () => number
-  /** Register a scroll listener */
-  onScroll: (callback: () => void) => { dispose: () => void }
-  /** Format the table at the current cursor position */
-  formatTable: () => void
-  /** Focus the editor */
-  focus: () => void
-  /** Perform a table action */
-  performTableAction: (action: TableAction) => void
-}
+import { getEmojiShortcodeQueryAtCursor } from './emojiPickerQuery'
+import { EditorPaneActionButtons } from './EditorPaneActionButtons'
+import { EditorPaneEmojiPicker } from './EditorPaneEmojiPicker'
+import type { EditorPaneProps, EditorPaneHandle, EmojiPickerState } from './editorPaneTypes'
+export type { EditorPaneHandle, TableAction } from './editorPaneTypes'
 
 /**
  * Main editor component using Monaco Editor.
@@ -115,6 +38,7 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       onFormat,
       onCodeBlock,
       vimMode,
+      displayLineMotion = false,
       showWordCount,
       showLineNumbers,
       viewMode,
@@ -394,7 +318,14 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       })
     }
 
-    useEditorVim({ editorInstance, editorRef, vimInstanceRef, statusBarRef, vimMode })
+    useEditorVim({
+      editorInstance,
+      editorRef,
+      vimInstanceRef,
+      statusBarRef,
+      vimMode,
+      displayLineMotion,
+    })
     useEditorSpellCheck({
       editorRef,
       monacoRef,
@@ -455,97 +386,24 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
       <div className="relative h-full group bg-background flex flex-col overflow-hidden rounded-lg border border-border">
         <div className="flex-1 min-h-0">
           <div ref={editorContainerRef} className="relative h-full">
-            <div className="absolute top-4 right-4 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              {onToggleLayout && viewMode && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={onToggleLayout}
-                      className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border text-foreground"
-                    >
-                      {viewMode === 'split' ? (
-                        <Maximize2 className="h-4 w-4" />
-                      ) : (
-                        <Minimize2 className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p className="text-xs">
-                      {viewMode === 'split' ? 'Expand Editor' : 'Restore Split View'}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={handleCopy}
-                    className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border text-foreground"
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p className="text-xs">Copy Markdown</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
+            <EditorPaneActionButtons
+              copied={copied}
+              viewMode={viewMode}
+              onCopy={handleCopy}
+              onToggleLayout={onToggleLayout}
+            />
 
-            {emojiPickerEnabled && emojiPickerState && (
-              <div
-                ref={emojiPickerRef}
-                className="absolute z-20 w-80 rounded-md border bg-popover p-2 text-popover-foreground shadow-md"
-                style={{ top: emojiPickerState.top, left: emojiPickerState.left }}
-                onMouseDown={(event) => event.preventDefault()}
-              >
-                {isEmojiLoading && (
-                  <p className="px-2 py-2 text-xs text-muted-foreground">Loading emojis...</p>
-                )}
-                {!isEmojiLoading && emojiLoadError && (
-                  <p className="px-2 py-2 text-xs text-destructive">{emojiLoadError}</p>
-                )}
-                {!isEmojiLoading && !emojiLoadError && (
-                  <ScrollArea className="h-56">
-                    <div className="space-y-1 pr-2">
-                      {filteredEmojiEntries.length === 0 && (
-                        <p className="px-2 py-2 text-xs text-muted-foreground">
-                          No emoji matches for :{emojiPickerState.query}
-                        </p>
-                      )}
-                      {filteredEmojiEntries.map((entry, index) => (
-                        <Button
-                          key={entry.shortcode}
-                          type="button"
-                          variant="ghost"
-                          className={cn(
-                            'w-full justify-start gap-2',
-                            index === activeSelectedEmojiIndex && 'bg-accent text-foreground'
-                          )}
-                          aria-label={`Insert :${entry.shortcode}:`}
-                          aria-selected={index === activeSelectedEmojiIndex}
-                          onMouseEnter={() => setSelectedEmojiIndex(index)}
-                          onClick={() => handleInsertEmojiShortcode(entry.shortcode)}
-                        >
-                          <span className="text-base leading-none">{entry.emoji}</span>
-                          <span className="font-mono text-xs text-foreground">
-                            :{entry.shortcode}:
-                          </span>
-                        </Button>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                )}
-              </div>
-            )}
+            <EditorPaneEmojiPicker
+              enabled={emojiPickerEnabled}
+              state={emojiPickerState}
+              pickerRef={emojiPickerRef}
+              isLoading={isEmojiLoading}
+              loadError={emojiLoadError}
+              entries={filteredEmojiEntries}
+              selectedIndex={activeSelectedEmojiIndex}
+              onHoverIndex={setSelectedEmojiIndex}
+              onSelectShortcode={handleInsertEmojiShortcode}
+            />
 
             <Editor
               height="100%"
@@ -560,10 +418,9 @@ export const EditorPane = forwardRef<EditorPaneHandle, EditorPaneProps>(
         </div>
         {showWordCount && (
           <div
-            className={cn(
-              'absolute right-4 z-10 pointer-events-none transition-all duration-300',
+            className={`absolute right-4 z-10 pointer-events-none transition-all duration-300 ${
               vimMode ? 'bottom-10' : 'bottom-4'
-            )}
+            }`}
           >
             <span className="bg-black/50 text-white px-2 py-1 rounded text-xs backdrop-blur-sm">
               {countWords(value)} words
