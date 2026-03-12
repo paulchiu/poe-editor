@@ -73,7 +73,12 @@ describe('setupVim', () => {
       'motion',
       'moveToFirstNonWhitespaceConfigurableLine'
     )
-    expect(vimMocks.mapCommand).toHaveBeenCalledWith('$', 'motion', 'moveToEndOfConfigurableLine')
+    expect(vimMocks.mapCommand).toHaveBeenCalledWith('$', 'motion', 'moveToEndOfConfigurableLine', {
+      inclusive: true,
+    })
+    expect(vimMocks.mapCommand).toHaveBeenCalledWith('g$', 'motion', 'moveToEndOfDisplayLine', {
+      inclusive: true,
+    })
 
     const displayLineOptionCall = vimMocks.defineOption.mock.calls.find(
       ([name]) => name === 'displayline'
