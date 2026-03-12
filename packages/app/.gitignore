@@ -6,6 +6,7 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+.wrangler/
 
 # Local environment files
 .env
@@ -17,6 +18,14 @@ build/
 
 # Vitest coverage
 coverage/
+
+# Playwright artifacts
+blob-report/
+playwright-report/
+test-results/
+screenshots/
+traces/
+videos/
 
 # Editor directories
 .vscode/
