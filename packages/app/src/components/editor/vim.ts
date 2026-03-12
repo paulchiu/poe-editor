@@ -167,9 +167,9 @@ export function setupVim(): void {
 
   Vim.mapCommand('0', 'motion', 'moveToStartOfConfigurableLine')
   Vim.mapCommand('^', 'motion', 'moveToFirstNonWhitespaceConfigurableLine')
-  Vim.mapCommand('$', 'motion', 'moveToEndOfConfigurableLine')
+  Vim.mapCommand('$', 'motion', 'moveToEndOfConfigurableLine', { inclusive: true })
 
-  Vim.mapCommand('g$', 'motion', 'moveToEndOfDisplayLine')
+  Vim.mapCommand('g$', 'motion', 'moveToEndOfDisplayLine', { inclusive: true })
   Vim.mapCommand('g^', 'motion', 'moveToStartOfDisplayLine')
   Vim.mapCommand('g0', 'motion', 'moveToStartOfDisplayLine')
 
