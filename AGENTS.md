@@ -54,6 +54,7 @@
   - Trailing Comma: `es5`
   - Print Width: `100`
   - Tab Width: `2`
+  - Numeric Literals: Use underscore thousand separators for large numbers where valid (e.g., `4_000`).
 - **TypeScript:**
   - **No `any`**: Use `unknown` and narrow.
   - **Props:** Define interface above component, suffixed with `Props` (e.g., `ButtonProps`).
