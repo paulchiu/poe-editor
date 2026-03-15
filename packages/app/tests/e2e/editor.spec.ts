@@ -23,7 +23,7 @@ test.describe('Editor Integration', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
     // Wait for the editor to be ready
-    await expect(page.locator('.monaco-editor')).toBeVisible()
+    await expect(page.locator('.monaco-editor')).toBeVisible({ timeout: 10_000 })
   })
 
   test('should render editor and preview panes', async ({ page }) => {

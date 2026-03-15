@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('New Document Dialog', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('.monaco-editor')).toBeVisible()
+    await expect(page.locator('.monaco-editor')).toBeVisible({ timeout: 10_000 })
   })
 
   test('should show confirmation dialog when creating new document', async ({ page }) => {

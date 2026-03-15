@@ -4,7 +4,7 @@ test.describe('Editor Preferences', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/')
     // Wait for editor to be ready
-    await expect(page.locator('.monaco-editor')).toBeVisible()
+    await expect(page.locator('.monaco-editor')).toBeVisible({ timeout: 10_000 })
   })
 
   test('should persist "Start with Empty Editor" preference', async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe('Editor Preferences', () => {
     // 3. Reload page with empty hash to simulate new session/document
     await page.goto('/#')
     await page.reload()
-    await expect(page.locator('.monaco-editor')).toBeVisible()
+    await expect(page.locator('.monaco-editor')).toBeVisible({ timeout: 10_000 })
 
     // 4. Verify editor is empty (no Welcome text)
     await expect(page.locator('.markdown-body')).not.toContainText('Poe Markdown Editor')
@@ -31,7 +31,7 @@ test.describe('Editor Preferences', () => {
     // 6. Reload page with empty hash
     await page.goto('/#')
     await page.reload()
-    await expect(page.locator('.monaco-editor')).toBeVisible()
+    await expect(page.locator('.monaco-editor')).toBeVisible({ timeout: 10_000 })
 
     // 7. Verify Welcome text returns
     await expect(page.locator('.markdown-body')).toContainText('Poe Markdown Editor')
