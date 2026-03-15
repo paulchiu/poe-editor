@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
-import type { editor } from 'monaco-editor'
-import { initVimMode, type VimMode as VimAdapter } from 'monaco-vim'
+import { Selection, type editor, type IPosition } from 'monaco-editor'
+import { initVimMode, VimMode, type VimMode as VimAdapter } from 'monaco-vim'
 import { toast } from '@/hooks/useToast'
-import type { CodeMirrorAdapter } from '../vimTypes'
+import type { CodeMirrorAdapter, VimModeModule } from '../vimTypes'
 import { setVimDisplayLineOption, setupVim } from '../vim'
 import { clearDisplayLineEnabledForEditor } from '../vimDisplayLine'
 
@@ -22,6 +22,7 @@ interface VimModeChangeEvent {
 interface VimStateWithSelection {
   state?: {
     vim?: {
+      visualMode?: boolean
       sel?: {
         head?: VimCursor
       }
@@ -58,8 +59,26 @@ const getVisualHead = (vim: VimAdapter): VimCursor | null => {
   return isVimCursor(head) ? head : null
 }
 
+const resolveVimApi = (): VimModeModule['Vim'] | null => {
+  if (!VimMode) {
+    return null
+  }
+
+  const { Vim } = VimMode as unknown as VimModeModule
+  return Vim || null
+}
+
 const toCodeMirrorAdapter = (vim: VimAdapter): CodeMirrorAdapter =>
   vim as unknown as CodeMirrorAdapter
+
+const exitVisualModeOnMouseDown = (vim: VimAdapter): void => {
+  const cm = toCodeMirrorAdapter(vim)
+  if (!cm.state.vim.visualMode) {
+    return
+  }
+
+  resolveVimApi()?.handleKey(cm, '<Esc>')
+}
 
 const attachVisualCursorSync = (
   editor: editor.IStandaloneCodeEditor,
@@ -67,6 +86,7 @@ const attachVisualCursorSync = (
 ): (() => void) => {
   let decorationIds: string[] = []
   let isVisualCharMode = false
+  let pendingMouseExitPosition: IPosition | null = null
   const domNode = editor.getDomNode()
 
   const clearDecoration = (): void => {
@@ -147,10 +167,39 @@ const attachVisualCursorSync = (
     }
   })
 
+  const mouseDownDisposable = editor.onMouseDown((event) => {
+    if (!event.event.leftButton || !event.target.position) {
+      return
+    }
+
+    if (!toCodeMirrorAdapter(vim).state.vim.visualMode) {
+      return
+    }
+
+    pendingMouseExitPosition = event.target.position
+    exitVisualModeOnMouseDown(vim)
+  })
+
+  const mouseUpDisposable = editor.onMouseUp((event) => {
+    if (!pendingMouseExitPosition) {
+      return
+    }
+
+    const position = event.target.position ?? pendingMouseExitPosition
+    pendingMouseExitPosition = null
+
+    editor.setPosition(position)
+    editor.setSelection(
+      new Selection(position.lineNumber, position.column, position.lineNumber, position.column)
+    )
+  })
+
   return () => {
     vim.off('vim-mode-change', onModeChange)
     cursorSelectionDisposable.dispose()
     modelChangeDisposable.dispose()
+    mouseDownDisposable.dispose()
+    mouseUpDisposable.dispose()
     clearDecoration()
   }
 }

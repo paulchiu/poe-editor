@@ -34,19 +34,21 @@ describe('renderMarkdownForPreview emoji shortcodes', () => {
 })
 
 describe('renderMarkdownForPreview lazy emoji loading', () => {
-  beforeEach(() => {
-    vi.resetModules()
+  beforeEach(async () => {
+    const { resetEmojiMarkdownRendererForTests } = await import('./markdown')
+    resetEmojiMarkdownRendererForTests()
   })
 
-  afterEach(() => {
-    vi.doUnmock('markdown-it-emoji')
-    vi.resetModules()
+  afterEach(async () => {
+    const { resetEmojiMarkdownRendererForTests } = await import('./markdown')
+    resetEmojiMarkdownRendererForTests()
   })
 
   it('does not import the emoji module when no shortcode pattern exists', async () => {
-    const emojiFactory = vi.fn(() => ({ full: vi.fn() }))
-    vi.doMock('markdown-it-emoji', emojiFactory)
-    const { renderMarkdownForPreview } = await import('./markdown')
+    const emojiFactory = vi.fn(async () => ({ full: vi.fn() }))
+    const { renderMarkdownForPreview, setEmojiMarkdownModuleLoaderForTests } =
+      await import('./markdown')
+    setEmojiMarkdownModuleLoaderForTests(emojiFactory)
 
     await renderMarkdownForPreview('No shortcode candidates in this markdown content.')
 
@@ -55,9 +57,10 @@ describe('renderMarkdownForPreview lazy emoji loading', () => {
 
   it('imports the emoji module when shortcode pattern exists', async () => {
     const emojiPlugin = vi.fn()
-    const emojiFactory = vi.fn(() => ({ full: emojiPlugin }))
-    vi.doMock('markdown-it-emoji', emojiFactory)
-    const { renderMarkdownForPreview } = await import('./markdown')
+    const emojiFactory = vi.fn(async () => ({ full: emojiPlugin }))
+    const { renderMarkdownForPreview, setEmojiMarkdownModuleLoaderForTests } =
+      await import('./markdown')
+    setEmojiMarkdownModuleLoaderForTests(emojiFactory)
 
     await renderMarkdownForPreview('Has :smile: shortcode candidate.')
 
