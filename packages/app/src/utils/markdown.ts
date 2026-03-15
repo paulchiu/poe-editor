@@ -14,16 +14,23 @@ import {
 export type { TocHeading } from '@/utils/markdownHeadings'
 
 type MarkdownItPlugin = (markdown: MarkdownIt) => void
+type EmojiMarkdownModule = {
+  full: MarkdownItPlugin
+}
+type EmojiMarkdownModuleLoader = () => Promise<EmojiMarkdownModule>
 
 const baseMarkdown = createMarkdownIt(false)
 const markdownRenderer = createMarkdownIt(true)
 
 let emojiMarkdownRendererPromise: Promise<MarkdownIt> | null = null
+const defaultEmojiMarkdownModuleLoader: EmojiMarkdownModuleLoader = async () =>
+  (await import('markdown-it-emoji')) as EmojiMarkdownModule
+let emojiMarkdownModuleLoader: EmojiMarkdownModuleLoader = defaultEmojiMarkdownModuleLoader
 
 async function getEmojiMarkdownRenderer(): Promise<MarkdownIt> {
   if (!emojiMarkdownRendererPromise) {
     emojiMarkdownRendererPromise = (async () => {
-      const { full } = await import('markdown-it-emoji')
+      const { full } = await emojiMarkdownModuleLoader()
       const parser = createMarkdownIt(true)
       parser.use(full as MarkdownItPlugin)
       return parser
@@ -98,4 +105,25 @@ export async function renderMarkdownForPreview(markdown: string): Promise<string
  */
 export function getFirstHeading(markdown: string): string | null {
   return getFirstHeadingFromMarkdown(markdown, baseMarkdown)
+}
+
+/**
+ * Overrides the lazy emoji module loader for isolated tests.
+ * @param loader - Test loader to use, or `null` to restore the default loader.
+ * @returns void
+ */
+export function setEmojiMarkdownModuleLoaderForTests(
+  loader: EmojiMarkdownModuleLoader | null
+): void {
+  emojiMarkdownRendererPromise = null
+  emojiMarkdownModuleLoader = loader ?? defaultEmojiMarkdownModuleLoader
+}
+
+/**
+ * Resets the lazy emoji renderer cache and restores the default emoji loader for tests.
+ * @returns void
+ */
+export function resetEmojiMarkdownRendererForTests(): void {
+  emojiMarkdownRendererPromise = null
+  emojiMarkdownModuleLoader = defaultEmojiMarkdownModuleLoader
 }
