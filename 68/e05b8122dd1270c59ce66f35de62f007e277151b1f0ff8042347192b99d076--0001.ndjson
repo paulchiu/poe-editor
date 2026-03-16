@@ -44,3 +44,4 @@
 {"session_uid":"b16996acdca0b1e803a8dca9067cf0033e28d6d4e7320ff7002795647aa040c7","session_blob_sha":"e6813cd55b468323fa05c594f2ae9cbd1ad764a9","session_start":1773541339,"agent":"codex","ingested_at":"2026-03-15T02:22:19Z"}
 {"session_uid":"9ac79425495819a7db3dbb8505fed8fbc64382d806f0dad1989e36c206999482","session_blob_sha":"bfbbbfd45096ff1cc03e278bc4c2f9bdf8599921","session_start":1773540341,"agent":"codex","ingested_at":"2026-03-15T02:05:41Z"}
 {"session_uid":"cb0cae3f0e34a9965c9c5b49a99f9c8deaa566ed38995f419603affce0f282c1","session_blob_sha":"6d125fd9335f31a35e883214b6c2379d83d0e7ea","session_start":1773545584,"agent":"codex","ingested_at":"2026-03-15T03:33:04Z"}
+{"session_uid":"5690e41da3a7dae82933059f50ed881c5914e1d0dabec22e620c4cf61bcba301","session_blob_sha":"e8a882420042a46e7b92b61b9570039246b05e86","session_start":1771467330,"agent":"amp-code","ingested_at":"2026-02-19T02:15:30Z"}
