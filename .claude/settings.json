@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | xargs -I{} sh -c 'echo \"{}\" | grep -qE \"\\.(ts|tsx|json|md|css|html)$\" && npx prettier --write \"{}\" 2>/dev/null; true'",
+            "timeout": 30,
+            "statusMessage": "Formatting with Prettier"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command // empty' | grep -qE '^git commit' && { cd \"$CLAUDE_PROJECT_DIR\" && npm run tsc && npm run lint && npm run test -- run; } || true",
+            "timeout": 300,
+            "statusMessage": "Running checks before commit"
+          }
+        ]
+      }
+    ]
+  }
+}

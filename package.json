@@ -28,10 +28,22 @@
     "test:coverage": "npm run test:coverage -w packages/app",
     "test:e2e": "npm run test:e2e -w packages/app",
     "deploy:app": "npm run deploy -w packages/app",
-    "deploy:proxy": "npm run deploy -w packages/proxy"
+    "deploy:proxy": "npm run deploy -w packages/proxy",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md,css,html}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.59.0",
