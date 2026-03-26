@@ -84,7 +84,7 @@
     "react-hot-toast": "^2.6.0",
     "react-resizable-panels": "^4.7.6",
     "react-toastify": "^11.0.5",
-    "recharts": "^3.8.0",
+    "recharts": "^3.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
