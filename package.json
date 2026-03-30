@@ -46,7 +46,7 @@
     "lint-staged": "^16.4.0"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.60.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.60.1",
     "lightningcss-linux-x64-gnu": "^1.32.0"
   }
 }
