@@ -21,7 +21,7 @@
     "react": "^19.2.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260401.1",
+    "@cloudflare/workers-types": "^4.20260402.1",
     "@eslint/js": "^9.39.2",
     "@types/react": "^19.2.14",
     "eslint": "^9.39.4",
