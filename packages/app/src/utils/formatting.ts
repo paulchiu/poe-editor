@@ -202,9 +202,9 @@ export function formatQuote(editor: EditorPaneHandle | null): void {
     editor,
     placeholder: '> ',
     transform: (lines) =>
-      lines.map((line) => {
-        // Skip empty lines to avoid trailing > on selection end
-        if (line.trim().length === 0) return line
+      lines.map((line, i) => {
+        // Skip trailing empty line to avoid extra > at selection end
+        if (i === lines.length - 1 && line.trim().length === 0) return line
         // We could strip existing quotes here if we wanted toggle behavior,
         // but preserving existing behavior of just adding > for now,
         // unless it's just a raw add.
