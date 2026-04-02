@@ -29,7 +29,7 @@
     "test:e2e": "npm run test:e2e -w packages/app",
     "deploy:app": "npm run deploy -w packages/app",
     "deploy:proxy": "npm run deploy -w packages/proxy",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
