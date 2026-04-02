@@ -217,6 +217,14 @@ describe('formatting utils', () => {
       expect(replaceSelectionMock).toHaveBeenCalledWith('> line 1\n> line 2')
     })
 
+    it('quotes blank lines between content lines', () => {
+      setMultilineInput('line 1\n\nline 2')
+
+      formatQuote(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('> line 1\n> \n> line 2')
+    })
+
     it('inserts quote marker on empty line', () => {
       setSingleLine('')
 
