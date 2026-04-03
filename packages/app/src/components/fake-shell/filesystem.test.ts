@@ -1,13 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  resolve,
-  getNode,
-  listDir,
-  readFile,
-  isDir,
-  completePath,
-  HOME,
-} from './filesystem'
+import { resolve, getNode, listDir, readFile, isDir, completePath, HOME } from './filesystem'
 
 describe('resolve', () => {
   it('returns absolute paths as-is (after normalization)', () => {

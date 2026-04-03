@@ -16,7 +16,17 @@ describe('neofetch', () => {
 
   it('contains expected system info fields', () => {
     const result = neofetch()
-    const fields = ['OS:', 'Host:', 'Kernel:', 'Shell:', 'Editor:', 'Theme:', 'Uptime:', 'Packages:', 'Memory:']
+    const fields = [
+      'OS:',
+      'Host:',
+      'Kernel:',
+      'Shell:',
+      'Editor:',
+      'Theme:',
+      'Uptime:',
+      'Packages:',
+      'Memory:',
+    ]
     for (const field of fields) {
       expect(result).toContain(field)
     }

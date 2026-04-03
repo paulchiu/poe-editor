@@ -30,9 +30,7 @@ const fs: FSNode = dir({
       }),
       '.bashrc': file("# ~/.bashrc\nalias vim='echo just use poe-editor'"),
       '.vimrc': file('" finally escaped vim\n" or did I?'),
-      'todo.txt': file(
-        '1. finish this editor\n2. touch grass\n3. figure out how to exit vim'
-      ),
+      'todo.txt': file('1. finish this editor\n2. touch grass\n3. figure out how to exit vim'),
       'README.md': file(
         'You found the secret terminal!\n\nThere is nothing useful here. Go back to writing.'
       ),
@@ -42,7 +40,7 @@ const fs: FSNode = dir({
             'Once upon a midnight dreary, while I pondered, weak and weary,',
             'Over many a quaint and curious volume of forgotten lore,',
             'While I nodded, nearly napping, suddenly there came a tapping,',
-            "As of some one gently rapping, rapping at my chamber door.",
+            'As of some one gently rapping, rapping at my chamber door.',
             '"\'Tis some visitor," I muttered, "tapping at my chamber door;',
             'Only this and nothing more."',
           ].join('\n')
@@ -106,10 +104,7 @@ export function getNode(absolutePath: string): FSNode | null {
  * List entries in a directory. If no path is provided, lists the cwd.
  * Returns null if the target is not a directory or does not exist.
  */
-export function listDir(
-  cwd: string,
-  path?: string
-): { name: string; node: FSNode }[] | null {
+export function listDir(cwd: string, path?: string): { name: string; node: FSNode }[] | null {
   const target = path !== undefined ? resolve(cwd, path) : cwd
   const node = getNode(target)
 
