@@ -11,6 +11,8 @@ import { useTransformers } from '@/hooks/useTransformers'
 import { useUrlState } from '@/hooks/useUrlState'
 import { useViewMode } from '@/hooks/useViewMode'
 import { useVimMode } from '@/hooks/useVimMode'
+import { onShellActivation } from '@/components/editor/vim'
+import { FakeShell } from '@/components/fake-shell/FakeShell'
 import { useWordCount } from '@/hooks/useWordCount'
 import { type EditorPaneHandle } from '@/components/editor'
 import { PoeEditorDialogs } from '@/components/poe-editor/PoeEditorDialogs'
@@ -84,6 +86,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   })
 
   const { vimMode: vimModeEnabled, toggleVimMode } = useVimMode()
+  const [shellActive, setShellActive] = useState(false)
   const { displayLineMotion, toggleDisplayLineMotion } = useDisplayLineMotion()
   const { showWordCount, toggleWordCount } = useWordCount()
   const { showLineNumbers, toggleLineNumbers } = useLineNumbers()
@@ -330,6 +333,10 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   })
 
   useEffect(() => {
+    return onShellActivation(() => setShellActive(true))
+  }, [])
+
+  useEffect(() => {
     const timeoutId = setTimeout(() => {
       setMounted(true)
     }, 0)
@@ -406,6 +413,10 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     toggleSpellCheck,
     displayLineMotion,
     toggleDisplayLineMotion,
+  }
+
+  if (shellActive) {
+    return <FakeShell onExit={() => setShellActive(false)} />
   }
 
   return (

@@ -84,6 +84,11 @@ export interface VimAPI {
     cm?: CodeMirrorAdapter,
     cfg?: Record<string, unknown>
   ) => void
+  defineEx: (
+    name: string,
+    prefix: string,
+    fn: (cm: CodeMirrorAdapter) => void
+  ) => void
 }
 
 export interface VimModeModule {
