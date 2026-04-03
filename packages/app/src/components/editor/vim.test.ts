@@ -6,6 +6,7 @@ interface VimMocks {
   mapCommand: ReturnType<typeof vi.fn>
   defineMotion: ReturnType<typeof vi.fn>
   defineOption: ReturnType<typeof vi.fn>
+  defineEx: ReturnType<typeof vi.fn>
 }
 
 const setupModule = async (): Promise<{
@@ -20,6 +21,7 @@ const setupModule = async (): Promise<{
     mapCommand: vi.fn(),
     defineMotion: vi.fn(),
     defineOption: vi.fn(),
+    defineEx: vi.fn(),
   }
 
   vi.doMock('monaco-vim', () => ({

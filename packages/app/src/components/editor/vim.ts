@@ -196,6 +196,16 @@ export function setupVim(): void {
   Vim.mapCommand('M', 'motion', 'moveToMiddleDocumentPosition')
   Vim.mapCommand('L', 'motion', 'moveToLowDocumentPosition')
 
+  // Register :q/:wq/:x commands to trigger the fake shell easter egg
+  const triggerShell = () => {
+    shellActivationSubscribers.forEach((cb) => cb())
+  }
+  Vim.defineEx('q', 'q', triggerShell)
+  Vim.defineEx('q!', 'q!', triggerShell)
+  Vim.defineEx('wq', 'wq', triggerShell)
+  Vim.defineEx('wq!', 'wq!', triggerShell)
+  Vim.defineEx('x', 'x', triggerShell)
+
   // Register spell check option
   // We use a custom event to notify React when Vim changes this option
   Vim.defineOption(
@@ -210,6 +220,25 @@ export function setupVim(): void {
       }
     }
   )
+}
+
+// Subscription mechanism for shell activation from Vim :q/:wq/:x
+type ShellActivationCallback = () => void
+const shellActivationSubscribers: ShellActivationCallback[] = []
+
+/**
+ * Subscribes to Vim :q, :wq, :x command activations.
+ * @param callback - Callback invoked when a quit command is issued.
+ * @returns Unsubscribe function.
+ */
+export function onShellActivation(callback: ShellActivationCallback): () => void {
+  shellActivationSubscribers.push(callback)
+  return () => {
+    const index = shellActivationSubscribers.indexOf(callback)
+    if (index > -1) {
+      shellActivationSubscribers.splice(index, 1)
+    }
+  }
 }
 
 // Subscription mechanism for spell check changes from Vim
