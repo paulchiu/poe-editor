@@ -1,7 +1,6 @@
 import js from '@eslint/js'
 import globals from 'globals'
-import react from 'eslint-plugin-react'
-import reactHooks from 'eslint-plugin-react-hooks'
+import reactX from 'eslint-plugin-react-x'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
@@ -29,21 +28,11 @@ export default tseslint.config(
         },
       },
     },
-    settings: {
-      react: {
-        version: 'detect',
-      },
-    },
     plugins: {
-      react: react,
-      'react-hooks': reactHooks,
+      'react-x': reactX,
     },
     rules: {
-      ...react.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'off',
-      'react/jsx-no-target-blank': 'off',
+      ...reactX.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-imports': [
         'warn',
