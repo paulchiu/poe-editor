@@ -35,6 +35,7 @@ export function EditorToolbar({
   onFormatTaskList,
   onFormatCodeBlock,
   onTableAction,
+  onFormatAllTables,
   isInTable,
   toggleVimMode,
   toggleTheme,
@@ -98,6 +99,7 @@ export function EditorToolbar({
         onFormatTaskList={onFormatTaskList}
         onFormatCodeBlock={onFormatCodeBlock}
         onTableAction={onTableAction}
+        onFormatAllTables={onFormatAllTables}
         isInTable={isInTable}
         onOpenTransformer={onOpenTransformer}
         pipelines={pipelines}

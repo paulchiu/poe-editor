@@ -29,6 +29,7 @@ interface FormattingHandlers {
   handleFormatNumberedList: () => void
   handleFormatTaskList: () => void
   handleFormatTable: () => void
+  handleFormatAllTables: () => void
   handleTableAction: (action: TableAction) => void
   handleFormat: (type: 'bold' | 'italic' | 'link' | 'code') => void
 }
@@ -88,6 +89,10 @@ export function useFormattingHandlers({
     sourceRef.current?.performTableAction('format-table')
   }, [sourceRef])
 
+  const handleFormatAllTables = useCallback((): void => {
+    sourceRef.current?.formatAllTables()
+  }, [sourceRef])
+
   const handleTableAction = useCallback(
     (action: TableAction): void => {
       sourceRef.current?.performTableAction(action)
@@ -127,6 +132,7 @@ export function useFormattingHandlers({
     handleFormatNumberedList,
     handleFormatTaskList,
     handleFormatTable,
+    handleFormatAllTables,
     handleTableAction,
     handleFormat,
   }

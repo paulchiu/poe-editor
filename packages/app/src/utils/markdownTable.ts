@@ -267,6 +267,38 @@ export function deleteColumn(text: string, colIndex: number): string {
   return deleteColumns(text, [colIndex])
 }
 
+/**
+ * Formats every markdown table in a document while preserving non-table content.
+ * @param text - The full document text.
+ * @returns The document with all tables formatted.
+ */
+export function formatAllTables(text: string): string {
+  const lines = text.split('\n')
+  const segments: string[] = []
+  let i = 0
+
+  while (i < lines.length) {
+    if (lines[i].includes('|')) {
+      const tableStart = i
+      while (i < lines.length && lines[i].includes('|')) {
+        i++
+      }
+      const tableText = lines.slice(tableStart, i).join('\n')
+
+      if (isMarkdownTable(tableText)) {
+        segments.push(formatMarkdownTable(tableText))
+      } else {
+        segments.push(tableText)
+      }
+    } else {
+      segments.push(lines[i])
+      i++
+    }
+  }
+
+  return segments.join('\n')
+}
+
 function formatTableFromRows(rows: string[][]): string {
   // Reuse the logic from formatMarkdownTable but starting from rows
   if (rows.length === 0) return ''

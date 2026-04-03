@@ -71,6 +71,8 @@ export interface EditorPaneHandle {
   onScroll: (callback: () => void) => { dispose: () => void }
   /** Format the table at the current cursor position */
   formatTable: () => void
+  /** Format all tables in the document */
+  formatAllTables: () => void
   /** Focus the editor */
   focus: () => void
   /** Perform a table action */

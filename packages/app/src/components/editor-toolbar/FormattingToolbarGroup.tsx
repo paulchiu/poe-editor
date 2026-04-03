@@ -65,6 +65,7 @@ type FormattingToolbarGroupProps = Pick<
   | 'onFormatTaskList'
   | 'onFormatCodeBlock'
   | 'onTableAction'
+  | 'onFormatAllTables'
   | 'isInTable'
   | 'onOpenTransformer'
   | 'pipelines'
@@ -124,6 +125,7 @@ export function FormattingToolbarGroup({
   onFormatTaskList,
   onFormatCodeBlock,
   onTableAction,
+  onFormatAllTables,
   isInTable,
   onOpenTransformer,
   pipelines,
@@ -247,10 +249,16 @@ export function FormattingToolbarGroup({
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {!isInTable ? (
-            <DropdownMenuItem onClick={() => onTableAction('insert-table')}>
-              <Plus className="size-4" />
-              Insert Table
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuItem onClick={() => onTableAction('insert-table')}>
+                <Plus className="size-4" />
+                Insert Table
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onFormatAllTables}>
+                <AlignLeft className="size-4" /> Format All Tables
+              </DropdownMenuItem>
+            </>
           ) : (
             <>
               <DropdownMenuSub>
@@ -273,6 +281,9 @@ export function FormattingToolbarGroup({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => onTableAction('format-table')}>
                 <AlignLeft className="size-4" /> Format Table
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onFormatAllTables}>
+                <AlignLeft className="size-4" /> Format All Tables
               </DropdownMenuItem>
             </>
           )}
