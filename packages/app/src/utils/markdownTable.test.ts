@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   isMarkdownTable,
   formatMarkdownTable,
+  formatAllTables,
   insertRow,
   insertColumn,
   deleteRow,
@@ -28,6 +29,52 @@ describe('markdownTable', () => {
     expect(formatted).toContain('| h1  | h2  |')
     expect(formatted).toContain('| --- | --- |')
     expect(formatted).toContain('| c1  | c2  |')
+  })
+
+  describe('formatAllTables', () => {
+    it('formats multiple tables in a document', () => {
+      const doc = [
+        '# Title',
+        '',
+        '|h1|h2|',
+        '|---|---|',
+        '|c1|c2|',
+        '',
+        'Some text',
+        '',
+        '|a|b|c|',
+        '|---|---|---|',
+        '|d|e|f|',
+      ].join('\n')
+
+      const result = formatAllTables(doc)
+      expect(result).toContain('| h1  | h2  |')
+      expect(result).toContain('| a   | b   | c   |')
+      expect(result).toContain('# Title')
+      expect(result).toContain('Some text')
+    })
+
+    it('returns text unchanged when there are no tables', () => {
+      const doc = '# Hello\n\nJust some text.'
+      expect(formatAllTables(doc)).toBe(doc)
+    })
+
+    it('handles a single table', () => {
+      const doc = '|h1|h2|\n|---|---|\n|c1|c2|'
+      const result = formatAllTables(doc)
+      expect(result).toContain('| h1  | h2  |')
+    })
+
+    it('preserves lines containing pipe that are not valid tables', () => {
+      const doc = 'a | b is not a table'
+      expect(formatAllTables(doc)).toBe(doc)
+    })
+
+    it('does not alter already-formatted tables', () => {
+      const formatted = '| h1  | h2  |\n| --- | --- |\n| c1  | c2  |'
+      const doc = `# Doc\n\n${formatted}\n\nEnd`
+      expect(formatAllTables(doc)).toBe(doc)
+    })
   })
 
   describe('table manipulation', () => {

@@ -33,6 +33,7 @@ describe('EditorToolbar', () => {
     onFormatTaskList: vi.fn(),
     onFormatCodeBlock: vi.fn(),
     onTableAction: vi.fn(),
+    onFormatAllTables: vi.fn(),
     isInTable: false,
     toggleVimMode: vi.fn(),
     toggleTheme: vi.fn(),

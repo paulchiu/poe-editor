@@ -108,6 +108,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     handleFormatNumberedList,
     handleFormatTaskList,
     handleFormatTable,
+    handleFormatAllTables,
     handleTableAction,
     handleFormat,
   } = useFormattingHandlers({
@@ -375,6 +376,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     onFormatTaskList: handleFormatTaskList,
     onFormatCodeBlock: handleFormatCodeBlock,
     onTableAction: handleTableAction,
+    onFormatAllTables: handleFormatAllTables,
     isInTable,
     toggleVimMode,
     toggleTheme,

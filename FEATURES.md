@@ -61,11 +61,12 @@ Poe includes standard Markdown editor functionality and a set of unique features
 
 ### Markdown Table
 
-| Feature                         | Notes                                                       |
-| ------------------------------- | ----------------------------------------------------------- |
-| Markdown table editing toolkit  | Insert/delete rows and columns, plus a format-table action. |
-| Table keyboard navigation       | `Tab` / `Shift+Tab` navigate table cells in-editor.         |
-| CJK/emoji-aware table alignment | Table formatter accounts for wide character display width.  |
+| Feature                         | Notes                                                                                 |
+| ------------------------------- | ------------------------------------------------------------------------------------- |
+| Markdown table editing toolkit  | Insert/delete rows and columns, plus a format-table action.                           |
+| Format all tables               | Format every markdown table in the document in one action via the Table toolbar menu. |
+| Table keyboard navigation       | `Tab` / `Shift+Tab` navigate table cells in-editor.                                   |
+| CJK/emoji-aware table alignment | Table formatter accounts for wide character display width.                            |
 
 ### Text Transformation
 

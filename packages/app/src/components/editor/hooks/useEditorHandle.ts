@@ -4,6 +4,7 @@ import type { editor } from 'monaco-editor'
 import { toast } from '@/hooks/useToast'
 import {
   formatMarkdownTable,
+  formatAllTables,
   insertRow,
   insertColumn,
   deleteRow,
@@ -174,6 +175,33 @@ export function useEditorHandle({
         editorRef.current.executeEdits('format-table', [
           {
             range,
+            text: formatted,
+            forceMoveMarkers: true,
+          },
+        ])
+      }
+    },
+
+    formatAllTables: () => {
+      const editor = editorRef.current
+      if (!editor) return
+
+      const model = editor.getModel()
+      if (!model) return
+
+      const fullText = model.getValue()
+      const formatted = formatAllTables(fullText)
+
+      if (formatted !== fullText) {
+        const lineCount = model.getLineCount()
+        editor.executeEdits('format-all-tables', [
+          {
+            range: {
+              startLineNumber: 1,
+              startColumn: 1,
+              endLineNumber: lineCount,
+              endColumn: model.getLineMaxColumn(lineCount),
+            },
             text: formatted,
             forceMoveMarkers: true,
           },

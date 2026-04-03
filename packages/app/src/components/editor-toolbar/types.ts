@@ -25,6 +25,7 @@ export interface EditorToolbarProps {
   onFormatTaskList: () => void
   onFormatCodeBlock: () => void
   onTableAction: (action: TableAction) => void
+  onFormatAllTables: () => void
   isInTable: boolean
   toggleVimMode: () => void
   toggleTheme: () => void
