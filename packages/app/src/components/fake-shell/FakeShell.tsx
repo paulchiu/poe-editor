@@ -23,6 +23,7 @@ const DEFAULT_STYLE: CSSProperties = { color: '#00ff00' }
 // -- ANSI rendering helper --
 
 function renderAnsi(text: string): ReactNode {
+  // eslint-disable-next-line no-control-regex
   const regex = /\x1b\[([0-9;]*)m/g
   const parts: ReactNode[] = []
   let lastIndex = 0
@@ -75,9 +76,7 @@ function renderAnsi(text: string): ReactNode {
 // -- Prompt helper --
 
 function getPrompt(cwd: string): string {
-  const display = cwd.startsWith(HOME)
-    ? '~' + cwd.slice(HOME.length)
-    : cwd
+  const display = cwd.startsWith(HOME) ? '~' + cwd.slice(HOME.length) : cwd
   return `edgar@poe-editor:${display || '~'}$ `
 }
 
@@ -87,8 +86,18 @@ function buildMotd(): string {
   const now = new Date()
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ]
 
   const dayName = days[now.getDay()]
@@ -121,12 +130,6 @@ const shellStyles: CSSProperties = {
   fontFamily: "'Courier New', 'Consolas', monospace",
   fontSize: '14px',
   textShadow: '0 0 5px rgba(0, 255, 0, 0.5)',
-  display: 'flex',
-  flexDirection: 'column',
-}
-
-const outputStyles: CSSProperties = {
-  flexGrow: 1,
   overflowY: 'auto',
   padding: '8px',
   whiteSpace: 'pre-wrap',
@@ -136,7 +139,6 @@ const outputStyles: CSSProperties = {
 const inputLineStyles: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  padding: '0 8px 8px 8px',
   whiteSpace: 'pre',
 }
 
@@ -338,12 +340,10 @@ export function FakeShell({ onExit }: FakeShellProps) {
   }
 
   return (
-    <div style={shellStyles} onClick={handleShellClick}>
-      <div ref={outputRef} style={outputStyles}>
-        {lines.map((line, i) => (
-          <div key={i}>{renderAnsi(line)}</div>
-        ))}
-      </div>
+    <div ref={outputRef} style={shellStyles} onClick={handleShellClick}>
+      {lines.map((line, i) => (
+        <div key={i}>{renderAnsi(line)}</div>
+      ))}
       <div style={inputLineStyles}>
         <span>{prompt}</span>
         <input

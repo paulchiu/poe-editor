@@ -1,10 +1,4 @@
-import {
-  resolve,
-  getNode,
-  listDir,
-  readFile,
-  HOME,
-} from './filesystem'
+import { resolve, getNode, listDir, readFile } from './filesystem'
 import { neofetch } from './neofetch'
 
 export interface ShellState {
@@ -141,8 +135,18 @@ function cmdDate(_args: string[], _state: ShellState): CommandResult {
   const now = new Date()
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ]
 
   const day = days[now.getUTCDay()]
