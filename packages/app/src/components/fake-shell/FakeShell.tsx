@@ -341,7 +341,9 @@ export function FakeShell({ onExit }: FakeShellProps) {
 
   return (
     <div ref={outputRef} style={shellStyles} onClick={handleShellClick}>
+      {/* Lines are append-only terminal output; index keys are stable */}
       {lines.map((line, i) => (
+        // eslint-disable-next-line react-x/no-array-index-key
         <div key={i}>{renderAnsi(line)}</div>
       ))}
       <div style={inputLineStyles}>

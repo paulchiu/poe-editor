@@ -73,13 +73,12 @@ export function ShutdownOverlay() {
   return (
     <div style={containerStyle}>
       {MESSAGES.slice(0, visibleCount).map((msg, i) => (
+        // eslint-disable-next-line react-x/no-array-index-key
         <div key={i}>
           {msg.startsWith(OK_PREFIX) ? (
             <>
               <span style={{ color: '#00ff00' }}>{OK_PREFIX}</span>
-              <span style={{ color: '#cccccc' }}>
-                {msg.slice(OK_PREFIX.length)}
-              </span>
+              <span style={{ color: '#cccccc' }}>{msg.slice(OK_PREFIX.length)}</span>
             </>
           ) : (
             <span style={{ color: '#00ff00' }}>{msg}</span>
