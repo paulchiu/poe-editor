@@ -99,7 +99,7 @@ export function generateShareableUrl(content: string, documentName: string, hash
   const markdownBody = getMarkdownBody(content)
 
   // Extract title from first heading or use document name
-  let title = getFirstHeading(content)
+  let title = getFirstHeading(markdownBody)
   if (!title) {
     title = documentName.replace(/\.md$/, '')
   } else {
