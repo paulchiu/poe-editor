@@ -35,14 +35,11 @@ export function SplashScreen({
 }: SplashScreenProps): ReactElement | null {
   const [isVisible, setIsVisible] = useState(true)
   const [isFading, setIsFading] = useState(false)
-  const [showLoading, setShowLoading] = useState(isLoading)
+  const [debugShowLoading, setDebugShowLoading] = useState<boolean | null>(null)
   const [tagline, setTagline] = useState(
     () => TAGLINES[Math.floor(Math.random() * TAGLINES.length)]
   )
-
-  useEffect(() => {
-    setShowLoading(isLoading)
-  }, [isLoading])
+  const showLoading = debug ? (debugShowLoading ?? isLoading) : isLoading
 
   useEffect(() => {
     // Start fade out when loading is complete
@@ -73,7 +70,7 @@ export function SplashScreen({
             onComplete()
           }, 500)
         } else if (e.key === 'l' || e.key === 'L') {
-          setShowLoading((prev) => !prev)
+          setDebugShowLoading((prev) => !(prev ?? isLoading))
         } else if (e.key === 'r' || e.key === 'R') {
           setTagline(TAGLINES[Math.floor(Math.random() * TAGLINES.length)])
         }
@@ -81,7 +78,7 @@ export function SplashScreen({
       window.addEventListener('keydown', handleEscape)
       return () => window.removeEventListener('keydown', handleEscape)
     }
-  }, [debug, isVisible, onComplete])
+  }, [debug, isLoading, isVisible, onComplete])
 
   if (!isVisible) {
     return null

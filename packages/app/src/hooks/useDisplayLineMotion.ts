@@ -15,12 +15,12 @@ interface UseDisplayLineMotionReturn {
  * @returns Current display-line motion state and toggle function
  */
 export function useDisplayLineMotion(): UseDisplayLineMotionReturn {
-  const [displayLineMotion, setDisplayLineMotionState] = useState<boolean>(() =>
+  const [displayLineMotion, setDisplayLineMotion] = useState<boolean>(() =>
     getBooleanEditorPreference('displayLineMotion', false)
   )
 
   const toggleDisplayLineMotion = (): void => {
-    setDisplayLineMotionState((current) => !current)
+    setDisplayLineMotion((current) => !current)
   }
 
   useEffect(() => {

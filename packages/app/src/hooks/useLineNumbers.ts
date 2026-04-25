@@ -15,12 +15,12 @@ interface UseLineNumbersReturn {
  * @returns Current Line Numbers visibility state and toggle function
  */
 export function useLineNumbers(): UseLineNumbersReturn {
-  const [showLineNumbers, setShowLineNumbersState] = useState<boolean>(() =>
+  const [showLineNumbers, setShowLineNumbers] = useState<boolean>(() =>
     getBooleanEditorPreference('showLineNumbers', true)
   )
 
   const toggleLineNumbers = (): void => {
-    setShowLineNumbersState((current) => !current)
+    setShowLineNumbers((current) => !current)
   }
 
   useEffect(() => {

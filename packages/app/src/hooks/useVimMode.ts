@@ -15,12 +15,12 @@ interface UseVimModeReturn {
  * @returns Current Vim mode state and toggle function
  */
 export function useVimMode(): UseVimModeReturn {
-  const [vimMode, setVimModeState] = useState<boolean>(() =>
+  const [vimMode, setVimMode] = useState<boolean>(() =>
     getBooleanEditorPreference('vimMode', false)
   )
 
   const toggleVimMode = (): void => {
-    setVimModeState((current) => !current)
+    setVimMode((current) => !current)
   }
 
   useEffect(() => {

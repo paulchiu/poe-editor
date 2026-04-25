@@ -12,7 +12,7 @@ interface UseViewModeReturn {
  * @returns Object containing viewMode state and setter
  */
 export function useViewMode(): UseViewModeReturn {
-  const [viewMode, setViewModeState] = useState<ViewMode>(() => {
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (typeof window === 'undefined') return 'split'
     const params = new URLSearchParams(window.location.search)
     const view = params.get('view')
@@ -23,8 +23,8 @@ export function useViewMode(): UseViewModeReturn {
   })
 
   // Sync state changes to URL
-  const setViewMode = useCallback((mode: ViewMode) => {
-    setViewModeState(mode)
+  const updateViewMode = useCallback((mode: ViewMode) => {
+    setViewMode(mode)
 
     const url = new URL(window.location.href)
     if (mode === 'split') {
@@ -47,6 +47,6 @@ export function useViewMode(): UseViewModeReturn {
 
   return {
     viewMode,
-    setViewMode,
+    setViewMode: updateViewMode,
   }
 }

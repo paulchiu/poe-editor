@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, type MutableRefObject } from 'react'
 import { getFirstHeading } from '@/utils/markdown'
 import { extractFirstEmojiToken, isEmojiShortcodeToken } from '@/utils/emoji'
 import { getEmojiForShortcode } from '@/utils/emojiShortcodes'
@@ -49,7 +49,7 @@ interface ResolvedTitleState {
  */
 function updateFavicon(
   emoji: string | null,
-  originalFaviconsRef: React.MutableRefObject<FaviconState[] | null>
+  originalFaviconsRef: MutableRefObject<FaviconState[] | null>
 ): void {
   const links = document.querySelectorAll<HTMLLinkElement>("link[rel*='icon']")
 
@@ -165,7 +165,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
     return limit ? parseInt(limit, 10) : defaultMaxLength
   })
 
-  const [content, setContentState] = useState<string>(() => {
+  const [content, setContent] = useState<string>(() => {
     // Initialize from URL hash on mount
     const hash = window.location.hash.slice(1) // Remove leading #
     if (!hash) return defaultContent
@@ -183,7 +183,7 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
     }
   })
 
-  const [documentName, setDocumentNameState] = useState<string>(() => {
+  const [documentName, setDocumentName] = useState<string>(() => {
     // Initialize document name from URL hash on mount
     const hash = window.location.hash.slice(1)
     if (!hash) return defaultName
@@ -318,8 +318,8 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
       const hash = window.location.hash.slice(1)
 
       const updateStateAndTitle = (newContent: string, newName: string) => {
-        setContentState(newContent)
-        setDocumentNameState(newName)
+        setContent(newContent)
+        setDocumentName(newName)
         applyDocumentChrome(newContent, newName)
       }
 
@@ -351,17 +351,17 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
     }
   }, [applyDocumentChrome, defaultContent, defaultName, onError])
 
-  const setContent = useCallback(
+  const updateContent = useCallback(
     (newContent: string) => {
-      setContentState(newContent)
+      setContent(newContent)
       updateUrl()
     },
     [updateUrl]
   )
 
-  const setDocumentName = useCallback(
+  const updateDocumentName = useCallback(
     (newName: string) => {
-      setDocumentNameState(newName)
+      setDocumentName(newName)
       updateUrl()
     },
     [updateUrl]
@@ -369,9 +369,9 @@ export function useUrlState(options?: UseUrlStateOptions): UseUrlStateReturn {
 
   return {
     content,
-    setContent,
+    setContent: updateContent,
     documentName,
-    setDocumentName,
+    setDocumentName: updateDocumentName,
     isOverLimit,
   }
 }

@@ -17,16 +17,16 @@ interface UseSpellCheckReturn {
  * @returns Current spell check state and toggle function
  */
 export function useSpellCheck(): UseSpellCheckReturn {
-  const [spellCheck, setSpellCheckState] = useState<boolean>(() =>
+  const [spellCheck, setSpellCheck] = useState<boolean>(() =>
     getBooleanEditorPreference('spellCheck', false)
   )
 
   const toggleSpellCheck = (): void => {
-    setSpellCheckState((current) => !current)
+    setSpellCheck((current) => !current)
   }
 
-  const setSpellCheck = (enabled: boolean): void => {
-    setSpellCheckState(enabled)
+  const updateSpellCheck = (enabled: boolean): void => {
+    setSpellCheck(enabled)
   }
 
   useEffect(() => {
@@ -42,6 +42,6 @@ export function useSpellCheck(): UseSpellCheckReturn {
   return {
     spellCheck,
     toggleSpellCheck,
-    setSpellCheck,
+    setSpellCheck: updateSpellCheck,
   }
 }

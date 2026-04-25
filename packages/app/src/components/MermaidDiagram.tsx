@@ -40,6 +40,7 @@ export function MermaidDiagram({
   const containerRef = useRef<HTMLDivElement>(null)
   const copyControlsRef = useRef<HTMLDivElement>(null)
   const copyResetTimeoutRef = useRef<number | null>(null)
+  const isCopyMenuOpen = menuOpen && Boolean(svg) && !error
 
   useEffect(() => {
     let cancelled = false
@@ -76,7 +77,7 @@ export function MermaidDiagram({
 
   useEffect(() => {
     if (!interactive) return
-    if (!menuOpen) return
+    if (!isCopyMenuOpen) return
 
     const handlePointerDown = (event: MouseEvent): void => {
       const target = event.target
@@ -90,13 +91,7 @@ export function MermaidDiagram({
     return () => {
       document.removeEventListener('mousedown', handlePointerDown)
     }
-  }, [interactive, menuOpen])
-
-  useEffect(() => {
-    if (!svg || error) {
-      setMenuOpen(false)
-    }
-  }, [svg, error])
+  }, [interactive, isCopyMenuOpen])
 
   const setCopiedStatus = (status: 'code' | 'image'): void => {
     setCopyStatus(status)
@@ -168,7 +163,7 @@ export function MermaidDiagram({
       <div
         ref={copyControlsRef}
         className="preview-mermaid-copy-controls"
-        data-open={menuOpen ? 'true' : undefined}
+        data-open={isCopyMenuOpen ? 'true' : undefined}
       >
         <button
           type="button"
@@ -189,13 +184,13 @@ export function MermaidDiagram({
           className="preview-mermaid-copy-menu-button"
           aria-label="Mermaid copy options"
           aria-haspopup="menu"
-          aria-expanded={menuOpen}
+          aria-expanded={isCopyMenuOpen}
           onClick={() => setMenuOpen((open) => !open)}
         >
           <ChevronDown className="h-3.5 w-3.5" />
         </button>
 
-        {menuOpen && (
+        {isCopyMenuOpen && (
           <div className="preview-mermaid-copy-menu" role="menu" aria-label="Mermaid copy options">
             <button
               type="button"
