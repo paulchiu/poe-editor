@@ -33,6 +33,15 @@ export default tseslint.config(
     },
     rules: {
       ...reactX.configs.recommended.rules,
+      // Custom hooks intentionally use internal setter names distinct from public API names.
+      'react-x/use-state': [
+        'warn',
+        {
+          enforceAssignment: true,
+          enforceLazyInitialization: true,
+          enforceSetterName: false,
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-imports': [
         'warn',
