@@ -1,8 +1,10 @@
+import type { Ref } from 'react'
 import type { EmojiShortcodeMatch } from './emojiPickerQuery'
 
 export interface EditorPaneProps {
   value: string
   onChange: (value: string) => void
+  ref?: Ref<EditorPaneHandle>
   onCursorChange?: (position: { lineNumber: number; column: number; isInTable: boolean }) => void
   theme?: 'light' | 'dark'
   onFormat?: (type: 'bold' | 'italic' | 'link' | 'code') => void

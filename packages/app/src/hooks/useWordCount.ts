@@ -15,12 +15,12 @@ interface UseWordCountReturn {
  * @returns Current Word Count visibility state and toggle function
  */
 export function useWordCount(): UseWordCountReturn {
-  const [showWordCount, setShowWordCountState] = useState<boolean>(() =>
+  const [showWordCount, setShowWordCount] = useState<boolean>(() =>
     getBooleanEditorPreference('showWordCount', false)
   )
 
   const toggleWordCount = (): void => {
-    setShowWordCountState((current) => !current)
+    setShowWordCount((current) => !current)
   }
 
   useEffect(() => {
