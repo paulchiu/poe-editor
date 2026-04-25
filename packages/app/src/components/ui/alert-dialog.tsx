@@ -1,4 +1,10 @@
-import { type ComponentProps, type ReactElement, type ElementRef, forwardRef } from 'react'
+import {
+  type ComponentProps,
+  type ComponentPropsWithoutRef,
+  type ElementRef,
+  type ReactElement,
+  type Ref,
+} from 'react'
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog'
 
 import { cn } from '@/utils/classnames'
@@ -101,31 +107,35 @@ function AlertDialogDescription({
   )
 }
 
-const AlertDialogAction = forwardRef<
-  ElementRef<typeof AlertDialogPrimitive.Action>,
-  ComponentProps<typeof AlertDialogPrimitive.Action>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Action
-    ref={ref}
-    data-slot="alert-dialog-action"
-    className={cn(buttonVariants(), className)}
-    {...props}
-  />
-))
-AlertDialogAction.displayName = AlertDialogPrimitive.Action.displayName
+type AlertDialogActionProps = ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> & {
+  ref?: Ref<ElementRef<typeof AlertDialogPrimitive.Action>>
+}
 
-const AlertDialogCancel = forwardRef<
-  ElementRef<typeof AlertDialogPrimitive.Cancel>,
-  ComponentProps<typeof AlertDialogPrimitive.Cancel>
->(({ className, ...props }, ref) => (
-  <AlertDialogPrimitive.Cancel
-    ref={ref}
-    data-slot="alert-dialog-cancel"
-    className={cn(buttonVariants({ variant: 'outline' }), className)}
-    {...props}
-  />
-))
-AlertDialogCancel.displayName = AlertDialogPrimitive.Cancel.displayName
+function AlertDialogAction({ className, ref, ...props }: AlertDialogActionProps): ReactElement {
+  return (
+    <AlertDialogPrimitive.Action
+      ref={ref}
+      data-slot="alert-dialog-action"
+      className={cn(buttonVariants(), className)}
+      {...props}
+    />
+  )
+}
+
+type AlertDialogCancelProps = ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> & {
+  ref?: Ref<ElementRef<typeof AlertDialogPrimitive.Cancel>>
+}
+
+function AlertDialogCancel({ className, ref, ...props }: AlertDialogCancelProps): ReactElement {
+  return (
+    <AlertDialogPrimitive.Cancel
+      ref={ref}
+      data-slot="alert-dialog-cancel"
+      className={cn(buttonVariants({ variant: 'outline' }), className)}
+      {...props}
+    />
+  )
+}
 
 export {
   AlertDialog,
