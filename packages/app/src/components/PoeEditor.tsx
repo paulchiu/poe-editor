@@ -23,6 +23,7 @@ import { usePoeEditorKeyboardShortcuts } from '@/components/poe-editor/usePoeEdi
 import { useUrlStateNotifications } from '@/components/poe-editor/useUrlStateNotifications'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { toggleTaskListItem } from '@/utils/formatting'
+import { toggleFrontMatterBoolean } from '@/utils/frontMatter'
 import { buildHtmlExportDocument } from '@/utils/htmlExport'
 import { renderMarkdown, renderMarkdownForPreview, getTocHeadings } from '@/utils/markdown'
 import type { MermaidColorMode } from '@/utils/mermaidTheme'
@@ -284,6 +285,16 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     [content, setContent]
   )
 
+  const handleFrontMatterBooleanToggle = useCallback(
+    (key: string, checked: boolean): void => {
+      const updatedContent = toggleFrontMatterBoolean(content, key, checked)
+      if (updatedContent !== content) {
+        setContent(updatedContent)
+      }
+    },
+    [content, setContent]
+  )
+
   const handleSave = useCallback((): void => {
     toast({ description: 'Document saved to URL' })
   }, [toast])
@@ -478,6 +489,7 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
         showEmojiPicker={showEmojiPicker}
         htmlContent={htmlContent}
         onTaskListToggle={handleTaskListToggle}
+        onFrontMatterBooleanToggle={handleFrontMatterBooleanToggle}
         colorMode={colorMode}
         tocHeadings={tocHeadings}
         showTocPanel={showTocPanel}

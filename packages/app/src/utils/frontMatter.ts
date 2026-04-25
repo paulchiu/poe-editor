@@ -32,6 +32,8 @@ interface FrontMatterBlock {
   yaml: string
   body: string
   sourcePrefix: string
+  yamlStart: number
+  yamlEnd: number
 }
 
 function escapeHtml(value: string): string {
@@ -83,6 +85,8 @@ function extractFrontMatterBlock(markdown: string): FrontMatterBlock | null {
         yaml: source.slice(contentStart, lineStart),
         body: source.slice(bodyStart),
         sourcePrefix: source.slice(0, bodyStart),
+        yamlStart: contentStart,
+        yamlEnd: lineStart,
       }
     }
 
@@ -164,14 +168,16 @@ export function getMarkdownBody(markdown: string): string {
   return extractFrontMatter(markdown)?.body ?? markdown
 }
 
-function renderPropertyValue(value: FrontMatterDisplayValue): string {
+function renderPropertyValue(key: string, value: FrontMatterDisplayValue): string {
   if (value.type === 'empty') {
     return '<span class="front-matter-empty">Empty</span>'
   }
 
   if (value.type === 'boolean') {
     const checkedAttribute = value.value ? ' checked=""' : ''
-    return `<span class="front-matter-boolean"><input type="checkbox" disabled=""${checkedAttribute} aria-label="${value.value ? 'true' : 'false'}"><span class="front-matter-boolean-label">${value.value ? 'true' : 'false'}</span></span>`
+    const escapedKey = escapeHtml(key)
+    const label = value.value ? 'true' : 'false'
+    return `<span class="front-matter-boolean"><input type="checkbox" class="front-matter-boolean-input" data-front-matter-key="${escapedKey}"${checkedAttribute} aria-label="Toggle ${escapedKey}"><span class="front-matter-boolean-label">${label}</span></span>`
   }
 
   if (value.type === 'list') {
@@ -231,9 +237,56 @@ export function renderFrontMatterHtml(frontMatter: FrontMatterData): string {
   const rows = frontMatter.properties
     .map(
       (property) =>
-        `<tr class="front-matter-row"><th class="front-matter-key">${escapeHtml(property.key)}</th><td class="front-matter-value">${renderPropertyValue(property.value)}</td></tr>`
+        `<tr class="front-matter-row"><th class="front-matter-key">${escapeHtml(property.key)}</th><td class="front-matter-value">${renderPropertyValue(property.key, property.value)}</td></tr>`
     )
     .join('')
 
   return `<section class="front-matter-properties" aria-label="Document properties"><table><tbody>${rows}</tbody></table></section>`
+}
+
+const YAML_BOOLEAN_LITERAL_PATTERN_SOURCE = '(true|True|TRUE|false|False|FALSE)'
+
+function escapeRegExpLiteral(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function preserveBooleanCase(currentLiteral: string, nextValue: boolean): string {
+  const literal = nextValue ? 'true' : 'false'
+  if (currentLiteral === currentLiteral.toUpperCase()) return literal.toUpperCase()
+  if (currentLiteral[0] === currentLiteral[0].toUpperCase()) {
+    return literal[0].toUpperCase() + literal.slice(1)
+  }
+  return literal
+}
+
+/**
+ * Toggles a top-level boolean value in the YAML front matter block.
+ * @param markdown - Source markdown that may begin with a YAML front matter block.
+ * @param key - Top-level key whose boolean value should be set.
+ * @param nextValue - The next boolean state to write.
+ * @returns Markdown with the boolean updated, or the original source if the key cannot be found.
+ */
+export function toggleFrontMatterBoolean(
+  markdown: string,
+  key: string,
+  nextValue: boolean
+): string {
+  if (!markdown || !key) return markdown
+  const block = extractFrontMatterBlock(markdown)
+  if (!block) return markdown
+
+  const escapedKey = escapeRegExpLiteral(key)
+  const pattern = new RegExp(
+    `^(${escapedKey}[ \\t]*:[ \\t]+)${YAML_BOOLEAN_LITERAL_PATTERN_SOURCE}([ \\t]*(?:#[^\\n]*)?)$`,
+    'm'
+  )
+
+  let didReplace = false
+  const updatedYaml = block.yaml.replace(pattern, (_match, prefix, current, suffix) => {
+    didReplace = true
+    return `${prefix}${preserveBooleanCase(current, nextValue)}${suffix}`
+  })
+
+  if (!didReplace || updatedYaml === block.yaml) return markdown
+  return markdown.slice(0, block.yamlStart) + updatedYaml + markdown.slice(block.yamlEnd)
 }

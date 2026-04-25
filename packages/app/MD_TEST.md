@@ -5,7 +5,17 @@ tags:
   - markdown
   - rendering
   - manual-test
+authors:
+  - Poe Team
+  - Contributors
+revision: 7
+weight: 3.14
 draft: false
+published: true
+empty_field:
+metadata:
+  owner: editor-team
+  status: stable
 ---
 
 # 🧪 Poe Markdown Render Manual Test
@@ -16,6 +26,8 @@ Use this document to quickly verify that Markdown rendering, syntax highlighting
 
 - Load this file in Poe editor and confirm editor + preview stay in sync while scrolling.
 - Confirm front matter renders as a properties panel above the first heading and raw YAML delimiters are hidden.
+- Confirm front matter properties cover every supported value type: text, number, boolean, list, tag list, empty value, and nested object.
+- Click the boolean checkboxes (`draft`, `published`) in the properties panel and confirm the YAML source toggles `true`/`false` to match.
 - Toggle between light and dark theme and confirm readability/contrast remains good for all sections.
 - Confirm first heading text still updates page title and emoji favicon (`🧪`) instead of front matter.
 - Export as HTML in light mode, open file, confirm light styling.

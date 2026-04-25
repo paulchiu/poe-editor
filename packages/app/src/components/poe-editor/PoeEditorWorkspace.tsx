@@ -40,6 +40,7 @@ interface PoeEditorWorkspaceProps {
   showEmojiPicker: boolean
   htmlContent: string
   onTaskListToggle: (taskIndex: number, checked: boolean) => void
+  onFrontMatterBooleanToggle: (key: string, checked: boolean) => void
   colorMode: MermaidColorMode
   tocHeadings: TocHeading[]
   showTocPanel: boolean
@@ -75,6 +76,7 @@ export function PoeEditorWorkspace({
   showEmojiPicker,
   htmlContent,
   onTaskListToggle,
+  onFrontMatterBooleanToggle,
   colorMode,
   tocHeadings,
   showTocPanel,
@@ -123,6 +125,7 @@ export function PoeEditorWorkspace({
                         ref={targetRef}
                         htmlContent={htmlContent}
                         onTaskListToggle={onTaskListToggle}
+                        onFrontMatterBooleanToggle={onFrontMatterBooleanToggle}
                         viewMode={viewMode}
                         onToggleLayout={onTogglePreviewLayout}
                         colorMode={colorMode}
@@ -188,6 +191,7 @@ export function PoeEditorWorkspace({
                   ref={targetRef}
                   htmlContent={htmlContent}
                   onTaskListToggle={onTaskListToggle}
+                  onFrontMatterBooleanToggle={onFrontMatterBooleanToggle}
                   colorMode={colorMode}
                   tocHeadings={tocHeadings}
                   showTocPanel={showTocPanel}

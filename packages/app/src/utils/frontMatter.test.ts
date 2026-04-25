@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { extractFrontMatter, getMarkdownBody, renderFrontMatterHtml } from './frontMatter'
+import {
+  extractFrontMatter,
+  getMarkdownBody,
+  renderFrontMatterHtml,
+  toggleFrontMatterBoolean,
+} from './frontMatter'
 
 describe('extractFrontMatter', () => {
   it('extracts object front matter and body', () => {
@@ -87,5 +92,63 @@ describe('renderFrontMatterHtml', () => {
 
   it('returns an empty string for empty properties', () => {
     expect(renderFrontMatterHtml({ properties: [] })).toBe('')
+  })
+
+  it('renders boolean checkboxes with the front matter key for click handlers', () => {
+    const result = extractFrontMatter('---\ndraft: false\npublished: true\n---\n# Body')
+    const html = renderFrontMatterHtml(result!.frontMatter)
+
+    expect(html).toContain('class="front-matter-boolean-input"')
+    expect(html).toContain('data-front-matter-key="draft"')
+    expect(html).toContain('data-front-matter-key="published"')
+    expect(html).not.toContain('disabled=""')
+  })
+})
+
+describe('toggleFrontMatterBoolean', () => {
+  it('flips a top-level boolean from false to true', () => {
+    const input = '---\ntitle: Doc\ndraft: false\n---\n# Body'
+    expect(toggleFrontMatterBoolean(input, 'draft', true)).toBe(
+      '---\ntitle: Doc\ndraft: true\n---\n# Body'
+    )
+  })
+
+  it('flips a top-level boolean from true to false', () => {
+    const input = '---\npublished: true\n---\n# Body'
+    expect(toggleFrontMatterBoolean(input, 'published', false)).toBe(
+      '---\npublished: false\n---\n# Body'
+    )
+  })
+
+  it('preserves casing for True/False and TRUE/FALSE literals', () => {
+    expect(toggleFrontMatterBoolean('---\nready: True\n---\n# Body', 'ready', false)).toBe(
+      '---\nready: False\n---\n# Body'
+    )
+    expect(toggleFrontMatterBoolean('---\nready: FALSE\n---\n# Body', 'ready', true)).toBe(
+      '---\nready: TRUE\n---\n# Body'
+    )
+  })
+
+  it('preserves trailing comments and inline whitespace', () => {
+    const input = '---\ndraft:   true  # initial draft\n---\n# Body'
+    expect(toggleFrontMatterBoolean(input, 'draft', false)).toBe(
+      '---\ndraft:   false  # initial draft\n---\n# Body'
+    )
+  })
+
+  it('returns the source unchanged when the key is missing or not a top-level boolean', () => {
+    const noKey = '---\ntitle: Doc\n---\n# Body'
+    expect(toggleFrontMatterBoolean(noKey, 'draft', true)).toBe(noKey)
+
+    const nested = '---\nmeta:\n  draft: false\n---\n# Body'
+    expect(toggleFrontMatterBoolean(nested, 'draft', true)).toBe(nested)
+
+    const nonBoolean = '---\ndraft: maybe\n---\n# Body'
+    expect(toggleFrontMatterBoolean(nonBoolean, 'draft', true)).toBe(nonBoolean)
+  })
+
+  it('returns the source unchanged when there is no front matter block', () => {
+    const input = '# Body without front matter'
+    expect(toggleFrontMatterBoolean(input, 'draft', true)).toBe(input)
   })
 })

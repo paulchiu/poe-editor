@@ -432,6 +432,7 @@ html:not(.dark) .markdown-body mark,
   inline-size: 0.95rem;
   block-size: 0.95rem;
   margin: 0;
+  cursor: pointer;
   accent-color: var(--fgColor-accent);
 }
 
