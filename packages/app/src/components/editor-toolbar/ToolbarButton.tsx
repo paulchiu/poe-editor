@@ -23,7 +23,7 @@ interface ToolbarButtonProps {
  * @param props - Component props.
  * @returns Toolbar button element.
  */
-export function ToolbarButton({
+export const ToolbarButton = ({
   icon: Icon,
   label,
   ref,
@@ -34,7 +34,7 @@ export function ToolbarButton({
   dragAttributes,
   dragListeners,
   tooltipDisabled,
-}: ToolbarButtonProps): ReactElement {
+}: ToolbarButtonProps): ReactElement => {
   const button = (
     <Button
       ref={ref}

@@ -28,7 +28,7 @@ export type { EditorPaneHandle, TableAction } from './editorPaneTypes'
  * @param props - Component properties
  * @returns React component
  */
-export function EditorPane({
+export const EditorPane = ({
   value,
   onChange,
   ref,
@@ -45,7 +45,7 @@ export function EditorPane({
   spellCheck = false,
   onSpellCheckChange,
   emojiPickerEnabled = true,
-}: EditorPaneProps): ReactElement {
+}: EditorPaneProps): ReactElement => {
   const [editorInstance, setEditorInstance] = useState<editor.IStandaloneCodeEditor | null>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const editorContainerRef = useRef<HTMLDivElement | null>(null)

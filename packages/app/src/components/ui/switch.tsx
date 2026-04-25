@@ -9,7 +9,7 @@ type SwitchProps = ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> & {
   ref?: Ref<ElementRef<typeof SwitchPrimitives.Root>>
 }
 
-function Switch({ className, ref, ...props }: SwitchProps): ReactElement {
+const Switch = ({ className, ref, ...props }: SwitchProps): ReactElement => {
   return (
     <SwitchPrimitives.Root
       className={cn(

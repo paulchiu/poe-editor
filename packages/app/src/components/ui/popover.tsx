@@ -13,13 +13,13 @@ type PopoverContentProps = ComponentPropsWithoutRef<typeof PopoverPrimitive.Cont
   ref?: Ref<ElementRef<typeof PopoverPrimitive.Content>>
 }
 
-function PopoverContent({
+const PopoverContent = ({
   className,
   align = 'center',
   sideOffset = 4,
   ref,
   ...props
-}: PopoverContentProps): ReactElement {
+}: PopoverContentProps): ReactElement => {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content

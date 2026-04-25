@@ -11,7 +11,7 @@ type ToastViewportProps = ComponentPropsWithoutRef<typeof ToastPrimitives.Viewpo
   ref?: Ref<ElementRef<typeof ToastPrimitives.Viewport>>
 }
 
-function ToastViewport({ className, ref, ...props }: ToastViewportProps): ReactElement {
+const ToastViewport = ({ className, ref, ...props }: ToastViewportProps): ReactElement => {
   return (
     <ToastPrimitives.Viewport
       ref={ref}
@@ -45,7 +45,7 @@ type ToastRootProps = ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
     ref?: Ref<ElementRef<typeof ToastPrimitives.Root>>
   }
 
-function Toast({ className, variant, ref, ...props }: ToastRootProps): ReactElement {
+const Toast = ({ className, variant, ref, ...props }: ToastRootProps): ReactElement => {
   return (
     <ToastPrimitives.Root
       ref={ref}
@@ -59,7 +59,7 @@ type ToastActionProps = ComponentPropsWithoutRef<typeof ToastPrimitives.Action> 
   ref?: Ref<ElementRef<typeof ToastPrimitives.Action>>
 }
 
-function ToastAction({ className, ref, ...props }: ToastActionProps): ReactElement {
+const ToastAction = ({ className, ref, ...props }: ToastActionProps): ReactElement => {
   return (
     <ToastPrimitives.Action
       ref={ref}
@@ -76,7 +76,7 @@ type ToastCloseProps = ComponentPropsWithoutRef<typeof ToastPrimitives.Close> & 
   ref?: Ref<ElementRef<typeof ToastPrimitives.Close>>
 }
 
-function ToastClose({ className, ref, ...props }: ToastCloseProps): ReactElement {
+const ToastClose = ({ className, ref, ...props }: ToastCloseProps): ReactElement => {
   return (
     <ToastPrimitives.Close
       ref={ref}
@@ -96,7 +96,7 @@ type ToastTitleProps = ComponentPropsWithoutRef<typeof ToastPrimitives.Title> & 
   ref?: Ref<ElementRef<typeof ToastPrimitives.Title>>
 }
 
-function ToastTitle({ className, ref, ...props }: ToastTitleProps): ReactElement {
+const ToastTitle = ({ className, ref, ...props }: ToastTitleProps): ReactElement => {
   return (
     <ToastPrimitives.Title
       ref={ref}
@@ -110,7 +110,7 @@ type ToastDescriptionProps = ComponentPropsWithoutRef<typeof ToastPrimitives.Des
   ref?: Ref<ElementRef<typeof ToastPrimitives.Description>>
 }
 
-function ToastDescription({ className, ref, ...props }: ToastDescriptionProps): ReactElement {
+const ToastDescription = ({ className, ref, ...props }: ToastDescriptionProps): ReactElement => {
   return (
     <ToastPrimitives.Description
       ref={ref}

@@ -5,7 +5,7 @@ export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
   ref?: Ref<HTMLTextAreaElement>
 }
 
-function Textarea({ className, ref, ...props }: TextareaProps): ReactElement {
+const Textarea = ({ className, ref, ...props }: TextareaProps): ReactElement => {
   return (
     <textarea
       className={cn(

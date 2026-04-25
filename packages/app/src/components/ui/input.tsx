@@ -6,7 +6,7 @@ export type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   ref?: Ref<HTMLInputElement>
 }
 
-function Input({ className, type, ref, ...props }: InputProps): ReactElement {
+const Input = ({ className, type, ref, ...props }: InputProps): ReactElement => {
   return (
     <input
       type={type}
