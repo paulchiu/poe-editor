@@ -1,5 +1,4 @@
-import type React from 'react'
-import { useImperativeHandle } from 'react'
+import { useImperativeHandle, type MutableRefObject, type Ref, type RefObject } from 'react'
 import type { editor } from 'monaco-editor'
 import { toast } from '@/hooks/useToast'
 import {
@@ -16,9 +15,9 @@ import { getTableAtCursor, getTableSelection } from '../table'
 import type { TableAction, EditorPaneHandle } from '../EditorPane'
 
 interface UseEditorHandleParams {
-  ref: React.ForwardedRef<EditorPaneHandle>
-  editorRef: React.RefObject<editor.IStandaloneCodeEditor | null>
-  pendingScrollCallbacks: React.MutableRefObject<
+  ref?: Ref<EditorPaneHandle>
+  editorRef: RefObject<editor.IStandaloneCodeEditor | null>
+  pendingScrollCallbacks: MutableRefObject<
     Array<{ callback: () => void; resolve: (disposable: { dispose: () => void }) => void }>
   >
 }
