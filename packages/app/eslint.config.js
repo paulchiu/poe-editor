@@ -33,6 +33,8 @@ export default tseslint.config(
     },
     rules: {
       ...reactX.configs.recommended.rules,
+      // The setter-name check is noisy for hooks that intentionally wrap internal setters.
+      'react-x/use-state': 'off',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-imports': [
         'warn',
