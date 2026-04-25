@@ -57,13 +57,9 @@ export function TransformerWorkbench({
   const prevStepsRef = useRef<PipelineStep[]>(steps)
   const cursorPositionRef = useRef<number>(0) // Track line number
 
-  // Sync steps to JSON when opening JSON mode or when steps change while in JSON mode (optional, but good for keeping sync)
+  // In JSON mode, merge toolbox additions into the JSON buffer while preserving in-progress edits.
   useEffect(() => {
-    if (mode === 'gui') {
-      setJsonValue(JSON.stringify(steps, null, 2))
-      setIsValidJson(true)
-      setValidationError(null)
-    } else {
+    if (mode === 'json') {
       // In JSON mode, if steps changed, it might be due to an add operation from the toolbox
       const prevSteps = prevStepsRef.current
       if (steps.length > prevSteps.length) {
