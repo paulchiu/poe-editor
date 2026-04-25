@@ -21,16 +21,16 @@
     "react": "^19.2.5"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260424.1",
+    "@cloudflare/workers-types": "^4.20260425.1",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
     "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
-    "miniflare": "^4.20260317.3",
+    "miniflare": "^4.20260424.0",
     "prettier": "^3.8.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.0",
     "vitest": "^4.1.5",
-    "wrangler": "^4.79.0"
+    "wrangler": "^4.85.0"
   }
 }
