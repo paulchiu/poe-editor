@@ -250,7 +250,7 @@ export function PreviewPane({
       }
 
       const frontMatterCheckbox = target.closest<HTMLInputElement>(
-        'input.front-matter-boolean-input'
+        '.front-matter-properties input.front-matter-boolean-input'
       )
       if (frontMatterCheckbox && root.contains(frontMatterCheckbox) && onFrontMatterBooleanToggle) {
         event.preventDefault()

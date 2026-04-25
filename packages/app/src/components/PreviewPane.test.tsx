@@ -215,6 +215,60 @@ describe('PreviewPane', () => {
     })
   })
 
+  it('ignores body-authored checkboxes spoofing the front matter boolean class', async () => {
+    const spoofHtml =
+      '<p>spoof</p><input type="checkbox" class="front-matter-boolean-input" data-front-matter-key="draft">'
+    const onFrontMatterBooleanToggle = vi.fn()
+
+    const { container } = render(
+      <PreviewPane
+        htmlContent={spoofHtml}
+        onFrontMatterBooleanToggle={onFrontMatterBooleanToggle}
+      />
+    )
+
+    const spoofedCheckbox = container.querySelector<HTMLInputElement>(
+      'input.front-matter-boolean-input[data-front-matter-key="draft"]'
+    )
+    expect(spoofedCheckbox).toBeTruthy()
+
+    fireEvent.click(spoofedCheckbox!)
+
+    await waitFor(() => {
+      expect(onFrontMatterBooleanToggle).not.toHaveBeenCalled()
+    })
+  })
+
+  it('calls onFrontMatterBooleanToggle when a front matter boolean is clicked', async () => {
+    const markdown = ['---', 'draft: false', 'published: true', '---', '# Body'].join('\n')
+    const renderedHtml = renderMarkdown(markdown)
+    const onFrontMatterBooleanToggle = vi.fn()
+
+    const { container } = render(
+      <PreviewPane
+        htmlContent={renderedHtml}
+        onFrontMatterBooleanToggle={onFrontMatterBooleanToggle}
+      />
+    )
+
+    const draftCheckbox = container.querySelector<HTMLInputElement>(
+      'input.front-matter-boolean-input[data-front-matter-key="draft"]'
+    )
+    const publishedCheckbox = container.querySelector<HTMLInputElement>(
+      'input.front-matter-boolean-input[data-front-matter-key="published"]'
+    )
+    expect(draftCheckbox).toBeTruthy()
+    expect(publishedCheckbox).toBeTruthy()
+
+    fireEvent.click(draftCheckbox!)
+    fireEvent.click(publishedCheckbox!)
+
+    await waitFor(() => {
+      expect(onFrontMatterBooleanToggle).toHaveBeenNthCalledWith(1, 'draft', true)
+      expect(onFrontMatterBooleanToggle).toHaveBeenNthCalledWith(2, 'published', false)
+    })
+  })
+
   it('handles footnote hash links without mutating URL storage hash', () => {
     const markdown = 'Alpha[^1]\n\n[^1]: Footnote content.'
     const renderedHtml = renderMarkdown(markdown)
