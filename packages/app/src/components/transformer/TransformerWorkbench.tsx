@@ -68,7 +68,7 @@ export function TransformerWorkbench({
         const addedSteps = steps.filter((s) => !prevSteps.find((p) => p.id === s.id))
 
         if (addedSteps.length > 0) {
-          let newJsonValue = jsonValue
+          let newJsonValue: string
 
           try {
             // Try to parse current JSON
