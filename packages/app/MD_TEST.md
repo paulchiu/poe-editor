@@ -12,6 +12,13 @@ revision: 7
 weight: 3.14
 draft: false
 published: true
+date: 2024-01-15T14:30:00Z
+summary: |
+  Multiline literal block.
+  Newlines and spacing are preserved as written.
+excerpt: >
+  Multiline folded block that the YAML parser
+  joins into a single line of prose.
 empty_field:
 metadata:
   owner: editor-team
@@ -26,7 +33,7 @@ Use this document to quickly verify that Markdown rendering, syntax highlighting
 
 - Load this file in Poe editor and confirm editor + preview stay in sync while scrolling.
 - Confirm front matter renders as a properties panel above the first heading and raw YAML delimiters are hidden.
-- Confirm front matter properties cover every supported value type: text, number, boolean, list, tag list, empty value, and nested object.
+- Confirm front matter properties cover every supported value type: text, number, boolean, date, list, tag list, multiline literal, multiline folded, empty value, and nested object.
 - Click the boolean checkboxes (`draft`, `published`) in the properties panel and confirm the YAML source toggles `true`/`false` to match.
 - Toggle between light and dark theme and confirm readability/contrast remains good for all sections.
 - Confirm first heading text still updates page title and emoji favicon (`🧪`) instead of front matter.
