@@ -59,7 +59,7 @@ function renderAnsi(text: string): ReactNode {
   if (lastIndex < text.length) {
     const segment = text.slice(lastIndex)
     parts.push(
-      <span key={key++} style={currentStyle}>
+      <span key={key} style={currentStyle}>
         {segment}
       </span>
     )

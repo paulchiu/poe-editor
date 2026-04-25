@@ -18,19 +18,19 @@
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "^19.2.4"
+    "react": "^19.2.5"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260424.1",
-    "@eslint/js": "^9.39.2",
+    "@cloudflare/workers-types": "^4.20260425.1",
+    "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
-    "eslint": "^10.2.0",
+    "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
-    "miniflare": "^4.20260317.3",
-    "prettier": "^3.8.1",
-    "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.0",
-    "vitest": "^4.1.2",
-    "wrangler": "^4.79.0"
+    "miniflare": "^4.20260424.0",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.0",
+    "vitest": "^4.1.5",
+    "wrangler": "^4.85.0"
   }
 }

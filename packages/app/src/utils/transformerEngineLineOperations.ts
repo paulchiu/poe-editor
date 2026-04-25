@@ -75,7 +75,7 @@ function applyKeepRemoveLines(text: string, step: PipelineStep): string {
   return text
     .split('\n')
     .filter((line) => {
-      let matches = false
+      let matches: boolean
 
       if (regexMode) {
         try {

@@ -97,11 +97,12 @@ export function parseToolbarImport(json: string): TransformationPipeline[] {
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new Error(
-        `Invalid configuration format: ${error.issues.map((issue: z.ZodIssue) => issue.message).join(', ')}`
+        `Invalid configuration format: ${error.issues.map((issue: z.ZodIssue) => issue.message).join(', ')}`,
+        { cause: error }
       )
     }
     if (error instanceof SyntaxError) {
-      throw new Error('Invalid JSON format')
+      throw new Error('Invalid JSON format', { cause: error })
     }
     throw error
   }
