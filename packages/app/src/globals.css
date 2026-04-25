@@ -239,6 +239,11 @@ html:not(.dark) .markdown-body {
   --color-prettylights-syntax-sublimelinter-gutter-mark: #818b98;
   --markdown-mark-bg: #ffe888;
   --markdown-mark-color: #2a2a2a;
+  --front-matter-key-color: #6f5738;
+  --front-matter-chip-bg: #f0efeb;
+  --front-matter-chip-border: #dbcdb6;
+  --front-matter-tag-bg: #e8f2ff;
+  --front-matter-tag-border: #b6d7ff;
   --code-syntax-keyword: #a626a4;
   --code-syntax-string: #50a14f;
   --code-syntax-variable: #986801;
@@ -313,6 +318,11 @@ html:not(.dark) .markdown-body {
   --color-prettylights-syntax-sublimelinter-gutter-mark: #3d444d;
   --markdown-mark-bg: #e5e7eb;
   --markdown-mark-color: #111827;
+  --front-matter-key-color: #c9d1d9;
+  --front-matter-chip-bg: #151b23;
+  --front-matter-chip-border: #3d444d;
+  --front-matter-tag-bg: #0d2d4d;
+  --front-matter-tag-border: #1f6feb;
   --code-syntax-keyword: var(--color-prettylights-syntax-keyword);
   --code-syntax-string: var(--color-prettylights-syntax-string);
   --code-syntax-variable: var(--color-prettylights-syntax-variable);
@@ -336,6 +346,98 @@ html:not(.dark) .markdown-body mark,
   border-radius: 0.2em;
   background-color: var(--markdown-mark-bg);
   color: var(--markdown-mark-color);
+}
+
+.markdown-body .front-matter-properties {
+  margin: 0 0 1.25rem;
+  padding: 0.35rem 0 0.75rem;
+  border-bottom: 1px solid var(--borderColor-muted);
+  color: var(--fgColor-default);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.markdown-body .front-matter-properties table {
+  display: table;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+}
+
+.markdown-body .front-matter-properties tr {
+  border: 0;
+  background: transparent;
+}
+
+.markdown-body .front-matter-properties tr:nth-child(2n) {
+  background: transparent;
+}
+
+.markdown-body .front-matter-properties th,
+.markdown-body .front-matter-properties td {
+  padding: 0.32rem 0;
+  border: 0;
+  vertical-align: top;
+}
+
+.markdown-body .front-matter-properties th {
+  width: 9rem;
+  padding-right: 1rem;
+  color: var(--front-matter-key-color);
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.markdown-body .front-matter-value {
+  color: var(--fgColor-default);
+}
+
+.markdown-body .front-matter-list,
+.markdown-body .front-matter-boolean {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.markdown-body .front-matter-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 1.45rem;
+  padding: 0.12rem 0.45rem;
+  border: 1px solid var(--front-matter-chip-border);
+  border-radius: 999px;
+  background: var(--front-matter-chip-bg);
+  color: var(--fgColor-default);
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.markdown-body .front-matter-tag {
+  border-color: var(--front-matter-tag-border);
+  background: var(--front-matter-tag-bg);
+  color: var(--fgColor-accent);
+}
+
+.markdown-body .front-matter-empty {
+  color: var(--fgColor-muted);
+  font-style: italic;
+}
+
+.markdown-body .front-matter-boolean input {
+  inline-size: 0.95rem;
+  block-size: 0.95rem;
+  margin: 0;
+  accent-color: var(--fgColor-accent);
+}
+
+.markdown-body .front-matter-boolean-label,
+.markdown-body .front-matter-value-text {
+  overflow-wrap: anywhere;
 }
 
 .markdown-body .contains-task-list {

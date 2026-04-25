@@ -11,6 +11,13 @@ describe('clipboard utils', () => {
     it('returns empty string for empty input', () => {
       expect(stripHtml('')).toBe('')
     })
+
+    it('keeps front matter properties readable in plain text', () => {
+      const html =
+        '<section class="front-matter-properties"><table><tbody><tr><th>title</th><td>Poe test</td></tr><tr><th>tags</th><td><span class="front-matter-chip">markdown</span><span class="front-matter-chip">preview</span></td></tr></tbody></table></section><h1>Body</h1>'
+
+      expect(stripHtml(html)).toBe('title: Poe test\ntags: markdown, preview\nBody')
+    })
   })
 
   describe('copyToClipboard', () => {

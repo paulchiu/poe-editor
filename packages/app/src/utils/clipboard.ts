@@ -129,5 +129,27 @@ export async function copySvgImageToClipboard(svg: string): Promise<void> {
 export function stripHtml(html: string): string {
   if (typeof window === 'undefined') return html
   const doc = new DOMParser().parseFromString(html, 'text/html')
+  const frontMatterSections = Array.from(doc.body.querySelectorAll('.front-matter-properties'))
+
+  for (const section of frontMatterSections) {
+    const rows = Array.from(section.querySelectorAll('tr'))
+    const lines = rows
+      .map((row) => {
+        const key = row.querySelector('th')?.textContent?.trim() ?? ''
+        const valueCell = row.querySelector('td')
+        const chips = Array.from(valueCell?.querySelectorAll('.front-matter-chip') ?? [])
+        const value =
+          chips.length > 0
+            ? chips
+                .map((chip) => chip.textContent?.trim())
+                .filter(Boolean)
+                .join(', ')
+            : (valueCell?.textContent?.trim() ?? '')
+        return key && value ? `${key}: ${value}` : key || value
+      })
+      .filter(Boolean)
+    section.replaceWith(doc.createTextNode(lines.length > 0 ? `${lines.join('\n')}\n` : ''))
+  }
+
   return doc.body.textContent || ''
 }

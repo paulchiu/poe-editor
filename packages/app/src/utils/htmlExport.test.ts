@@ -22,6 +22,8 @@ describe('htmlExport', () => {
     expect(result).toContain('preview-code-copy-button')
     expect(result).toContain('.markdown-body .contains-task-list')
     expect(result).toContain('.markdown-body .task-list-item > .task-list-item-checkbox')
+    expect(result).toContain('--front-matter-key-color: #6f5738;')
+    expect(result).toContain('.markdown-body .front-matter-properties')
     expect(result).not.toContain('github-markdown-dark.min.css')
   })
 
@@ -37,6 +39,7 @@ describe('htmlExport', () => {
     expect(result).toContain('--code-block-background: #151b23;')
     expect(result).toContain('--code-block-border: #3d444db3;')
     expect(result).toContain('--code-syntax-keyword: var(--color-prettylights-syntax-keyword);')
+    expect(result).toContain('--front-matter-key-color: #c9d1d9;')
     expect(result).toContain('background-color: #0d1117;')
     expect(result).not.toContain('github-markdown-light.min.css')
   })

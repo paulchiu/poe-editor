@@ -1,3 +1,13 @@
+---
+title: Poe Markdown Render Manual Test
+description: Manual fixture for checking Markdown rendering, syntax highlighting, Mermaid, tables, and theme behavior.
+tags:
+  - markdown
+  - rendering
+  - manual-test
+draft: false
+---
+
 # 🧪 Poe Markdown Render Manual Test
 
 Use this document to quickly verify that Markdown rendering, syntax highlighting, Mermaid, tables, and theme behavior all look correct.
@@ -5,8 +15,9 @@ Use this document to quickly verify that Markdown rendering, syntax highlighting
 ## Manual Test Checklist
 
 - Load this file in Poe editor and confirm editor + preview stay in sync while scrolling.
+- Confirm front matter renders as a properties panel above the first heading and raw YAML delimiters are hidden.
 - Toggle between light and dark theme and confirm readability/contrast remains good for all sections.
-- Confirm first heading text updates page title and emoji favicon (`🧪`).
+- Confirm first heading text still updates page title and emoji favicon (`🧪`) instead of front matter.
 - Export as HTML in light mode, open file, confirm light styling.
 - Export as HTML in dark mode, open file, confirm dark styling.
 - Copy preview as rich text and paste into a rich-text target (e.g., docs editor) to verify structure survives.

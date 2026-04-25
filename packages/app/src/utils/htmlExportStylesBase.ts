@@ -5,6 +5,7 @@ interface HtmlExportBaseStylesParams {
   colorMode: MermaidColorMode
   codeBlockVariables: string
   codeSyntaxVariables: string
+  frontMatterVariables: string
   mermaidTextColor: string
 }
 
@@ -18,6 +19,7 @@ export function getHtmlExportBaseStyles({
   colorMode,
   codeBlockVariables,
   codeSyntaxVariables,
+  frontMatterVariables,
   mermaidTextColor,
 }: HtmlExportBaseStylesParams): string {
   return `
@@ -37,6 +39,7 @@ export function getHtmlExportBaseStyles({
       line-height: 1.3;
 ${codeBlockVariables}
 ${codeSyntaxVariables}
+${frontMatterVariables}
     }
     .markdown-body code,
     .markdown-body pre,
@@ -61,6 +64,80 @@ ${codeSyntaxVariables}
       block-size: 0.95rem;
       vertical-align: middle;
       accent-color: var(--fgColor-accent);
+    }
+    .markdown-body .front-matter-properties {
+      margin: 0 0 1.25rem;
+      padding: 0.35rem 0 0.75rem;
+      border-bottom: 1px solid var(--borderColor-muted);
+      color: var(--fgColor-default);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.35;
+    }
+    .markdown-body .front-matter-properties table {
+      display: table;
+      width: 100%;
+      margin: 0;
+      border: 0;
+      border-collapse: collapse;
+    }
+    .markdown-body .front-matter-properties tr,
+    .markdown-body .front-matter-properties tr:nth-child(2n) {
+      border: 0;
+      background: transparent;
+    }
+    .markdown-body .front-matter-properties th,
+    .markdown-body .front-matter-properties td {
+      padding: 0.32rem 0;
+      border: 0;
+      vertical-align: top;
+    }
+    .markdown-body .front-matter-properties th {
+      width: 9rem;
+      padding-right: 1rem;
+      color: var(--front-matter-key-color);
+      font-weight: 500;
+      text-align: left;
+      white-space: nowrap;
+    }
+    .markdown-body .front-matter-list,
+    .markdown-body .front-matter-boolean {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .markdown-body .front-matter-chip {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      min-height: 1.45rem;
+      padding: 0.12rem 0.45rem;
+      border: 1px solid var(--front-matter-chip-border);
+      border-radius: 999px;
+      background: var(--front-matter-chip-bg);
+      color: var(--fgColor-default);
+      font-size: 0.78rem;
+      line-height: 1.2;
+    }
+    .markdown-body .front-matter-tag {
+      border-color: var(--front-matter-tag-border);
+      background: var(--front-matter-tag-bg);
+      color: var(--fgColor-accent);
+    }
+    .markdown-body .front-matter-empty {
+      color: var(--fgColor-muted);
+      font-style: italic;
+    }
+    .markdown-body .front-matter-boolean input {
+      inline-size: 0.95rem;
+      block-size: 0.95rem;
+      margin: 0;
+      accent-color: var(--fgColor-accent);
+    }
+    .markdown-body .front-matter-boolean-label,
+    .markdown-body .front-matter-value-text {
+      overflow-wrap: anywhere;
     }
     .markdown-body pre {
       margin: 1rem 0;

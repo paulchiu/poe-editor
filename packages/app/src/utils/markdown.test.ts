@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { renderMarkdown, getFirstHeading } from './markdown'
+import { renderMarkdown, getFirstHeading, getTocHeadings } from './markdown'
 
 describe('renderMarkdown', () => {
   it('should render basic markdown', () => {
@@ -45,6 +45,35 @@ describe('renderMarkdown', () => {
 
   it('should handle empty input', () => {
     expect(renderMarkdown('')).toBe('')
+  })
+
+  it('should render front matter as a properties panel before the markdown body', () => {
+    const markdown = [
+      '---',
+      'title: Front Matter Title',
+      'tags: [poe, preview]',
+      'draft: false',
+      '---',
+      '# Body Title',
+      '',
+      'Body text.',
+    ].join('\n')
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('class="front-matter-properties"')
+    expect(html).toContain('<th class="front-matter-key">title</th>')
+    expect(html).toContain('<span class="front-matter-value-text">Front Matter Title</span>')
+    expect(html).toContain('<span class="front-matter-chip front-matter-tag">poe</span>')
+    expect(html).toContain('<h1 id="body-title">Body Title</h1>')
+    expect(html).not.toContain('<hr>')
+    expect(html).not.toContain('---')
+  })
+
+  it('should sanitize unsafe front matter property values', () => {
+    const html = renderMarkdown('---\ntitle: "<img src=x onerror=alert(1)>"\n---\n# Body')
+
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;')
+    expect(html).not.toContain('<img src="x"')
   })
 
   it('should render strikethrough across common markdown containers', () => {
@@ -193,6 +222,10 @@ describe('getFirstHeading', () => {
     expect(getFirstHeading('Some text\n# Title')).toBe('Title')
   })
 
+  it('should ignore front matter before heading', () => {
+    expect(getFirstHeading('---\ntitle: Metadata title\n---\n# Real Title')).toBe('Real Title')
+  })
+
   it('should ignore hashes in code blocks', () => {
     const md = '```\n# Not a heading\n```\n# Real Heading'
     expect(getFirstHeading(md)).toBe('Real Heading')
@@ -229,6 +262,15 @@ describe('extended markdown', () => {
     expect(html).toContain('<h2 id="child">Child</h2>')
     expect(html).toContain('<h1 id="intro-1">Intro</h1>')
     expect(html).not.toContain('href="#ignored"')
+  })
+
+  it('should ignore front matter when collecting TOC headings', () => {
+    const headings = getTocHeadings('---\ntitle: Metadata title\n---\n# Real Title\n## Child')
+
+    expect(headings).toEqual([
+      { level: 1, text: 'Real Title', id: 'real-title' },
+      { level: 2, text: 'Child', id: 'child' },
+    ])
   })
 
   it('should replace TOC directive', () => {

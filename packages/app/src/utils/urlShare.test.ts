@@ -103,6 +103,22 @@ describe('generateShareableUrl', () => {
     expect(url).toContain('/this-is-the-snippet-text')
   })
 
+  it('uses body content for title and snippet when front matter is present', () => {
+    const content = [
+      '---',
+      'title: Metadata title',
+      'description: Metadata snippet should be ignored',
+      '---',
+      '# Real Title',
+      '',
+      'Real body snippet',
+    ].join('\n')
+    const url = generateShareableUrl(content, 'untitled.md', 'hash')
+
+    expect(url).toContain('/real-title/real-body-snippet')
+    expect(url).not.toContain('metadata')
+  })
+
   it('handles empty hash', () => {
     const content = '# Title\n\nSnippet'
     const url = generateShareableUrl(content, 'untitled.md', '')
@@ -116,6 +132,21 @@ describe('generateShareableUrl', () => {
 
     expect(url).toContain('?hero=https%3A%2F%2Fimages.example.com%2Fhero.png')
     expect(url).toContain('#hash')
+  })
+
+  it('ignores image syntax inside front matter when choosing hero image', () => {
+    const content = [
+      '---',
+      'hero: "![metadata](https://images.example.com/metadata.png)"',
+      '---',
+      '# Title',
+      '',
+      '![body](https://images.example.com/body.png)',
+    ].join('\n')
+    const url = generateShareableUrl(content, 'untitled.md', 'hash')
+
+    expect(url).toContain('?hero=https%3A%2F%2Fimages.example.com%2Fbody.png')
+    expect(url).not.toContain('metadata.png')
   })
 
   it('uses the first image when multiple images are referenced', () => {

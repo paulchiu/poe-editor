@@ -3,6 +3,7 @@ import { sanitizeGithubSafeHtml } from '@/utils/githubSafeHtml'
 import { createMarkdownIt, EMOJI_SHORTCODE_PATTERN } from '@/utils/markdownRenderers'
 import { parseFootnotes, renderFootnotes } from '@/utils/markdownFootnotes'
 import { renderGithubCallouts, renderTaskLists } from '@/utils/markdownPostProcessing'
+import { extractFrontMatter, getMarkdownBody, renderFrontMatterHtml } from '@/utils/frontMatter'
 import {
   applyHeadingIds,
   collectHeadings,
@@ -48,17 +49,23 @@ async function getEmojiMarkdownRenderer(): Promise<MarkdownIt> {
 function renderMarkdownWithRenderer(markdown: string, renderer: MarkdownIt): string {
   if (!markdown) return ''
 
-  const headings = collectHeadings(markdown, baseMarkdown)
+  const frontMatterResult = extractFrontMatter(markdown)
+  const markdownBody = frontMatterResult?.body ?? markdown
+  const frontMatterHtml = frontMatterResult
+    ? renderFrontMatterHtml(frontMatterResult.frontMatter)
+    : ''
+  const headings = collectHeadings(markdownBody, baseMarkdown)
   const {
     markdown: markdownWithReferences,
     definitions,
     referencesByLabel,
-  } = parseFootnotes(markdown)
+  } = parseFootnotes(markdownBody)
 
   const renderedBody = renderer.render(markdownWithReferences)
   const withHeadingIds = applyHeadingIds(renderedBody, headings)
   const withTocDirective = injectTocDirective(withHeadingIds, headings, baseMarkdown)
-  const withFootnotes = `${withTocDirective}${renderFootnotes(definitions, referencesByLabel, renderer)}`
+  const withFrontMatter = `${frontMatterHtml}${withTocDirective}`
+  const withFootnotes = `${withFrontMatter}${renderFootnotes(definitions, referencesByLabel, renderer)}`
   const withGithubCallouts = renderGithubCallouts(withFootnotes)
   const withTaskLists = renderTaskLists(withGithubCallouts)
   return sanitizeGithubSafeHtml(withTaskLists)
@@ -71,7 +78,7 @@ function renderMarkdownWithRenderer(markdown: string, renderer: MarkdownIt): str
  */
 export function getTocHeadings(markdown: string): TocHeading[] {
   if (!markdown) return []
-  return collectHeadings(markdown, baseMarkdown)
+  return collectHeadings(getMarkdownBody(markdown), baseMarkdown)
 }
 
 /**
@@ -90,7 +97,8 @@ export function renderMarkdown(markdown: string): string {
  */
 export async function renderMarkdownForPreview(markdown: string): Promise<string> {
   if (!markdown) return ''
-  if (!EMOJI_SHORTCODE_PATTERN.test(markdown)) {
+  const markdownBody = getMarkdownBody(markdown)
+  if (!EMOJI_SHORTCODE_PATTERN.test(markdownBody)) {
     return renderMarkdownWithRenderer(markdown, markdownRenderer)
   }
 
@@ -104,7 +112,7 @@ export async function renderMarkdownForPreview(markdown: string): Promise<string
  * @returns The text content of the first heading, or null if none found.
  */
 export function getFirstHeading(markdown: string): string | null {
-  return getFirstHeadingFromMarkdown(markdown, baseMarkdown)
+  return getFirstHeadingFromMarkdown(getMarkdownBody(markdown), baseMarkdown)
 }
 
 /**

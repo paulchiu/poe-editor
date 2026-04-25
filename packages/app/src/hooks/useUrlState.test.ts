@@ -113,6 +113,23 @@ describe('useUrlState', () => {
     vi.useRealTimers()
   })
 
+  it('should ignore front matter when updating document title', () => {
+    vi.useFakeTimers()
+    const { result } = renderHook(() => useUrlState())
+    vi.mocked(compression.compressDocumentToHash).mockReturnValue('hash')
+
+    act(() => {
+      result.current.setContent('---\ntitle: Metadata Title\n---\n# Real Title\nContent')
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+
+    expect(document.title).toBe('Real Title')
+    vi.useRealTimers()
+  })
+
   it('should prefer document name fallback over path metadata after rename', () => {
     vi.useFakeTimers()
     window.history.replaceState(null, '', '/shared-title/shared-snippet')
