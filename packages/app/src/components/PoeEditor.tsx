@@ -57,10 +57,6 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
   const [showImportExport, setShowImportExport] = useState(false)
   const [editingPipeline, setEditingPipeline] = useState<TransformationPipeline | null>(null)
   const [selectedText, setSelectedText] = useState<string | undefined>(undefined)
-  const [, setCursorPosition] = useState({
-    lineNumber: 1,
-    column: 1,
-  })
   const [isInTable, setIsInTable] = useState(false)
 
   const documentMenuRef = useRef<HTMLButtonElement>(null)
@@ -309,7 +305,6 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
 
   const handleCursorChange = useCallback(
     (position: { lineNumber: number; column: number; isInTable: boolean }): void => {
-      setCursorPosition(position)
       setIsInTable(position.isInTable ?? false)
     },
     []
