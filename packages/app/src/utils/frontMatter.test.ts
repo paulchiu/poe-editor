@@ -151,4 +151,20 @@ describe('toggleFrontMatterBoolean', () => {
     const input = '# Body without front matter'
     expect(toggleFrontMatterBoolean(input, 'draft', true)).toBe(input)
   })
+
+  it('rejects non-boolean scalars where `#` is part of the value, not a comment', () => {
+    const input = '---\ndraft: false#actually-a-string\n---\n# Body'
+    expect(toggleFrontMatterBoolean(input, 'draft', true)).toBe(input)
+  })
+
+  it('returns the source unchanged for YAML shapes the line regex does not support', () => {
+    const quotedKey = '---\n"draft mode": false\n---\n# Body'
+    expect(toggleFrontMatterBoolean(quotedKey, 'draft mode', true)).toBe(quotedKey)
+
+    const anchored = '---\ndraft: &flag false\n---\n# Body'
+    expect(toggleFrontMatterBoolean(anchored, 'draft', true)).toBe(anchored)
+
+    const nextLineScalar = '---\ndraft:\n  false\n---\n# Body'
+    expect(toggleFrontMatterBoolean(nextLineScalar, 'draft', true)).toBe(nextLineScalar)
+  })
 })

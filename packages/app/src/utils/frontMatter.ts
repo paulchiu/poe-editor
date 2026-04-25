@@ -261,10 +261,18 @@ function preserveBooleanCase(currentLiteral: string, nextValue: boolean): string
 
 /**
  * Toggles a top-level boolean value in the YAML front matter block.
+ *
+ * Matches the common shape `key: <bool>` (optionally followed by a YAML inline
+ * comment introduced by whitespace + `#`). Returns the original source unchanged
+ * when the key is not a top-level scalar boolean written on a single line: that
+ * includes quoted keys (`"draft": false`), anchored scalars (`draft: &flag false`),
+ * explicit-key form (`? draft\n: false`), next-line scalars (`draft:\n  false`),
+ * and any non-top-level (indented) match.
+ *
  * @param markdown - Source markdown that may begin with a YAML front matter block.
  * @param key - Top-level key whose boolean value should be set.
  * @param nextValue - The next boolean state to write.
- * @returns Markdown with the boolean updated, or the original source if the key cannot be found.
+ * @returns Markdown with the boolean updated, or the original source if the key cannot be safely toggled.
  */
 export function toggleFrontMatterBoolean(
   markdown: string,
@@ -277,7 +285,7 @@ export function toggleFrontMatterBoolean(
 
   const escapedKey = escapeRegExpLiteral(key)
   const pattern = new RegExp(
-    `^(${escapedKey}[ \\t]*:[ \\t]+)${YAML_BOOLEAN_LITERAL_PATTERN_SOURCE}([ \\t]*(?:#[^\\n]*)?)$`,
+    `^(${escapedKey}[ \\t]*:[ \\t]+)${YAML_BOOLEAN_LITERAL_PATTERN_SOURCE}((?:[ \\t]+#[^\\n]*)?[ \\t]*)$`,
     'm'
   )
 
