@@ -10,6 +10,35 @@ import { renderMarkdown } from '@/utils/markdown'
 const CLIPBOARD_FAILURE_HINT =
   'Copy failed. Clipboard access may be blocked by your browser permissions.'
 
+const setPreviewScrollMetrics = (
+  previewDocument: HTMLElement,
+  {
+    scrollHeight,
+    clientHeight,
+    scrollTop,
+  }: {
+    scrollHeight: number
+    clientHeight: number
+    scrollTop: number
+  }
+): void => {
+  Object.defineProperties(previewDocument, {
+    scrollHeight: {
+      configurable: true,
+      value: scrollHeight,
+    },
+    clientHeight: {
+      configurable: true,
+      value: clientHeight,
+    },
+    scrollTop: {
+      configurable: true,
+      value: scrollTop,
+      writable: true,
+    },
+  })
+}
+
 // Mock the utilities and toast hook
 vi.mock('@/utils/clipboard', () => ({
   copyToClipboard: vi.fn(),
@@ -119,6 +148,50 @@ describe('PreviewPane', () => {
     })
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('reveals a jump-to-top control after scrolling a long preview document', async () => {
+    render(<PreviewPane htmlContent={htmlContent} />)
+
+    const previewDocument = screen.getByRole('region', { name: 'Preview document' })
+    setPreviewScrollMetrics(previewDocument, {
+      scrollHeight: 1_200,
+      clientHeight: 500,
+      scrollTop: 360,
+    })
+    fireEvent.scroll(previewDocument)
+
+    const jumpToTopButton = await screen.findByRole('button', {
+      name: 'Jump to top of preview',
+    })
+    const scrollToMock = vi.fn()
+    Object.defineProperty(previewDocument, 'scrollTo', {
+      configurable: true,
+      value: scrollToMock,
+    })
+
+    fireEvent.click(jumpToTopButton)
+
+    expect(scrollToMock).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' })
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('button', { name: 'Jump to top of preview' })
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  it('keeps the jump-to-top control hidden for short preview documents', () => {
+    render(<PreviewPane htmlContent={htmlContent} />)
+
+    const previewDocument = screen.getByRole('region', { name: 'Preview document' })
+    setPreviewScrollMetrics(previewDocument, {
+      scrollHeight: 480,
+      clientHeight: 500,
+      scrollTop: 360,
+    })
+    fireEvent.scroll(previewDocument)
+
+    expect(screen.queryByRole('button', { name: 'Jump to top of preview' })).not.toBeInTheDocument()
   })
 
   it('calls onTaskListToggle when task checkbox is clicked', async () => {
