@@ -21,6 +21,7 @@ import type { TocHeading } from '@/utils/markdown'
 interface PreviewPaneProps {
   htmlContent: string
   onTaskListToggle?: (taskIndex: number, checked: boolean) => void
+  onFrontMatterBooleanToggle?: (key: string, checked: boolean) => void
   viewMode?: 'editor' | 'preview' | 'split'
   onToggleLayout?: () => void
   colorMode?: MermaidColorMode
@@ -78,6 +79,7 @@ const getPreviewSegmentRenderItems = (htmlContent: string): PreviewSegmentRender
 export function PreviewPane({
   htmlContent,
   onTaskListToggle,
+  onFrontMatterBooleanToggle,
   viewMode,
   onToggleLayout,
   colorMode = 'light',
@@ -247,6 +249,21 @@ export function PreviewPane({
         return
       }
 
+      const frontMatterCheckbox = target.closest<HTMLInputElement>(
+        '.front-matter-properties input.front-matter-boolean-input'
+      )
+      if (frontMatterCheckbox && root.contains(frontMatterCheckbox) && onFrontMatterBooleanToggle) {
+        event.preventDefault()
+        event.stopPropagation()
+
+        const key = frontMatterCheckbox.getAttribute('data-front-matter-key')
+        if (!key) return
+
+        const currentlyChecked = frontMatterCheckbox.hasAttribute('checked')
+        onFrontMatterBooleanToggle(key, !currentlyChecked)
+        return
+      }
+
       const hashLink = target.closest<HTMLAnchorElement>('a[href^="#"]')
       if (hashLink && root.contains(hashLink)) {
         const targetId = decodeURIComponent(hashLink.hash.slice(1))
@@ -330,7 +347,7 @@ export function PreviewPane({
         host.classList.remove('preview-code-copy-host')
       }
     }
-  }, [htmlContent, onTaskListToggle, printFriendly])
+  }, [htmlContent, onTaskListToggle, onFrontMatterBooleanToggle, printFriendly])
 
   const handleCopy = async (): Promise<void> => {
     try {

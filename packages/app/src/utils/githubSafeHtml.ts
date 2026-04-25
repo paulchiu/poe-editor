@@ -47,6 +47,7 @@ const GLOBAL_ALLOWED_ATTRIBUTES = new Set([
   'align',
   'aria-label',
   'class',
+  'data-front-matter-key',
   'data-language',
   'data-task-index',
   'data-raw-code',
