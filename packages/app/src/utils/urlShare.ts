@@ -1,5 +1,6 @@
 import { getFirstHeading } from '@/utils/markdown'
 import { extractFirstEmoji } from '@/utils/emoji'
+import { getMarkdownBody } from '@/utils/frontMatter'
 
 /**
  * Extracts the first image URL reference from markdown or HTML image syntax
@@ -95,8 +96,10 @@ export function encodePathSegment(text: string): string {
  * @returns The full shareable URL
  */
 export function generateShareableUrl(content: string, documentName: string, hash: string): string {
+  const markdownBody = getMarkdownBody(content)
+
   // Extract title from first heading or use document name
-  let title = getFirstHeading(content)
+  let title = getFirstHeading(markdownBody)
   if (!title) {
     title = documentName.replace(/\.md$/, '')
   } else {
@@ -108,12 +111,12 @@ export function generateShareableUrl(content: string, documentName: string, hash
   }
 
   // Extract snippet from content
-  const snippet = extractSnippet(content)
+  const snippet = extractSnippet(markdownBody)
 
   // Encode path segments
   const encodedTitle = encodePathSegment(title)
   const encodedSnippet = encodePathSegment(snippet)
-  const heroImageUrl = extractFirstImageUrl(content)
+  const heroImageUrl = extractFirstImageUrl(markdownBody)
 
   // Build the URL
   const baseUrl = window.location.origin

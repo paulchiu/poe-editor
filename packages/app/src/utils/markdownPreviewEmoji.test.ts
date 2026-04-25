@@ -55,6 +55,19 @@ describe('renderMarkdownForPreview lazy emoji loading', () => {
     expect(emojiFactory).not.toHaveBeenCalled()
   })
 
+  it('does not import the emoji module for shortcode text that only appears in front matter', async () => {
+    const emojiFactory = vi.fn(async () => ({ full: vi.fn() }))
+    const { renderMarkdownForPreview, setEmojiMarkdownModuleLoaderForTests } =
+      await import('./markdown')
+    setEmojiMarkdownModuleLoaderForTests(emojiFactory)
+
+    const html = await renderMarkdownForPreview('---\nicon: ":smile:"\n---\n# Title')
+
+    expect(emojiFactory).not.toHaveBeenCalled()
+    expect(html).toContain(':smile:')
+    expect(html).not.toContain('😄')
+  })
+
   it('imports the emoji module when shortcode pattern exists', async () => {
     const emojiPlugin = vi.fn()
     const emojiFactory = vi.fn(async () => ({ full: emojiPlugin }))

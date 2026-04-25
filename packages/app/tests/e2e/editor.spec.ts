@@ -4,6 +4,7 @@ interface MonacoEditor {
   getScrollHeight: () => number
   getLayoutInfo: () => { height: number }
   setScrollTop: (scrollTop: number) => void
+  setValue: (value: string) => void
 }
 
 interface MonacoEditorGlobal {
@@ -74,6 +75,46 @@ test.describe('Editor Integration', () => {
     // Verifying text
     const boldPreview = page.locator('.markdown-body strong')
     await expect(boldPreview).toHaveText('Hello formatting')
+  })
+
+  test('should render front matter as preview properties', async ({ page }) => {
+    const content = [
+      '---',
+      'title: Preview Fixture',
+      'tags:',
+      '  - markdown',
+      '  - properties',
+      'draft: false',
+      '---',
+      '# Body Title',
+      '',
+      'Body text',
+    ].join('\n')
+
+    await page.evaluate((text) => {
+      const editorInstances = (
+        window as unknown as MonacoEditorGlobal
+      ).monaco?.editor?.getEditors?.()
+      editorInstances?.[0]?.setValue(text)
+    }, content)
+
+    const preview = page.locator('.markdown-body')
+    const properties = preview.locator('.front-matter-properties')
+    await expect(properties).toContainText('Preview Fixture')
+    await expect(properties).toContainText('markdown')
+    await expect(properties).toContainText('false')
+    await expect(preview.locator('h1')).toHaveText('Body Title')
+    await expect(preview).not.toContainText('---')
+
+    await expect(async () => {
+      const isBeforeHeading = await preview.evaluate((root) => {
+        const panel = root.querySelector('.front-matter-properties')
+        const heading = root.querySelector('h1')
+        if (!panel || !heading) return false
+        return panel.getBoundingClientRect().bottom <= heading.getBoundingClientRect().top
+      })
+      expect(isBeforeHeading).toBe(true)
+    }).toPass()
   })
 
   test('should sync scroll from editor to preview', async ({ page }) => {

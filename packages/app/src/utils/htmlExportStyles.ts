@@ -42,6 +42,24 @@ function getCodeSyntaxVariables(colorMode: MermaidColorMode): string {
       --code-syntax-comment: #6a737d;`
 }
 
+function getFrontMatterVariables(colorMode: MermaidColorMode): string {
+  if (colorMode === 'dark') {
+    return `
+      --front-matter-key-color: #c9d1d9;
+      --front-matter-chip-bg: #151b23;
+      --front-matter-chip-border: #3d444d;
+      --front-matter-tag-bg: #0d2d4d;
+      --front-matter-tag-border: #1f6feb;`
+  }
+
+  return `
+      --front-matter-key-color: #6f5738;
+      --front-matter-chip-bg: #f0efeb;
+      --front-matter-chip-border: #dbcdb6;
+      --front-matter-tag-bg: #e8f2ff;
+      --front-matter-tag-border: #b6d7ff;`
+}
+
 /**
  * Returns inline CSS used by exported HTML documents.
  * @param colorMode - Selected markdown color mode.
@@ -55,12 +73,14 @@ export function getHtmlExportStyles(colorMode: MermaidColorMode): string {
   const mermaidTextColor = colorMode === 'dark' ? '#ffffff' : '#2a2a2a'
   const codeBlockVariables = getCodeBlockVariables(colorMode)
   const codeSyntaxVariables = getCodeSyntaxVariables(colorMode)
+  const frontMatterVariables = getFrontMatterVariables(colorMode)
 
   const baseStyles = getHtmlExportBaseStyles({
     bodyColors,
     colorMode,
     codeBlockVariables,
     codeSyntaxVariables,
+    frontMatterVariables,
     mermaidTextColor,
   })
 

@@ -381,6 +381,28 @@ describe('toggleTaskListItem', () => {
   ])('$name', ({ input, index, checked, expected }) => {
     expect(toggleTaskListItem(input, index, checked)).toBe(expected)
   })
+
+  it('ignores task-like front matter list items when toggling rendered body tasks', () => {
+    const markdown = [
+      '---',
+      'tasks:',
+      '  - "- [ ] metadata task"',
+      '---',
+      '- [ ] body task',
+      '- [x] second body task',
+    ].join('\n')
+
+    expect(toggleTaskListItem(markdown, 0, true)).toBe(
+      [
+        '---',
+        'tasks:',
+        '  - "- [ ] metadata task"',
+        '---',
+        '- [x] body task',
+        '- [x] second body task',
+      ].join('\n')
+    )
+  })
 })
 
 describe('getAutoContinueEdit', () => {

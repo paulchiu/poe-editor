@@ -1,4 +1,5 @@
 import type { EditorPaneHandle } from '@/components/editor'
+import { extractFrontMatter } from '@/utils/frontMatter'
 
 interface LineFormattingOptions {
   editor: EditorPaneHandle
@@ -361,7 +362,9 @@ export function formatTaskList(editor: EditorPaneHandle | null): void {
 export function toggleTaskListItem(markdown: string, taskIndex: number, checked: boolean): string {
   if (!markdown || taskIndex < 0) return markdown
 
-  const lines = markdown.split('\n')
+  const frontMatterResult = extractFrontMatter(markdown)
+  const body = frontMatterResult?.body ?? markdown
+  const lines = body.split('\n')
   let currentTaskIndex = 0
 
   const updatedLines = lines.map((line) => {
@@ -377,7 +380,8 @@ export function toggleTaskListItem(markdown: string, taskIndex: number, checked:
     return `${taskMatch[1]}${checked ? 'x' : ' '}${taskMatch[3]}${taskMatch[4]}`
   })
 
-  return updatedLines.join('\n')
+  const updatedBody = updatedLines.join('\n')
+  return frontMatterResult ? `${frontMatterResult.sourcePrefix}${updatedBody}` : updatedBody
 }
 
 export interface AutoContinueResult {
