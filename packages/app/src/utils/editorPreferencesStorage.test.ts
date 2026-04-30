@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { getBooleanEditorPreference, setBooleanEditorPreference } from './editorPreferencesStorage'
+import {
+  getBooleanEditorPreference,
+  getNumberEditorPreference,
+  setBooleanEditorPreference,
+  setNumberEditorPreference,
+} from './editorPreferencesStorage'
 
 const PREFERENCES_STORAGE_KEY = 'poe-editor-preferences'
 
@@ -55,5 +60,35 @@ describe('editorPreferencesStorage', () => {
     expect(value).toBe(false)
     expect(localStorage.getItem('poe-editor-line-numbers')).toBeNull()
     expect(getStoredPreferences().showLineNumbers).toBe(false)
+  })
+
+  it('stores number preferences in the consolidated preference object', () => {
+    setBooleanEditorPreference('emojiPicker', true)
+    setNumberEditorPreference('previewFontSizePercent', 130, 75, 150)
+
+    expect(getStoredPreferences()).toEqual({
+      emojiPicker: true,
+      previewFontSizePercent: 130,
+    })
+  })
+
+  it('reads number preferences with defaults and bounds', () => {
+    localStorage.setItem(
+      PREFERENCES_STORAGE_KEY,
+      JSON.stringify({
+        previewFontSizePercent: 500,
+        showWordCount: true,
+      })
+    )
+
+    expect(getNumberEditorPreference('previewFontSizePercent', 100, 75, 150)).toBe(150)
+    expect(getNumberEditorPreference('showWordCount', 100, 75, 150)).toBe(100)
+  })
+
+  it('rejects non-finite number preference writes', () => {
+    const didWrite = setNumberEditorPreference('previewFontSizePercent', Number.NaN, 75, 150)
+
+    expect(didWrite).toBe(false)
+    expect(getStoredPreferences()).toEqual({})
   })
 })

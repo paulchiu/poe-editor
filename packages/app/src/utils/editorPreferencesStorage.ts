@@ -9,8 +9,9 @@ export type EditorPreferenceKey =
   | 'displayLineMotion'
   | 'spellCheck'
   | 'emojiPicker'
+  | 'previewFontSizePercent'
 
-type EditorPreferenceStore = Partial<Record<EditorPreferenceKey, boolean>>
+type EditorPreferenceStore = Partial<Record<EditorPreferenceKey, boolean | number>>
 
 const LEGACY_STORAGE_KEYS: Partial<Record<EditorPreferenceKey, string>> = {
   showWordCount: 'poe-editor-word-count',
@@ -36,6 +37,10 @@ function readPreferencesStore(): EditorPreferenceStore {
   } catch {
     return {}
   }
+}
+
+function clampNumber(value: number, minimum: number, maximum: number): number {
+  return Math.min(Math.max(value, minimum), maximum)
 }
 
 /**
@@ -91,6 +96,58 @@ export function setBooleanEditorPreference(
       localStorage.removeItem(legacyKey)
     }
 
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Reads a number editor preference from consolidated storage.
+ * @param preferenceKey - Preference key to read.
+ * @param defaultValue - Default value when no preference is stored.
+ * @param minimum - Minimum allowed value.
+ * @param maximum - Maximum allowed value.
+ * @returns Stored value clamped to bounds, or the provided default.
+ */
+export function getNumberEditorPreference(
+  preferenceKey: EditorPreferenceKey,
+  defaultValue: number,
+  minimum: number,
+  maximum: number
+): number {
+  const store = readPreferencesStore()
+  const storedValue = store[preferenceKey]
+  if (typeof storedValue !== 'number' || !Number.isFinite(storedValue)) {
+    return defaultValue
+  }
+
+  return clampNumber(storedValue, minimum, maximum)
+}
+
+/**
+ * Writes a number editor preference to consolidated storage.
+ * @param preferenceKey - Preference key to write.
+ * @param value - Numeric value to persist.
+ * @param minimum - Minimum allowed value.
+ * @param maximum - Maximum allowed value.
+ * @returns True when write succeeds, otherwise false.
+ */
+export function setNumberEditorPreference(
+  preferenceKey: EditorPreferenceKey,
+  value: number,
+  minimum: number,
+  maximum: number
+): boolean {
+  if (!Number.isFinite(value)) return false
+
+  try {
+    const currentStore = readPreferencesStore()
+    const nextStore: EditorPreferenceStore = {
+      ...currentStore,
+      [preferenceKey]: clampNumber(value, minimum, maximum),
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextStore))
     return true
   } catch {
     return false

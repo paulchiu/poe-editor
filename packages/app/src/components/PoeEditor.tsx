@@ -73,6 +73,11 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
     toggleShowTocPanel,
     showEmojiPicker,
     toggleShowEmojiPicker,
+    previewFontSizePercent,
+    canDecreasePreviewFontSize,
+    canIncreasePreviewFontSize,
+    decreasePreviewFontSize,
+    increasePreviewFontSize,
   } = useEditorPreferences()
 
   const { content, setContent, documentName, setDocumentName, isOverLimit } = useUrlState({
@@ -488,6 +493,11 @@ export function PoeEditor({ onReady }: PoeEditorProps): ReactElement {
         colorMode={colorMode}
         tocHeadings={tocHeadings}
         showTocPanel={showTocPanel}
+        previewFontSizePercent={previewFontSizePercent}
+        canDecreasePreviewFontSize={canDecreasePreviewFontSize}
+        canIncreasePreviewFontSize={canIncreasePreviewFontSize}
+        onDecreasePreviewFontSize={decreasePreviewFontSize}
+        onIncreasePreviewFontSize={increasePreviewFontSize}
       />
     </TooltipProvider>
   )
