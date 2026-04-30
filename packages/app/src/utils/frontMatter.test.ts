@@ -86,8 +86,39 @@ describe('renderFrontMatterHtml', () => {
     expect(html).toContain('checked=""')
     expect(html).toContain('>3<')
     expect(html).toContain('front-matter-empty')
-    expect(html).toContain('{&quot;one&quot;:&quot;two&quot;}')
+    expect(html).toContain('class="front-matter-nested-table"')
+    expect(html).toContain('<th class="front-matter-nested-key">one</th>')
+    expect(html).toContain('<span class="front-matter-value-text">two</span>')
+    expect(html).not.toContain('{&quot;one&quot;:&quot;two&quot;}')
     expect(html).not.toContain('<script>')
+  })
+
+  it('renders nested object front matter as escaped key/value rows', () => {
+    const result = extractFrontMatter(
+      [
+        '---',
+        'review:',
+        '  codex_status: "reviewed"',
+        '  claude_status: "agreed / no blockers"',
+        '  escaped: "<img src=x onerror=alert(1)>"',
+        '  approved: true',
+        '---',
+        '# Body',
+      ].join('\n')
+    )
+
+    const html = renderFrontMatterHtml(result!.frontMatter)
+
+    expect(html).toContain('<th class="front-matter-key">review</th>')
+    expect(html).toContain('<th class="front-matter-nested-key">codex_status</th>')
+    expect(html).toContain('<span class="front-matter-value-text">reviewed</span>')
+    expect(html).toContain('<th class="front-matter-nested-key">claude_status</th>')
+    expect(html).toContain('<span class="front-matter-value-text">agreed / no blockers</span>')
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;')
+    expect(html).toContain('<span class="front-matter-value-text">true</span>')
+    expect(html).not.toContain('{"codex_status"')
+    expect(html).not.toContain('data-front-matter-key="approved"')
+    expect(html).not.toContain('<img src="x"')
   })
 
   it('returns an empty string for empty properties', () => {

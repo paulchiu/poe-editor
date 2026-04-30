@@ -395,6 +395,37 @@ html:not(.dark) .markdown-body mark,
   color: var(--fgColor-default);
 }
 
+.markdown-body .front-matter-properties .front-matter-nested-table {
+  display: table;
+  width: auto;
+  min-width: min(22rem, 100%);
+  margin: 0;
+  border: 0;
+  border-collapse: collapse;
+}
+
+.markdown-body .front-matter-nested-table .front-matter-nested-row {
+  border: 0;
+  background: transparent;
+}
+
+.markdown-body .front-matter-nested-table .front-matter-nested-key,
+.markdown-body .front-matter-nested-table .front-matter-nested-value {
+  padding: 0.12rem 0;
+  border: 0;
+  vertical-align: top;
+}
+
+.markdown-body .front-matter-nested-table .front-matter-nested-key {
+  width: auto;
+  min-width: 8rem;
+  padding-right: 1rem;
+  color: var(--front-matter-key-color);
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+
 .markdown-body .front-matter-list,
 .markdown-body .front-matter-boolean {
   display: inline-flex;
