@@ -6,9 +6,9 @@ import {
   setNumberEditorPreference,
 } from '@/utils/editorPreferencesStorage'
 
-export const PREVIEW_FONT_SIZE_MIN_PERCENT = 75
+export const PREVIEW_FONT_SIZE_MIN_PERCENT = 80
 export const PREVIEW_FONT_SIZE_MAX_PERCENT = 150
-export const PREVIEW_FONT_SIZE_STEP_PERCENT = 10
+export const PREVIEW_FONT_SIZE_STEP_PERCENT = 5
 export const PREVIEW_FONT_SIZE_DEFAULT_PERCENT = 100
 
 interface UseEditorPreferencesReturn {

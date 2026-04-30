@@ -404,7 +404,10 @@ export function PreviewPane({
           style={previewBodyStyle}
         >
           {!printFriendly && (
-            <div className="absolute top-4 right-4 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            <div
+              className="preview-action-toolbar absolute top-4 right-4 z-10 flex items-center gap-1"
+              data-testid="preview-action-toolbar"
+            >
               {showPreviewFontSizeControls && (
                 <>
                   <Tooltip>

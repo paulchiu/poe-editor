@@ -195,6 +195,27 @@ describe('PreviewPane', () => {
     expect(screen.getByRole('button', { name: 'Increase preview font size' })).toBeDisabled()
   })
 
+  it('uses pointer-event gated preview toolbar styles with touch visibility', () => {
+    render(
+      <PreviewPane
+        htmlContent={htmlContent}
+        onDecreasePreviewFontSize={vi.fn()}
+        onIncreasePreviewFontSize={vi.fn()}
+      />
+    )
+
+    const toolbar = screen.getByTestId('preview-action-toolbar')
+    expect(toolbar).toHaveClass('preview-action-toolbar')
+    expect(toolbar).not.toHaveClass('opacity-0')
+    expect(toolbar).not.toHaveClass('pointer-events-none')
+
+    const globalCss = readFileSync(resolve(process.cwd(), 'src/globals.css'), 'utf8')
+    expect(globalCss).toContain('.preview-action-toolbar {\n  pointer-events: none;')
+    expect(globalCss).toContain('.preview-action-toolbar:focus-within')
+    expect(globalCss).toContain('@media (hover: none), (pointer: coarse)')
+    expect(globalCss).toContain('pointer-events: auto;')
+  })
+
   it('reveals a jump-to-top control after scrolling a long preview document', async () => {
     render(<PreviewPane htmlContent={htmlContent} />)
 

@@ -64,7 +64,7 @@ describe('editorPreferencesStorage', () => {
 
   it('stores number preferences in the consolidated preference object', () => {
     setBooleanEditorPreference('emojiPicker', true)
-    setNumberEditorPreference('previewFontSizePercent', 130, 75, 150)
+    setNumberEditorPreference('previewFontSizePercent', 130, 80, 150)
 
     expect(getStoredPreferences()).toEqual({
       emojiPicker: true,
@@ -81,12 +81,12 @@ describe('editorPreferencesStorage', () => {
       })
     )
 
-    expect(getNumberEditorPreference('previewFontSizePercent', 100, 75, 150)).toBe(150)
-    expect(getNumberEditorPreference('showWordCount', 100, 75, 150)).toBe(100)
+    expect(getNumberEditorPreference('previewFontSizePercent', 100, 80, 150)).toBe(150)
+    expect(getNumberEditorPreference('showWordCount', 100, 80, 150)).toBe(100)
   })
 
   it('rejects non-finite number preference writes', () => {
-    const didWrite = setNumberEditorPreference('previewFontSizePercent', Number.NaN, 75, 150)
+    const didWrite = setNumberEditorPreference('previewFontSizePercent', Number.NaN, 80, 150)
 
     expect(didWrite).toBe(false)
     expect(getStoredPreferences()).toEqual({})
