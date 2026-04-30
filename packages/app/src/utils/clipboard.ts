@@ -132,24 +132,58 @@ export function stripHtml(html: string): string {
   const frontMatterSections = Array.from(doc.body.querySelectorAll('.front-matter-properties'))
 
   for (const section of frontMatterSections) {
-    const rows = Array.from(section.querySelectorAll('tr'))
+    const rows = Array.from(section.querySelectorAll(':scope > table > tbody > tr'))
     const lines = rows
       .map((row) => {
-        const key = row.querySelector('th')?.textContent?.trim() ?? ''
-        const valueCell = row.querySelector('td')
-        const chips = Array.from(valueCell?.querySelectorAll('.front-matter-chip') ?? [])
-        const value =
-          chips.length > 0
-            ? chips
-                .map((chip) => chip.textContent?.trim())
-                .filter(Boolean)
-                .join(', ')
-            : (valueCell?.textContent?.trim() ?? '')
-        return key && value ? `${key}: ${value}` : key || value
+        const key = row.querySelector(':scope > th')?.textContent?.trim() ?? ''
+        const valueCell = row.querySelector(':scope > td')
+        const value = valueCell ? getFrontMatterCellText(valueCell, 1) : ''
+        return key && value
+          ? `${key}:${value.startsWith('\n') ? value : ` ${value}`}`
+          : key || value
       })
       .filter(Boolean)
     section.replaceWith(doc.createTextNode(lines.length > 0 ? `${lines.join('\n')}\n` : ''))
   }
 
   return doc.body.textContent || ''
+}
+
+function getFrontMatterCellText(valueCell: Element, indentLevel: number): string {
+  const nestedRows = Array.from(
+    valueCell.querySelectorAll(':scope > .front-matter-nested-table > tbody > tr')
+  )
+  if (nestedRows.length > 0) {
+    const nestedLines = nestedRows
+      .map((row) => getFrontMatterRowText(row, indentLevel))
+      .filter(Boolean)
+
+    return nestedLines.length > 0 ? `\n${nestedLines.join('\n')}` : ''
+  }
+
+  const chips = Array.from(
+    valueCell.querySelectorAll(
+      ':scope > .front-matter-list > .front-matter-chip, :scope > .front-matter-chip'
+    )
+  )
+  if (chips.length > 0) {
+    return chips
+      .map((chip) => chip.textContent?.trim())
+      .filter(Boolean)
+      .join(', ')
+  }
+
+  return valueCell.textContent?.trim() ?? ''
+}
+
+function getFrontMatterRowText(row: Element, indentLevel: number): string {
+  const key = row.querySelector(':scope > th')?.textContent?.trim() ?? ''
+  const valueCell = row.querySelector(':scope > td')
+  const value = valueCell ? getFrontMatterCellText(valueCell, indentLevel + 1) : ''
+  const indent = '  '.repeat(indentLevel)
+
+  if (!key) return value ? `${indent}${value}` : ''
+  if (!value) return `${indent}${key}`
+
+  return `${indent}${key}:${value.startsWith('\n') ? value : ` ${value}`}`
 }
