@@ -26,7 +26,12 @@ type FrontMatterDisplayValue =
   | { type: 'number'; value: string }
   | { type: 'boolean'; value: boolean }
   | { type: 'list'; items: string[]; isTagList: boolean }
-  | { type: 'object'; value: string }
+  | { type: 'object'; entries: FrontMatterObjectEntry[] }
+
+interface FrontMatterObjectEntry {
+  key: string
+  value: FrontMatterDisplayValue
+}
 
 interface FrontMatterBlock {
   yaml: string
@@ -143,7 +148,17 @@ function toDisplayValue(key: string, value: unknown): FrontMatterDisplayValue {
     return { type: 'list', items, isTagList: key.toLowerCase() === 'tags' }
   }
 
-  return { type: 'object', value: stringifyComplexValue(value) }
+  if (isRecord(value)) {
+    return {
+      type: 'object',
+      entries: Object.entries(value).map(([entryKey, entryValue]) => ({
+        key: entryKey,
+        value: toDisplayValue(entryKey, entryValue),
+      })),
+    }
+  }
+
+  return { type: 'text', value: stringifyComplexValue(value) }
 }
 
 function toFrontMatterData(value: unknown): FrontMatterData | null {
@@ -168,12 +183,20 @@ export function getMarkdownBody(markdown: string): string {
   return extractFrontMatter(markdown)?.body ?? markdown
 }
 
-function renderPropertyValue(key: string, value: FrontMatterDisplayValue): string {
+function renderPropertyValue(
+  key: string,
+  value: FrontMatterDisplayValue,
+  options: { interactiveBooleans: boolean }
+): string {
   if (value.type === 'empty') {
     return '<span class="front-matter-empty">Empty</span>'
   }
 
   if (value.type === 'boolean') {
+    if (!options.interactiveBooleans) {
+      return `<span class="front-matter-value-text">${value.value ? 'true' : 'false'}</span>`
+    }
+
     const checkedAttribute = value.value ? ' checked=""' : ''
     const escapedKey = escapeHtml(key)
     const label = value.value ? 'true' : 'false'
@@ -189,8 +212,20 @@ function renderPropertyValue(key: string, value: FrontMatterDisplayValue): strin
     return `<span class="front-matter-list">${items}</span>`
   }
 
-  const text = value.type === 'object' ? value.value : value.value
-  return `<span class="front-matter-value-text">${escapeHtml(text)}</span>`
+  if (value.type === 'object') {
+    if (value.entries.length === 0) return '<span class="front-matter-empty">Empty</span>'
+
+    const rows = value.entries
+      .map(
+        (entry) =>
+          `<tr class="front-matter-nested-row"><th class="front-matter-nested-key">${escapeHtml(entry.key)}</th><td class="front-matter-nested-value">${renderPropertyValue(entry.key, entry.value, { interactiveBooleans: false })}</td></tr>`
+      )
+      .join('')
+
+    return `<table class="front-matter-nested-table"><tbody>${rows}</tbody></table>`
+  }
+
+  return `<span class="front-matter-value-text">${escapeHtml(value.value)}</span>`
 }
 
 /**
@@ -237,7 +272,7 @@ export function renderFrontMatterHtml(frontMatter: FrontMatterData): string {
   const rows = frontMatter.properties
     .map(
       (property) =>
-        `<tr class="front-matter-row"><th class="front-matter-key">${escapeHtml(property.key)}</th><td class="front-matter-value">${renderPropertyValue(property.key, property.value)}</td></tr>`
+        `<tr class="front-matter-row"><th class="front-matter-key">${escapeHtml(property.key)}</th><td class="front-matter-value">${renderPropertyValue(property.key, property.value, { interactiveBooleans: true })}</td></tr>`
     )
     .join('')
 

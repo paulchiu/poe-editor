@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { copyToClipboard, copySvgImageToClipboard, stripHtml } from './clipboard'
+import { extractFrontMatter, renderFrontMatterHtml } from './frontMatter'
 
 describe('clipboard utils', () => {
   describe('stripHtml', () => {
@@ -17,6 +18,33 @@ describe('clipboard utils', () => {
         '<section class="front-matter-properties"><table><tbody><tr><th>title</th><td>Poe test</td></tr><tr><th>tags</th><td><span class="front-matter-chip">markdown</span><span class="front-matter-chip">preview</span></td></tr></tbody></table></section><h1>Body</h1>'
 
       expect(stripHtml(html)).toBe('title: Poe test\ntags: markdown, preview\nBody')
+    })
+
+    it('keeps nested front matter properties readable without duplicate rows', () => {
+      const result = extractFrontMatter(
+        [
+          '---',
+          'review:',
+          '  codex_status: reviewed',
+          '  approved: true',
+          'tags:',
+          '  - markdown',
+          '  - preview',
+          '---',
+          '# Body',
+        ].join('\n')
+      )
+      const html = `${renderFrontMatterHtml(result!.frontMatter)}<h1>Body</h1>`
+
+      expect(stripHtml(html)).toBe(
+        [
+          'review:',
+          '  codex_status: reviewed',
+          '  approved: true',
+          'tags: markdown, preview',
+          'Body',
+        ].join('\n')
+      )
     })
   })
 

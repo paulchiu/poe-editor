@@ -24,6 +24,7 @@ describe('htmlExport', () => {
     expect(result).toContain('.markdown-body .task-list-item > .task-list-item-checkbox')
     expect(result).toContain('--front-matter-key-color: #6f5738;')
     expect(result).toContain('.markdown-body .front-matter-properties')
+    expect(result).toContain('.markdown-body .front-matter-properties .front-matter-nested-table')
     expect(result).not.toContain('github-markdown-dark.min.css')
   })
 
