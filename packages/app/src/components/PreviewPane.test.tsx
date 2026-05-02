@@ -64,7 +64,7 @@ describe('PreviewPane', () => {
   it('calls copyToClipboard when copy button is clicked', async () => {
     render(<PreviewPane htmlContent={htmlContent} />)
 
-    const copyButton = screen.getByRole('button')
+    const copyButton = screen.getByRole('button', { name: 'Copy rich text' })
     fireEvent.click(copyButton)
 
     await waitFor(() => {
@@ -77,7 +77,7 @@ describe('PreviewPane', () => {
     vi.mocked(copyToClipboard).mockRejectedValueOnce(new Error('Failed'))
     render(<PreviewPane htmlContent={htmlContent} />)
 
-    const copyButton = screen.getByRole('button')
+    const copyButton = screen.getByRole('button', { name: 'Copy rich text' })
     fireEvent.click(copyButton)
 
     await waitFor(() => {
@@ -140,7 +140,14 @@ describe('PreviewPane', () => {
     const markdown = '```js\nconsole.log("print mode")\n```'
     const renderedHtml = renderMarkdown(markdown)
 
-    const { container } = render(<PreviewPane htmlContent={renderedHtml} printFriendly />)
+    const { container } = render(
+      <PreviewPane
+        htmlContent={renderedHtml}
+        printFriendly
+        onDecreasePreviewFontSize={vi.fn()}
+        onIncreasePreviewFontSize={vi.fn()}
+      />
+    )
 
     await waitFor(() => {
       expect(container.querySelector('.preview-code-copy-button')).toBeNull()
@@ -148,6 +155,65 @@ describe('PreviewPane', () => {
     })
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('renders preview font-size controls and applies the current font size', () => {
+    const onDecreasePreviewFontSize = vi.fn()
+    const onIncreasePreviewFontSize = vi.fn()
+
+    render(
+      <PreviewPane
+        htmlContent={htmlContent}
+        previewFontSizePercent={120}
+        onDecreasePreviewFontSize={onDecreasePreviewFontSize}
+        onIncreasePreviewFontSize={onIncreasePreviewFontSize}
+      />
+    )
+
+    const previewBody = screen.getByText('Test content').closest('.markdown-body')
+    expect(previewBody).toHaveStyle({ fontSize: '1.2rem' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Decrease preview font size' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Increase preview font size' }))
+
+    expect(onDecreasePreviewFontSize).toHaveBeenCalledTimes(1)
+    expect(onIncreasePreviewFontSize).toHaveBeenCalledTimes(1)
+  })
+
+  it('disables preview font-size controls at bounds', () => {
+    render(
+      <PreviewPane
+        htmlContent={htmlContent}
+        canDecreasePreviewFontSize={false}
+        canIncreasePreviewFontSize={false}
+        onDecreasePreviewFontSize={vi.fn()}
+        onIncreasePreviewFontSize={vi.fn()}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Decrease preview font size' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Increase preview font size' })).toBeDisabled()
+  })
+
+  it('uses pointer-event gated preview toolbar styles with touch visibility', () => {
+    render(
+      <PreviewPane
+        htmlContent={htmlContent}
+        onDecreasePreviewFontSize={vi.fn()}
+        onIncreasePreviewFontSize={vi.fn()}
+      />
+    )
+
+    const toolbar = screen.getByTestId('preview-action-toolbar')
+    expect(toolbar).toHaveClass('preview-action-toolbar')
+    expect(toolbar).not.toHaveClass('opacity-0')
+    expect(toolbar).not.toHaveClass('pointer-events-none')
+
+    const globalCss = readFileSync(resolve(process.cwd(), 'src/globals.css'), 'utf8')
+    expect(globalCss).toContain('.preview-action-toolbar {\n  pointer-events: none;')
+    expect(globalCss).toContain('.preview-action-toolbar:focus-within')
+    expect(globalCss).toContain('@media (hover: none), (pointer: coarse)')
+    expect(globalCss).toContain('pointer-events: auto;')
   })
 
   it('reveals a jump-to-top control after scrolling a long preview document', async () => {

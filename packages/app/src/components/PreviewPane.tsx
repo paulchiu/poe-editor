@@ -7,8 +7,9 @@ import {
   useCallback,
   type ReactElement,
   type Ref,
+  type CSSProperties,
 } from 'react'
-import { ArrowUpToLine, Copy, Check, Maximize2, Minimize2 } from 'lucide-react'
+import { ArrowUpToLine, Copy, Check, Maximize2, Minimize2, Minus, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { toast } from '@/hooks/useToast'
@@ -29,6 +30,11 @@ interface PreviewPaneProps {
   bodyClassName?: string
   tocHeadings?: TocHeading[]
   showTocPanel?: boolean
+  previewFontSizePercent?: number
+  canDecreasePreviewFontSize?: boolean
+  canIncreasePreviewFontSize?: boolean
+  onDecreasePreviewFontSize?: () => void
+  onIncreasePreviewFontSize?: () => void
   ref?: Ref<HTMLDivElement>
 }
 
@@ -87,6 +93,11 @@ export function PreviewPane({
   bodyClassName = 'markdown-body',
   tocHeadings = [],
   showTocPanel = false,
+  previewFontSizePercent = 100,
+  canDecreasePreviewFontSize = true,
+  canIncreasePreviewFontSize = true,
+  onDecreasePreviewFontSize,
+  onIncreasePreviewFontSize,
   ref,
 }: PreviewPaneProps): ReactElement {
   const [copied, setCopied] = useState(false)
@@ -95,6 +106,12 @@ export function PreviewPane({
   const previewBodyRef = useRef<HTMLDivElement>(null)
 
   const segments = useMemo(() => getPreviewSegmentRenderItems(htmlContent), [htmlContent])
+  const previewBodyStyle: CSSProperties | undefined = printFriendly
+    ? undefined
+    : { fontSize: `${previewFontSizePercent / 100}rem` }
+  const showPreviewFontSizeControls = Boolean(
+    onDecreasePreviewFontSize && onIncreasePreviewFontSize
+  )
 
   const setPreviewScrollContainerRef = useCallback(
     (node: HTMLDivElement | null): void => {
@@ -384,15 +401,60 @@ export function PreviewPane({
         <div
           ref={previewBodyRef}
           className={`relative group ${bodyClassName} p-6 pt-0 bg-transparent min-h-full`}
+          style={previewBodyStyle}
         >
           {!printFriendly && (
-            <div className="absolute top-4 right-4 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div
+              className="preview-action-toolbar absolute top-4 right-4 z-10 flex items-center gap-1"
+              data-testid="preview-action-toolbar"
+            >
+              {showPreviewFontSizeControls && (
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Decrease preview font size"
+                        onClick={onDecreasePreviewFontSize}
+                        disabled={!canDecreasePreviewFontSize}
+                        className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p className="text-xs">Decrease preview font size</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        aria-label="Increase preview font size"
+                        onClick={onIncreasePreviewFontSize}
+                        disabled={!canIncreasePreviewFontSize}
+                        className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p className="text-xs">Increase preview font size</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </>
+              )}
+
               {onToggleLayout && viewMode && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon-sm"
+                      aria-label={viewMode === 'split' ? 'Expand preview' : 'Restore split view'}
                       onClick={onToggleLayout}
                       className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border"
                     >
@@ -416,6 +478,7 @@ export function PreviewPane({
                   <Button
                     variant="ghost"
                     size="icon-sm"
+                    aria-label="Copy rich text"
                     onClick={handleCopy}
                     className="h-8 w-8 bg-muted/80 backdrop-blur hover:bg-muted border border-border"
                   >

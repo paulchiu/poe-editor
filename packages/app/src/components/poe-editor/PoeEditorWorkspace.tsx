@@ -44,6 +44,11 @@ interface PoeEditorWorkspaceProps {
   colorMode: MermaidColorMode
   tocHeadings: TocHeading[]
   showTocPanel: boolean
+  previewFontSizePercent: number
+  canDecreasePreviewFontSize: boolean
+  canIncreasePreviewFontSize: boolean
+  onDecreasePreviewFontSize: () => void
+  onIncreasePreviewFontSize: () => void
 }
 
 /**
@@ -80,6 +85,11 @@ export function PoeEditorWorkspace({
   colorMode,
   tocHeadings,
   showTocPanel,
+  previewFontSizePercent,
+  canDecreasePreviewFontSize,
+  canIncreasePreviewFontSize,
+  onDecreasePreviewFontSize,
+  onIncreasePreviewFontSize,
 }: PoeEditorWorkspaceProps): ReactElement {
   return (
     <>
@@ -131,6 +141,11 @@ export function PoeEditorWorkspace({
                         colorMode={colorMode}
                         tocHeadings={tocHeadings}
                         showTocPanel={showTocPanel}
+                        previewFontSizePercent={previewFontSizePercent}
+                        canDecreasePreviewFontSize={canDecreasePreviewFontSize}
+                        canIncreasePreviewFontSize={canIncreasePreviewFontSize}
+                        onDecreasePreviewFontSize={onDecreasePreviewFontSize}
+                        onIncreasePreviewFontSize={onIncreasePreviewFontSize}
                       />
                     </div>
                   </ResizablePanel>
@@ -195,6 +210,11 @@ export function PoeEditorWorkspace({
                   colorMode={colorMode}
                   tocHeadings={tocHeadings}
                   showTocPanel={showTocPanel}
+                  previewFontSizePercent={previewFontSizePercent}
+                  canDecreasePreviewFontSize={canDecreasePreviewFontSize}
+                  canIncreasePreviewFontSize={canIncreasePreviewFontSize}
+                  onDecreasePreviewFontSize={onDecreasePreviewFontSize}
+                  onIncreasePreviewFontSize={onIncreasePreviewFontSize}
                 />
               </div>
             </div>

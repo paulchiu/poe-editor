@@ -128,6 +128,25 @@
   animation: progress-indeterminate 1.5s infinite linear;
 }
 
+.preview-action-toolbar {
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.group:hover .preview-action-toolbar,
+.preview-action-toolbar:focus-within {
+  pointer-events: auto;
+  opacity: 1;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .preview-action-toolbar {
+    pointer-events: auto;
+    opacity: 1;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
