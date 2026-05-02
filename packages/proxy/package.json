@@ -24,7 +24,7 @@
     "@cloudflare/workers-types": "^4.20260502.1",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
-    "eslint": "^10.2.1",
+    "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
     "miniflare": "^4.20260426.0",
     "prettier": "^3.8.3",
