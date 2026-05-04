@@ -27,6 +27,38 @@ describe('renderMarkdown', () => {
     expect(html).toContain('class="hljs language-ts"')
   })
 
+  it('should syntax-highlight diff code blocks with addition and deletion spans', () => {
+    const markdown = [
+      '```diff',
+      '--- a/foo',
+      '+++ b/foo',
+      '@@ -1,3 +1,3 @@',
+      ' context line',
+      '-removed line',
+      '+added line',
+      '```',
+    ].join('\n')
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<div class="code-block-with-language" data-language="diff">')
+    expect(html).toContain('<div class="code-block-language-hint">Diff</div>')
+    expect(html).toContain('<pre><code class="hljs language-diff">')
+    expect(html).toContain('<span class="hljs-deletion">-removed line</span>')
+    expect(html).toContain('<span class="hljs-addition">+added line</span>')
+    expect(html).toContain('<span class="hljs-comment">--- a/foo</span>')
+    expect(html).toContain('<span class="hljs-comment">+++ b/foo</span>')
+  })
+
+  it('should label patch code blocks as Patch and apply diff highlighting', () => {
+    const markdown = '```patch\n-old\n+new\n```'
+    const html = renderMarkdown(markdown)
+
+    expect(html).toContain('<div class="code-block-language-hint">Patch</div>')
+    expect(html).toContain('class="hljs language-patch"')
+    expect(html).toContain('<span class="hljs-deletion">-old</span>')
+    expect(html).toContain('<span class="hljs-addition">+new</span>')
+  })
+
   it('should render mermaid code blocks as standard code blocks', () => {
     const markdown = '```mermaid\ngraph TD;\n    A-->B;\n```'
     const html = renderMarkdown(markdown)
