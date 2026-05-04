@@ -980,6 +980,11 @@ html:not(.dark) .markdown-body mark,
     text-shadow: none !important;
   }
 
+  .poe-editor-print-shell .poe-editor-print-markdown-body .hljs-addition,
+  .poe-editor-print-shell .poe-editor-print-markdown-body .hljs-deletion {
+    background-color: transparent !important;
+  }
+
   .poe-editor-print-shell
     .poe-editor-print-markdown-body
     .code-block-with-language[data-language='mermaid']
