@@ -110,7 +110,7 @@
     "eslint": "^10.3.0",
     "eslint-plugin-react-x": "^5.7.1",
     "globals": "^17.6.0",
-    "jsdom": "^29.1.0",
+    "jsdom": "^29.1.1",
     "markdownlint-cli2": "^0.22.1",
     "postcss": "^8.5.12",
     "prettier": "^3.8.3",
