@@ -418,7 +418,9 @@ ${frontMatterVariables}
       background-color: var(--color-prettylights-syntax-markup-deleted-bg);
     }
     .markdown-body .code-block-with-language[data-language='diff'] .hljs-comment,
-    .markdown-body .code-block-with-language[data-language='patch'] .hljs-comment {
+    .markdown-body .code-block-with-language[data-language='patch'] .hljs-comment,
+    .markdown-body .code-block-with-language[data-language='diff'] .hljs-meta,
+    .markdown-body .code-block-with-language[data-language='patch'] .hljs-meta {
       color: var(--color-prettylights-syntax-meta-diff-range);
     }
     .markdown-body svg[id^='mermaid-'] text,

@@ -47,6 +47,7 @@ describe('renderMarkdown', () => {
     expect(html).toContain('<span class="hljs-addition">+added line</span>')
     expect(html).toContain('<span class="hljs-comment">--- a/foo</span>')
     expect(html).toContain('<span class="hljs-comment">+++ b/foo</span>')
+    expect(html).toContain('<span class="hljs-meta">@@ -1,3 +1,3 @@</span>')
   })
 
   it('should label patch code blocks as Patch and apply diff highlighting', () => {

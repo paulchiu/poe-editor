@@ -50,6 +50,11 @@ describe('htmlExport', () => {
     expect(result).toContain('--code-syntax-keyword: var(--color-prettylights-syntax-keyword);')
     expect(result).toContain('--front-matter-key-color: #c9d1d9;')
     expect(result).toContain('background-color: #0d1117;')
+    expect(result).toContain('.markdown-body .hljs-addition')
+    expect(result).toContain('.markdown-body .hljs-deletion')
+    expect(result).toContain(
+      ".markdown-body .code-block-with-language[data-language='diff'] .hljs-meta"
+    )
     expect(result).not.toContain('github-markdown-light.min.css')
   })
 
