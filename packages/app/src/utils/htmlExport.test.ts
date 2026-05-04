@@ -14,6 +14,14 @@ describe('htmlExport', () => {
     expect(result).toContain('--code-block-background: #f0efeb;')
     expect(result).toContain('--code-block-border: #c8b28f;')
     expect(result).toContain('--code-syntax-keyword: #a626a4;')
+    expect(result).toContain('.markdown-body .hljs-addition')
+    expect(result).toContain('.markdown-body .hljs-deletion')
+    expect(result).toContain(
+      ".markdown-body .code-block-with-language[data-language='diff'] .hljs-comment"
+    )
+    expect(result).toContain(
+      ".markdown-body .code-block-with-language[data-language='patch'] .hljs-comment"
+    )
     expect(result).toContain("font-family: 'Crimson Text', serif;")
     expect(result).toContain(
       "font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;"
@@ -42,6 +50,11 @@ describe('htmlExport', () => {
     expect(result).toContain('--code-syntax-keyword: var(--color-prettylights-syntax-keyword);')
     expect(result).toContain('--front-matter-key-color: #c9d1d9;')
     expect(result).toContain('background-color: #0d1117;')
+    expect(result).toContain('.markdown-body .hljs-addition')
+    expect(result).toContain('.markdown-body .hljs-deletion')
+    expect(result).toContain(
+      ".markdown-body .code-block-with-language[data-language='diff'] .hljs-meta"
+    )
     expect(result).not.toContain('github-markdown-light.min.css')
   })
 

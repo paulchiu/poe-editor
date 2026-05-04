@@ -409,6 +409,20 @@ ${frontMatterVariables}
     .markdown-body .hljs-quote {
       color: var(--code-syntax-comment);
     }
+    .markdown-body .hljs-addition {
+      color: var(--color-prettylights-syntax-markup-inserted-text);
+      background-color: var(--color-prettylights-syntax-markup-inserted-bg);
+    }
+    .markdown-body .hljs-deletion {
+      color: var(--color-prettylights-syntax-markup-deleted-text);
+      background-color: var(--color-prettylights-syntax-markup-deleted-bg);
+    }
+    .markdown-body .code-block-with-language[data-language='diff'] .hljs-comment,
+    .markdown-body .code-block-with-language[data-language='patch'] .hljs-comment,
+    .markdown-body .code-block-with-language[data-language='diff'] .hljs-meta,
+    .markdown-body .code-block-with-language[data-language='patch'] .hljs-meta {
+      color: var(--color-prettylights-syntax-meta-diff-range);
+    }
     .markdown-body svg[id^='mermaid-'] text,
     .markdown-body svg[id^='mermaid-'] tspan,
     .markdown-body svg[id^='mermaid-'] .label,

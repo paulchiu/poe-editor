@@ -162,6 +162,10 @@ const HTML_EXPORT_PRINT_STYLES = `
         -webkit-text-fill-color: #000 !important;
         text-shadow: none !important;
       }
+      .markdown-body .hljs-addition,
+      .markdown-body .hljs-deletion {
+        background-color: transparent !important;
+      }
       .markdown-body .code-block-language-hint {
         color: #000 !important;
         background: #fff !important;

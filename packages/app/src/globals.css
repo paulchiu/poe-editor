@@ -728,6 +728,23 @@ html:not(.dark) .markdown-body mark,
   color: var(--code-syntax-comment);
 }
 
+.markdown-body .hljs-addition {
+  color: var(--color-prettylights-syntax-markup-inserted-text);
+  background-color: var(--color-prettylights-syntax-markup-inserted-bg);
+}
+
+.markdown-body .hljs-deletion {
+  color: var(--color-prettylights-syntax-markup-deleted-text);
+  background-color: var(--color-prettylights-syntax-markup-deleted-bg);
+}
+
+.markdown-body .code-block-with-language[data-language='diff'] .hljs-comment,
+.markdown-body .code-block-with-language[data-language='patch'] .hljs-comment,
+.markdown-body .code-block-with-language[data-language='diff'] .hljs-meta,
+.markdown-body .code-block-with-language[data-language='patch'] .hljs-meta {
+  color: var(--color-prettylights-syntax-meta-diff-range);
+}
+
 .poe-editor-print-shell {
   display: none;
 }
@@ -961,6 +978,11 @@ html:not(.dark) .markdown-body mark,
     opacity: 1 !important;
     -webkit-text-fill-color: #000 !important;
     text-shadow: none !important;
+  }
+
+  .poe-editor-print-shell .poe-editor-print-markdown-body .hljs-addition,
+  .poe-editor-print-shell .poe-editor-print-markdown-body .hljs-deletion {
+    background-color: transparent !important;
   }
 
   .poe-editor-print-shell
