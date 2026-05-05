@@ -3,6 +3,16 @@ import { getMermaidInitializeOptions, getMermaidInitScript } from '@/utils/merma
 
 type ThemeVariables = ReturnType<typeof getMermaidInitializeOptions>['themeVariables']
 
+const DARK_ALT_BACKGROUND_COLOR = '#2d333b'
+
+const DARK_ALT_BACKGROUND_KEYS = [
+  'attributeBackgroundColorEven',
+  'altBackground',
+  'altSectionBkgColor',
+  'excludeBkgColor',
+  'rowEven',
+] as const satisfies readonly (keyof ThemeVariables)[]
+
 const DARK_TABLE_BACKGROUND_KEYS = [
   'attributeBackgroundColorOdd',
   'attributeBackgroundColorEven',
@@ -77,9 +87,9 @@ describe('mermaidTheme', () => {
     expect(options.themeVariables.primaryBorderColor).toBe('#4493f8')
     expect(options.themeVariables.textColor).toBe('#ffffff')
     expect(options.themeVariables.attributeBackgroundColorOdd).toBe('#151b23')
-    expect(options.themeVariables.attributeBackgroundColorEven).toBe('#1f2630')
-    expect(options.themeVariables.altSectionBkgColor).toBe('#1f2630')
-    expect(options.themeVariables.rowEven).toBe('#1f2630')
+    expect(options.themeVariables.attributeBackgroundColorEven).toBe(DARK_ALT_BACKGROUND_COLOR)
+    expect(options.themeVariables.altSectionBkgColor).toBe(DARK_ALT_BACKGROUND_COLOR)
+    expect(options.themeVariables.rowEven).toBe(DARK_ALT_BACKGROUND_COLOR)
   })
 
   it('keeps dark table backgrounds readable against white text', () => {
@@ -91,18 +101,24 @@ describe('mermaidTheme', () => {
 
     expect(darkTableBackgrounds).toEqual([
       '#151b23',
-      '#1f2630',
+      DARK_ALT_BACKGROUND_COLOR,
       '#151b23',
       '#0d1117',
-      '#1f2630',
+      DARK_ALT_BACKGROUND_COLOR,
       '#151b23',
-      '#1f2630',
+      DARK_ALT_BACKGROUND_COLOR,
       '#0d1117',
-      '#1f2630',
+      DARK_ALT_BACKGROUND_COLOR,
       '#151b23',
       '#151b23',
-      '#1f2630',
+      DARK_ALT_BACKGROUND_COLOR,
     ])
+
+    for (const key of DARK_ALT_BACKGROUND_KEYS) {
+      const background = options.themeVariables[key]
+      expect(background).toBe(DARK_ALT_BACKGROUND_COLOR)
+      expect(getContrastRatio('#ffffff', background)).toBeGreaterThanOrEqual(4.5)
+    }
 
     for (const background of darkTableBackgrounds) {
       expect(getContrastRatio('#ffffff', background)).toBeGreaterThanOrEqual(4.5)
@@ -140,7 +156,7 @@ describe('mermaidTheme', () => {
     expect(script).toContain("document.addEventListener('DOMContentLoaded'")
     expect(script).toContain('mermaid.initialize(')
     expect(script).toContain('"primaryBorderColor":"#4493f8"')
-    expect(script).toContain('"attributeBackgroundColorEven":"#1f2630"')
+    expect(script).toContain(`"attributeBackgroundColorEven":"${DARK_ALT_BACKGROUND_COLOR}"`)
     expect(script).toContain("mermaid.run({ querySelector: '.language-mermaid' })")
   })
 })
