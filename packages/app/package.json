@@ -1,6 +1,6 @@
 {
   "name": "@poe-editor/app",
-  "version": "1.27.1",
+  "version": "1.28.0",
   "description": "Poe Markdown Editor - A React SPA with live preview and Vim mode",
   "type": "module",
   "private": true,
@@ -102,7 +102,7 @@
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/markdown-it": "^14.1.2",
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.6.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
