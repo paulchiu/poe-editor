@@ -58,7 +58,6 @@ export function TransformerWorkbench({
   const cursorPositionRef = useRef<number>(0) // Track line number
 
   // In JSON mode, merge toolbox additions into the JSON buffer while preserving in-progress edits.
-  /* eslint-disable react-x/set-state-in-effect -- The JSON editor mirrors external step changes while it is mounted. */
   useEffect(() => {
     if (mode === 'json') {
       // In JSON mode, if steps changed, it might be due to an add operation from the toolbox
@@ -246,8 +245,6 @@ export function TransformerWorkbench({
     // Update ref
     prevStepsRef.current = steps
   }, [steps, mode, isValidJson, jsonValue])
-  /* eslint-enable react-x/set-state-in-effect */
-
   // Handle vim mode initialization on mode/prop change
   useEffect(() => {
     // Initialize Vim mode

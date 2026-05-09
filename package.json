@@ -46,8 +46,11 @@
     "lint-staged": "^17.0.2"
   },
   "overrides": {
-    "dompurify": "3.3.3",
+    "dompurify": "3.4.2",
     "lodash-es": "4.18.1",
+    "monaco-editor": {
+      "dompurify": "3.4.2"
+    },
     "smol-toml": "1.6.1"
   },
   "optionalDependencies": {
