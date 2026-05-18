@@ -24,13 +24,13 @@
     "@cloudflare/workers-types": "^4.20260515.1",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.14",
-    "eslint": "^10.3.0",
+    "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "miniflare": "^4.20260507.1",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.2",
-    "vitest": "^4.1.5",
+    "typescript-eslint": "^8.59.3",
+    "vitest": "^4.1.6",
     "wrangler": "^4.90.0"
   }
 }
