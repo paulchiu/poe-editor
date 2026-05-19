@@ -91,7 +91,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typo-js": "^1.3.2",
     "vaul": "^1.1.2",
-    "yaml": "^2.8.4",
+    "yaml": "^2.9.0",
     "zod": "^4.4.2"
   },
   "devDependencies": {
