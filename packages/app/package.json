@@ -73,7 +73,7 @@
     "markdown-it-emoji": "^3.0.0",
     "markdown-it-highlightjs": "^4.2.0",
     "mermaid": "^11.14.0",
-    "miniflare": "^3.20250129.0",
+    "miniflare": "^4.20260518.0",
     "monaco-editor": "^0.55.1",
     "monaco-spellchecker": "^0.6.0",
     "monaco-vim": "^0.4.4",
