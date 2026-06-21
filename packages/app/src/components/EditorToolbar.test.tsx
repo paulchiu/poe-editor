@@ -28,6 +28,7 @@ describe('EditorToolbar', () => {
     onFormatCode: vi.fn(),
     onFormatHeading: vi.fn(),
     onFormatQuote: vi.fn(),
+    onFormatUnquote: vi.fn(),
     onFormatBulletList: vi.fn(),
     onFormatNumberedList: vi.fn(),
     onFormatTaskList: vi.fn(),
@@ -110,7 +111,7 @@ describe('EditorToolbar', () => {
     await user.click(screen.getByRole('button', { name: 'Italic' }))
     await user.click(screen.getByRole('button', { name: 'Link' }))
     await user.click(screen.getByRole('button', { name: 'Code' }))
-    await user.click(screen.getByRole('button', { name: 'Quote' }))
+    await user.click(screen.getByRole('button', { name: /^Quote/ }))
     await user.click(screen.getByRole('button', { name: 'Code Block' }))
     await user.click(screen.getByRole('button', { name: 'Transform Selection' }))
     await user.click(screen.getByRole('button', { name: 'Vim Mode' }))
@@ -125,6 +126,16 @@ describe('EditorToolbar', () => {
     expect(props.onOpenTransformer).toHaveBeenCalledTimes(1)
     expect(props.toggleVimMode).toHaveBeenCalledTimes(1)
     expect(props.toggleTheme).toHaveBeenCalledTimes(1)
+  })
+
+  it('triggers onFormatUnquote when the quote button is right-clicked', () => {
+    const props = renderToolbar()
+
+    const quoteButton = screen.getByRole('button', { name: /^Quote/ })
+    fireEvent.contextMenu(quoteButton)
+
+    expect(props.onFormatUnquote).toHaveBeenCalledTimes(1)
+    expect(props.onFormatQuote).not.toHaveBeenCalled()
   })
 
   it('triggers heading, list, and table menu actions', async () => {

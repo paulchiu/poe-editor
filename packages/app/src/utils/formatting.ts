@@ -19,6 +19,7 @@ const ORDERED_LIST_PATTERN = /^(\s*)(\d+)\.\s+$/
 const ORDERED_LIST_CONTENT_PATTERN = /^(\s*)(\d+)\.\s+(.+)/
 const QUOTE_PATTERN = /^(\s*)>\s?$/
 const QUOTE_CONTENT_PATTERN = /^(\s*)>\s(.+)/
+const QUOTE_STRIP_PATTERN = /^(\s*)>\s?/
 
 function insertTemplate(editor: EditorPaneHandle, prefix: string, suffix: string) {
   editor.insertText(prefix + suffix)
@@ -213,6 +214,23 @@ export function formatQuote(editor: EditorPaneHandle | null): void {
         // The helper reads actual lines. If line is empty, it's empty string.
         return `> ${line}`
       }),
+  })
+}
+
+/**
+ * Removes one level of blockquote marker from each selected line, preserving
+ * indentation and any deeper quote levels. Lines without a quote marker are
+ * left unchanged.
+ * @param editor - Editor instance handle
+ * @returns void
+ */
+export function unformatQuote(editor: EditorPaneHandle | null): void {
+  if (!editor) return
+
+  applyLineFormatting({
+    editor,
+    placeholder: '',
+    transform: (lines) => lines.map((line) => line.replace(QUOTE_STRIP_PATTERN, '$1')),
   })
 }
 

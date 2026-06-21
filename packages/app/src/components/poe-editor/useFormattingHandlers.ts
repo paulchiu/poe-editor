@@ -11,6 +11,7 @@ import {
   formatNumberedList,
   formatQuote,
   formatTaskList,
+  unformatQuote,
 } from '@/utils/formatting'
 
 interface UseFormattingHandlersParams {
@@ -25,6 +26,7 @@ interface FormattingHandlers {
   handleFormatCodeBlock: () => void
   handleFormatHeading: (level: number) => void
   handleFormatQuote: () => void
+  handleFormatUnquote: () => void
   handleFormatBulletList: () => void
   handleFormatNumberedList: () => void
   handleFormatTaskList: () => void
@@ -71,6 +73,10 @@ export function useFormattingHandlers({
 
   const handleFormatQuote = useCallback((): void => {
     formatQuote(sourceRef.current)
+  }, [sourceRef])
+
+  const handleFormatUnquote = useCallback((): void => {
+    unformatQuote(sourceRef.current)
   }, [sourceRef])
 
   const handleFormatBulletList = useCallback((): void => {
@@ -128,6 +134,7 @@ export function useFormattingHandlers({
     handleFormatCodeBlock,
     handleFormatHeading,
     handleFormatQuote,
+    handleFormatUnquote,
     handleFormatBulletList,
     handleFormatNumberedList,
     handleFormatTaskList,
