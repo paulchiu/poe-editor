@@ -1,4 +1,4 @@
-import { type ElementType, type ReactElement, type Ref } from 'react'
+import { type ElementType, type MouseEventHandler, type ReactElement, type Ref } from 'react'
 import type { DraggableAttributes } from '@dnd-kit/core'
 import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities'
 import { Button } from '@/components/ui/button'
@@ -10,6 +10,7 @@ interface ToolbarButtonProps {
   label: string
   ref?: Ref<HTMLButtonElement>
   onClick?: () => void
+  onContextMenu?: MouseEventHandler<HTMLButtonElement>
   active?: boolean
   allowDrag?: boolean
   className?: string
@@ -28,6 +29,7 @@ export const ToolbarButton = ({
   label,
   ref,
   onClick,
+  onContextMenu,
   active = false,
   allowDrag = false,
   className,
@@ -41,6 +43,7 @@ export const ToolbarButton = ({
       variant="ghost"
       size="icon-sm"
       onClick={onClick}
+      onContextMenu={onContextMenu}
       onMouseDown={allowDrag ? undefined : (event) => event.preventDefault()}
       style={{ touchAction: allowDrag ? 'none' : undefined }}
       className={cn(

@@ -60,6 +60,7 @@ type FormattingToolbarGroupProps = Pick<
   | 'onFormatCode'
   | 'onFormatHeading'
   | 'onFormatQuote'
+  | 'onFormatUnquote'
   | 'onFormatBulletList'
   | 'onFormatNumberedList'
   | 'onFormatTaskList'
@@ -120,6 +121,7 @@ export function FormattingToolbarGroup({
   onFormatCode,
   onFormatHeading,
   onFormatQuote,
+  onFormatUnquote,
   onFormatBulletList,
   onFormatNumberedList,
   onFormatTaskList,
@@ -199,7 +201,15 @@ export function FormattingToolbarGroup({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <ToolbarButton icon={Quote} label="Quote" onClick={onFormatQuote} />
+      <ToolbarButton
+        icon={Quote}
+        label="Quote (right-click to unquote)"
+        onClick={onFormatQuote}
+        onContextMenu={(event) => {
+          event.preventDefault()
+          onFormatUnquote()
+        }}
+      />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

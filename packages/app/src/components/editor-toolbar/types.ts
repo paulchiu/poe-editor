@@ -20,6 +20,7 @@ export interface EditorToolbarProps {
   onFormatCode: () => void
   onFormatHeading: (level: number) => void
   onFormatQuote: () => void
+  onFormatUnquote: () => void
   onFormatBulletList: () => void
   onFormatNumberedList: () => void
   onFormatTaskList: () => void

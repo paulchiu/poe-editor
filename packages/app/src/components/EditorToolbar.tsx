@@ -30,6 +30,7 @@ export function EditorToolbar({
   onFormatCode,
   onFormatHeading,
   onFormatQuote,
+  onFormatUnquote,
   onFormatBulletList,
   onFormatNumberedList,
   onFormatTaskList,
@@ -94,6 +95,7 @@ export function EditorToolbar({
         onFormatCode={onFormatCode}
         onFormatHeading={onFormatHeading}
         onFormatQuote={onFormatQuote}
+        onFormatUnquote={onFormatUnquote}
         onFormatBulletList={onFormatBulletList}
         onFormatNumberedList={onFormatNumberedList}
         onFormatTaskList={onFormatTaskList}

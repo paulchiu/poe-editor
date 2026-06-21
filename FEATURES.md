@@ -6,7 +6,7 @@ Poe includes standard Markdown editor functionality and a set of unique features
 
 - Live Markdown preview while typing.
 - Split-pane editing and preview, with editor-only and preview-only modes.
-- Standard formatting actions: headings, bold/italic, links, inline code, code blocks, quotes, and lists (bullet, numbered, task).
+- Standard formatting actions: headings, bold/italic, links, inline code, code blocks, quotes, and lists (bullet, numbered, task). Right-click the Quote button to remove one level of quote from the selected lines.
 - Syntax-highlighted code blocks in preview.
 - Keyboard shortcuts and in-app shortcuts help.
 - Export/download as Markdown (`.md`) and HTML (`.html`).

@@ -12,6 +12,7 @@ import {
   formatTaskList,
   getAutoContinueEdit,
   toggleTaskListItem,
+  unformatQuote,
 } from './formatting'
 import type { EditorPaneHandle } from '@/components/editor'
 
@@ -231,6 +232,48 @@ describe('formatting utils', () => {
       formatQuote(mockEditor)
 
       expect(insertTextMock).toHaveBeenCalledWith('> ')
+    })
+  })
+
+  describe('unformatQuote', () => {
+    it('removes the quote marker from each selected line', () => {
+      setMultilineInput('> line 1\n> line 2')
+
+      unformatQuote(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('line 1\nline 2')
+    })
+
+    it('removes only one level from nested quotes', () => {
+      setMultilineInput('> > line 1\n> > line 2')
+
+      unformatQuote(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('> line 1\n> line 2')
+    })
+
+    it('preserves leading indentation when removing the marker', () => {
+      setMultilineInput('  > indented')
+
+      unformatQuote(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('  indented')
+    })
+
+    it('removes a quote marker without a trailing space', () => {
+      setMultilineInput('>tight')
+
+      unformatQuote(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('tight')
+    })
+
+    it('leaves lines without a quote marker unchanged', () => {
+      setMultilineInput('plain\n> quoted')
+
+      unformatQuote(mockEditor)
+
+      expect(replaceSelectionMock).toHaveBeenCalledWith('plain\nquoted')
     })
   })
 
