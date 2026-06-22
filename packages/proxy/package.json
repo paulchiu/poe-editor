@@ -18,12 +18,12 @@
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
-    "react": "^19.2.6"
+    "react": "^19.2.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260621.1",
     "@eslint/js": "^10.0.1",
-    "@types/react": "^19.2.15",
+    "@types/react": "^19.2.17",
     "eslint": "^10.4.0",
     "eslint-config-prettier": "^10.1.8",
     "miniflare": "^4.20260617.1",
