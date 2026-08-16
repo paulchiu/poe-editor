@@ -38,6 +38,11 @@ jobs:
             version-update:semver-patch)
               gh pr edit "$PR_URL" --add-label "patch"
               ;;
+            *)
+              # No update-type means no label, which fails the required version-label
+              # check and leaves the PR stuck with a misleading error.
+              gh pr edit "$PR_URL" --add-label "norelease"
+              ;;
           esac
 
       - name: Enable auto-merge for minor and patch updates
