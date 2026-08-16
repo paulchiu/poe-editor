@@ -1,0 +1,3 @@
+# Manual markdown render fixture: prettier 3.9 rewrites subscript (~x~) as
+# strikethrough, including inside fenced blocks, breaking the cases under test.
+MD_TEST.md
