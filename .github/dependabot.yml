@@ -14,35 +14,27 @@ updates:
     labels:
       - 'dependencies'
       - 'automerge'
+    ignore:
+      # typescript-eslint peers on typescript <6.1.0, so TS 7 breaks lint and the
+      # vitest tree. Drop this once typescript-eslint supports it.
+      - dependency-name: 'typescript'
+        update-types:
+          - 'version-update:semver-major'
+    # Grouping is by dependency-type rather than a hand-maintained pattern list so
+    # nothing falls through into its own PR. Every PR touches package-lock.json, and
+    # main requires branches be up to date, so N open PRs cost O(N^2) rebases.
+    #
+    # Majors are excluded: a grouped PR reports the highest update-type in the batch,
+    # and one major would block auto-merge for the whole group. They arrive ungrouped
+    # instead, so each can be reviewed or closed on its own.
     groups:
       dev-dependencies:
-        patterns:
-          - '@types/*'
-          - 'eslint*'
-          - '@vitejs/*'
-          - 'prettier'
-          - 'typescript*'
-          - 'vite*'
-          - 'vitest*'
-          - '@playwright/*'
+        dependency-type: 'development'
         update-types:
-          - 'major'
           - 'minor'
           - 'patch'
       runtime-dependencies:
-        patterns:
-          - '@radix-ui/*'
-          - '@tailwindcss/*'
-          - 'class-variance-authority'
-          - 'clsx'
-          - 'lucide-react'
-          - 'react'
-          - 'react-dom'
-          - 'tailwind-merge'
-          - 'tailwindcss'
-          - 'cva'
-          - 'lucide-react'
+        dependency-type: 'production'
         update-types:
-          - 'major'
           - 'minor'
           - 'patch'
