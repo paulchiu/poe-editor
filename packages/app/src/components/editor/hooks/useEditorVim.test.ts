@@ -53,8 +53,8 @@ const createEditorMock = (): MockEditor => {
       }) => void)
     | null = null
   let mouseUpHandler:
-    | ((event: { target: { position?: { lineNumber: number; column: number } } }) => void)
-    | null = null
+    ((event: { target: { position?: { lineNumber: number; column: number } } }) => void) | null =
+    null
 
   const setPosition = vi.fn()
   const setSelection = vi.fn()
