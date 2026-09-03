@@ -171,7 +171,8 @@ describe('PreviewPane', () => {
     )
 
     const previewBody = screen.getByText('Test content').closest('.markdown-body')
-    expect(previewBody).toHaveStyle({ fontSize: '1.2rem' })
+    /** Assert the inline value, not computed style, which jsdom resolves rem to px. */
+    expect((previewBody as HTMLElement).style.fontSize).toBe('1.2rem')
 
     fireEvent.click(screen.getByRole('button', { name: 'Decrease preview font size' }))
     fireEvent.click(screen.getByRole('button', { name: 'Increase preview font size' }))
