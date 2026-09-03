@@ -1,6 +1,6 @@
-import MarkdownIt from 'markdown-it'
+import MarkdownItFactory from 'markdown-it'
 import highlightjs from 'markdown-it-highlightjs'
-import type Token from 'markdown-it/lib/token.mjs'
+import type { MarkdownIt, StateBlock, StateInline, Token } from 'markdown-it'
 
 const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
   bash: 'Bash',
@@ -44,31 +44,6 @@ const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
   zsh: 'Shell',
 }
 
-type MarkdownTokenNesting = -1 | 0 | 1
-
-interface MarkdownItInlineRuleState {
-  src: string
-  pos: number
-  posMax: number
-  push: (type: string, tag: string, nesting: MarkdownTokenNesting) => Token
-}
-
-interface MarkdownItBlockRuleState {
-  sCount: number[]
-  blkIndent: number
-  src: string
-  bMarks: number[]
-  tShift: number[]
-  eMarks: number[]
-  env: object
-  md: MarkdownIt
-  tokens: Token[]
-  line: number
-  getLines: (begin: number, end: number, indent: number, keepLastLF: boolean) => string
-  push: (type: string, tag: string, nesting: MarkdownTokenNesting) => Token
-  isEmpty: (line: number) => boolean
-}
-
 /** Matches possible emoji shortcode candidates to trigger lazy emoji parser loading. */
 export const EMOJI_SHORTCODE_PATTERN = /:[a-zA-Z0-9_+-]+:/
 
@@ -109,7 +84,7 @@ function applyFenceRenderer(markdown: MarkdownIt): void {
 }
 
 function createDelimitedInlineRule(marker: '==' | '^' | '~', tag: 'mark' | 'sup' | 'sub') {
-  return (state: MarkdownItInlineRuleState, silent: boolean): boolean => {
+  return (state: StateInline, silent: boolean): boolean => {
     const markerLength = marker.length
     const start = state.pos
 
@@ -146,7 +121,7 @@ function createDelimitedInlineRule(marker: '==' | '^' | '~', tag: 'mark' | 'sup'
 }
 
 function definitionListRule(
-  state: MarkdownItBlockRuleState,
+  state: StateBlock,
   startLine: number,
   endLine: number,
   silent: boolean
@@ -235,7 +210,7 @@ function definitionListRule(
  * @returns Configured markdown-it parser instance.
  */
 export function createMarkdownIt(enableExtendedMarkdown: boolean): MarkdownIt {
-  const parser = new MarkdownIt({
+  const parser = new MarkdownItFactory({
     html: true,
     linkify: true,
     typographer: true,
