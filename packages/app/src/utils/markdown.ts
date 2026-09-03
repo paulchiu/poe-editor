@@ -1,4 +1,4 @@
-import type MarkdownIt from 'markdown-it'
+import type { MarkdownIt } from 'markdown-it'
 import { sanitizeGithubSafeHtml } from '@/utils/githubSafeHtml'
 import { createMarkdownIt, EMOJI_SHORTCODE_PATTERN } from '@/utils/markdownRenderers'
 import { parseFootnotes, renderFootnotes } from '@/utils/markdownFootnotes'

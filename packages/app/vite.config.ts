@@ -7,6 +7,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      /**
+       * monaco-vim imports a pre-`exports` deep path that monaco-editor's exports
+       * map now rewrites to a non-existent file. Redirect it to the supported
+       * subpath so the bundle can resolve it.
+       */
+      'monaco-editor/esm/vs/editor/editor.api': 'monaco-editor/editor/editor.api',
     },
   },
   server: {

@@ -1,5 +1,5 @@
 declare module 'markdown-it-emoji' {
-  import type MarkdownIt from 'markdown-it'
+  import type { MarkdownIt } from 'markdown-it'
 
   type MarkdownItEmojiPlugin = (markdown: MarkdownIt) => void
 
