@@ -241,6 +241,9 @@ export function createMarkdownIt(enableExtendedMarkdown: boolean): MarkdownIt {
     typographer: true,
   }).use(highlightjs)
 
+  /** linkify-it 6 defaults fuzzyLink off; keep autolinking bare hosts like www.example.com. */
+  parser.linkify.set({ fuzzyLink: true })
+
   parser.renderer.rules.s_open = () => '<del>'
   parser.renderer.rules.s_close = () => '</del>'
 
