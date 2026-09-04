@@ -28,9 +28,12 @@ function repoNpmSettings(): Record<string, string> {
     }, {})
 }
 
+/** Large native binaries where a duplicate copy costs a second multi-megabyte download. */
+const SINGLE_COPY_BINARIES = ['workerd', 'esbuild']
+
 describe('install cost', () => {
-  it('resolves a single copy of the workerd binary', () => {
-    expect(resolvedCopiesOf('workerd')).toHaveLength(1)
+  it.each(SINGLE_COPY_BINARIES)('resolves a single copy of %s', (name) => {
+    expect(resolvedCopiesOf(name)).toHaveLength(1)
   })
 
   it('enables prefer-offline for everyone who clones the repo', () => {
