@@ -25,7 +25,7 @@
     "format": "npm run format --workspaces",
     "format:check": "npm run format:check --workspaces",
     "test": "npm test -w packages/app",
-    "test:coverage": "npm run test:coverage -w packages/app",
+    "test:coverage": "npm run test:coverage --workspaces",
     "test:e2e": "npm run test:e2e -w packages/app",
     "deploy:app": "npm run deploy -w packages/app",
     "deploy:proxy": "npm run deploy -w packages/proxy",
