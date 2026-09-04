@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -17,5 +18,13 @@ function resolvedCopiesOf(name: string): string[] {
 describe('workspace install', () => {
   it('resolves a single copy of workerd', () => {
     expect(resolvedCopiesOf('workerd')).toHaveLength(1)
+  })
+
+  it('reads prefer-offline from the repo npm config', () => {
+    const value = execFileSync('npm', ['config', 'get', 'prefer-offline'], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+    })
+    expect(value.trim()).toBe('true')
   })
 })
