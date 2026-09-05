@@ -1,6 +1,6 @@
 {
   "name": "poe-editor",
-  "version": "1.37.4",
+  "version": "1.37.5",
   "description": "A Markdown editor with vim support - Monorepo",
   "author": "Poe",
   "license": "MIT",
