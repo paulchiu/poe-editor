@@ -3,8 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { parse } from 'yaml'
 import { describe, expect, it } from 'vitest'
-
-const REPO_ROOT = resolve(import.meta.dirname, '../..')
+import { REPO_ROOT } from './src/test/repoFiles'
 
 /** Script name CI's test step invokes. */
 const CI_TEST_SCRIPT = 'test:coverage'
