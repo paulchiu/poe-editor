@@ -51,6 +51,9 @@
     "monaco-editor": {
       "dompurify": "3.4.13"
     },
+    "satori": {
+      "fflate": "^0.7.5"
+    },
     "smol-toml": "1.6.1",
     "undici": "^7.29.0"
   },
