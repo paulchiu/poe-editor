@@ -22,7 +22,7 @@
     "react": "^19.2.7"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260817.1",
+    "@cloudflare/workers-types": "^5.20260904.1",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.17",
     "@vitest/coverage-v8": "^4.1.11",
@@ -32,6 +32,6 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.68.0",
     "vitest": "^4.1.11",
-    "wrangler": "^4.127.1"
+    "wrangler": "^4.129.0"
   }
 }
