@@ -55,7 +55,7 @@
       "fflate": "^0.7.5"
     },
     "smol-toml": "1.6.1",
-    "undici": "^7.29.0"
+    "undici": "^7.29.1"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.63.1",
