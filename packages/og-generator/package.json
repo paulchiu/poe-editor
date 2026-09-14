@@ -17,12 +17,12 @@
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
-    "react": "^19.2.7",
+    "react": "^19.3.0",
     "satori": "^0.33.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/react": "^19.2.17",
+    "@types/react": "^19.3.0",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
