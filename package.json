@@ -58,7 +58,7 @@
     "undici": "^7.29.1"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.63.1",
+    "@rollup/rollup-linux-x64-gnu": "^4.63.2",
     "lightningcss-linux-x64-gnu": "^1.32.0"
   }
 }
