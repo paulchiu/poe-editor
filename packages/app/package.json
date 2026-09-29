@@ -80,7 +80,7 @@
     "react": "^19.3.0",
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.3.0",
-    "react-hook-form": "^7.88.0",
+    "react-hook-form": "^7.89.0",
     "react-hot-toast": "^2.6.1",
     "react-resizable-panels": "^4.13.3",
     "react-toastify": "^11.1.0",
