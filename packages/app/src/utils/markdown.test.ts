@@ -64,7 +64,7 @@ describe('renderMarkdown', () => {
     const markdown = '```mermaid\ngraph TD;\n    A-->B;\n```'
     const html = renderMarkdown(markdown)
     expect(html).toContain('<div class="code-block-language-hint">Mermaid</div>')
-    expect(html).toContain('data-raw-code="graph TD;\n    A-->B;"')
+    expect(html).toContain('data-raw-code="graph TD;\n    A--&gt;B;"')
     expect(html).toContain('<pre><code class="hljs language-mermaid">')
     expect(html).toContain('graph TD;')
   })
