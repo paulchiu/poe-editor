@@ -38,3 +38,11 @@ updates:
         update-types:
           - 'minor'
           - 'patch'
+      # vitest and its plugins peer on an exact shared version, so separate major PRs can never
+      # pass CI alone. Listed last so minors and patches still land in dev-dependencies.
+      vitest-major:
+        patterns:
+          - 'vitest'
+          - '@vitest/*'
+        update-types:
+          - 'major'

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { copyToClipboard, copySvgImageToClipboard, stripHtml } from './clipboard'
 import { extractFrontMatter, renderFrontMatterHtml } from './frontMatter'
 
@@ -101,13 +101,6 @@ describe('clipboard utils', () => {
         vi.stubGlobal('Blob', vi.fn())
       }
       vi.stubGlobal('ClipboardItem', clipboardItemMock)
-      /** Vitest 4's jsdom createObjectURL shim reads a Blob internal that jsdom 30.1 renamed. */
-      vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:mock')
-      vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
-    })
-
-    afterEach(() => {
-      vi.restoreAllMocks()
     })
 
     it('writes svg image data to clipboard when supported', async () => {
