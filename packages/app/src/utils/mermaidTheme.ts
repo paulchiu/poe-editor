@@ -34,10 +34,15 @@ interface MermaidThemeVariables {
 export interface MermaidInitializeOptions {
   startOnLoad: boolean
   theme: 'base'
+  layout: 'dagre'
+  look: 'classic'
   themeVariables: MermaidThemeVariables
 }
 
-const MERMAID_THEME_OPTIONS: Record<MermaidColorMode, MermaidInitializeOptions> = {
+const MERMAID_THEME_OPTIONS: Record<
+  MermaidColorMode,
+  Omit<MermaidInitializeOptions, 'layout' | 'look'>
+> = {
   light: {
     startOnLoad: false,
     theme: 'base',
@@ -155,6 +160,9 @@ export function getMermaidInitializeOptions(colorMode: MermaidColorMode): Mermai
 
   return {
     ...options,
+    /** Mermaid 12 changed the default layout and look; pin the pre-12 rendering. */
+    layout: 'dagre',
+    look: 'classic',
     themeVariables: {
       ...options.themeVariables,
     },

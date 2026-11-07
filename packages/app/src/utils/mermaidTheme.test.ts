@@ -67,6 +67,8 @@ describe('mermaidTheme', () => {
 
     expect(options.theme).toBe('base')
     expect(options.startOnLoad).toBe(false)
+    expect(options.layout).toBe('dagre')
+    expect(options.look).toBe('classic')
     expect(options.themeVariables.primaryColor).toBe('#f0efeb')
     expect(options.themeVariables.primaryTextColor).toBe('#2a2a2a')
     expect(options.themeVariables.primaryBorderColor).toBe('#8b6f47')
