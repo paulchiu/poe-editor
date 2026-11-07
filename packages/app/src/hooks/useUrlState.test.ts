@@ -14,9 +14,11 @@ vi.mock('@/utils/emojiShortcodes', () => ({
 }))
 
 describe('useUrlState', () => {
-  beforeEach(() => {
-    // Reset window.location.hash
+  beforeEach(async () => {
+    /** jsdom queues hashchange via setImmediate, so drain events left by earlier tests' hash assignments before rendering. */
+    vi.useRealTimers()
     window.location.hash = ''
+    await new Promise((resolve) => setImmediate(resolve))
     vi.clearAllMocks()
 
     // Mock window.scrollTo to avoid jsdom errors if any

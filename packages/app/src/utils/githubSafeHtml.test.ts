@@ -18,7 +18,7 @@ describe('sanitizeGithubSafeHtml', () => {
 
     expect(sanitized).toContain('<details open="">')
     expect(sanitized).toContain('<summary>See more</summary>')
-    expect(sanitized).toContain('<div align="center" data-raw-code="graph TD;A-->B;">')
+    expect(sanitized).toContain('<div align="center" data-raw-code="graph TD;A--&gt;B;">')
     expect(sanitized).toContain(
       '<input type="checkbox" class="task-list-item-checkbox" checked="" data-task-index="0">'
     )
