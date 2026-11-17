@@ -95,7 +95,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@playwright/test": "^1.65.0",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/postcss": "^4.3.5",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^7.0.1",
@@ -107,12 +107,12 @@
     "@types/semver": "^7.8.0",
     "@vitejs/plugin-react": "^6.3.0",
     "@vitest/coverage-v8": "^5.1.0",
-    "eslint": "^10.14.0",
+    "eslint": "^10.15.0",
     "eslint-plugin-react-x": "^5.30.2",
     "globals": "^17.14.0",
-    "jsdom": "^31.0.0",
+    "jsdom": "^31.0.1",
     "markdownlint-cli2": "^0.24.1",
-    "postcss": "^8.5.32",
+    "postcss": "^8.5.33",
     "prettier": "^3.10.1",
     "semver": "^7.8.6",
     "tailwindcss": "^4.2.4",
@@ -121,6 +121,6 @@
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.8",
     "vitest": "^5.1.0",
-    "wrangler": "^4.161.0"
+    "wrangler": "^4.162.0"
   }
 }
